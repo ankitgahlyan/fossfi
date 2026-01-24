@@ -6,7 +6,7 @@ import "../common/errors"
 // these constants are used to estimate storage fee (how much we should pay for storing a wallet contract);
 // actual storage state (desired value of these constants) are printed to console in StateInit.spec.ts
 
-const STORAGE_SIZE_MaxWallet_bits         = 1026
+const STORAGE_SIZE_MaxWallet_bits         = 1026 // todo: fixme adjust
 const STORAGE_SIZE_MaxWallet_cells        = 3
 const STORAGE_SIZE_InitStateWallet_bits   = 812
 const STORAGE_SIZE_InitStateWallet_cells  = 3

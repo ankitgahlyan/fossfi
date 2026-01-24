@@ -4,11 +4,12 @@
 //  Modified by TON Studio
 
 import { Sha256 } from "@aws-crypto/sha256-js"
-import { Dictionary, beginCell, Cell, Address } from "@ton/core"
+import { Dictionary, DictionaryValue, beginCell, Cell, Address, contractAddress } from "@ton/core"
 import { TonClient } from "@ton/ton"
 import chalk from "chalk"
 import { FossFi } from "../wrappers/FossFi";
 import { FossFiWallet } from "../wrappers/FossFiWallet";
+import { sha256_sync } from "@ton/crypto";
 
 const ONCHAIN_CONTENT_PREFIX = 0x00
 const SNAKE_PREFIX = 0x00
@@ -24,9 +25,63 @@ const toKey = (key: string) => {
     return BigInt(`0x${sha256(key).toString("hex")}`)
 }
 
+function OnChainString(): DictionaryValue<string> {
+    return {
+        serialize(src, builder) {
+            builder.storeRef(beginCell().storeUint(0, 8).storeStringTail(src));
+        },
+        parse(src) {
+            const sc  = src.loadRef().beginParse();
+            const tag = sc.loadUint(8);
+            if(tag == 0) {
+                return sc.loadStringTail();
+            } else if(tag == 1) {
+                // Not really tested, but feels like it should work
+                const chunkDict = Dictionary.loadDirect(Dictionary.Keys.Uint(32), Dictionary.Values.Cell(), sc);
+                return chunkDict.values().map(x => x.beginParse().loadStringTail()).join('');
+
+            } else {
+                throw Error(`Prefix ${tag} is not supported yet!`);
+            }
+        }
+    }
+}
+
+export function nftContentToCell(content: {
+    name: string
+    description: string
+    symbol: string
+    image: string
+}) {
+    // if(content.type == 'offchain') {
+    //     return beginCell()
+    //         .storeUint(1, 8)
+    //         .storeStringRefTail(content.uri) //Snake logic under the hood
+    //         .endCell();
+    // }
+    let keySet = new Set(['uri' , 'name' , 'description' , 'image' , 'image_data' , 'symbol' , 'decimals' , 'amount_style' , 'render_type' , 'currency' , 'game']);
+    let contentDict = Dictionary.empty(Dictionary.Keys.Buffer(32), OnChainString());
+
+    // for (let contentKey in content.data) {
+    //     if(keySet.has(contentKey)) {
+    //         contentDict.set(
+    //             sha256_sync(contentKey),
+    //             content.data[contentKey as OnChainContentData]!
+    //         );
+    //     }
+    // }
+
+    // Store the on-chain metadata in the dictionary
+    Object.entries(content).forEach(([key, value]) => {
+        contentDict.set(sha256_sync(key), value)
+    })
+    return beginCell().storeUint(0, 8).storeDict(contentDict).endCell();
+}
+
 export function buildOnchainMetadata(data: {
     name: string
     description: string
+    symbol: string
     image: string
 }): Cell {
     const dict = Dictionary.empty(Dictionary.Keys.BigUint(256), Dictionary.Values.Cell())
@@ -137,7 +192,8 @@ const jettonParams = {
         "https://raw.githubusercontent.com/tact-lang/tact/refs/heads/main/docs/public/logomark-light.svg",
 }
 // Create content Cell
-export const content = buildOnchainMetadata(jettonParams)
+export const envContent = buildOnchainMetadata(jettonParams)
+export const content = nftContentToCell(jettonParams)
 
 export async function buildJettonMinterFromEnv(deployerAddress: Address) {
 

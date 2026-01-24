@@ -23,6 +23,8 @@ export type FossFiConfig = {
     admin_address: Address | null,
     base_fi_wallet_code: Cell,
     latest_fi_wallet_code: Cell,
+    jetton_wallet_code: Cell,
+    jetton_minter_code: Cell,
     metadata_uri: Cell | FossFiContent
 };
 export type FossFiConfigFull = {
@@ -75,9 +77,11 @@ export function fossFiConfigToCell(config: FossFiConfig): Cell {
         .storeUint(0, 10)
         .storeUint(0, 10)
         .storeAddress(config.admin_address)
-        .storeAddress(null) // Transfer admin_address address
-        .storeRef(config.base_fi_wallet_code) // todo: sync changes
-        .storeRef(config.latest_fi_wallet_code) // todo: sync changes
+        .storeAddress(config.admin_address) // Transfer admin_address address
+        .storeRef(config.base_fi_wallet_code)
+        .storeRef(config.latest_fi_wallet_code)
+        .storeRef(config.jetton_wallet_code)
+        .storeRef(config.jetton_minter_code)
         .storeRef(content)
         .endCell();
 }

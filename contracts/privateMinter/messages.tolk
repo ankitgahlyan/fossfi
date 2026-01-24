@@ -78,7 +78,7 @@
 //     queryId: uint64
 // }
 
-// struct (0x2508d66a) UpgradeMinterCode {
+// struct (0x2508d66a) UpgradeAnyDataCode {
 //     queryId: uint64
 //     newData: cell
 //     newCode: cell
