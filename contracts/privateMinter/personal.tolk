@@ -15,7 +15,7 @@ type AllowedMessageToMinter =
     | ChangeMinterAdmin
     | ClaimMinterAdmin
     | ChangeMinterMetadataUri
-    | UpgradeMinterCode
+    | UpgradeAnyDataCode
     | TopUpTons
 
 fun onBouncedMessage(in: InMessageBounced) {
@@ -236,7 +236,7 @@ fun onInternalMessage(in: InMessage) {
             storage.save();
         }
 
-        UpgradeMinterCode => {
+        UpgradeAnyDataCode => {
             var storage = lazy PriStore.load();
             assertSenderIsAdmin(in.senderAddress, storage.adminAddress);
             contract.setCodePostponed(msg.newCode);

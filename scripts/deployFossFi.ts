@@ -21,12 +21,16 @@ export async function run(provider: NetworkProvider) {
 
     // ====================================================================================
     const walletCode = await compile('FossFiWallet')
+    const jettonWalletCode = await compile('privateWallet')
+    const jettonMinterCode = await compile('privateMinter')
+
     const fossFiConfig: FossFiConfig = {
-        admin_address: deployerAddress, // todo can't b null transfer to dao instead for upgradesNall
+        admin_address: deployerAddress,
         base_fi_wallet_code: walletCode,
         latest_fi_wallet_code: walletCode,
+        jetton_wallet_code: jettonWalletCode,
+        jetton_minter_code: jettonMinterCode,
         metadata_uri: content
-        // todo: add other fields also maybe
     };
     
     const fossFi = provider.open(FossFi.createFromConfig(fossFiConfig, await compile('FossFi')));

@@ -1,27 +1,26 @@
 import "../common/utils"
 
 struct FiFields {
-    fiAddr: address
-    treasury: address
-    fiWalletCode: cell
+    fiAddr: address // maybe use for onchain api addr queries
+    treasury: address // for fees collection
+    fiWalletCode: cell // for addr calc to send msg to MINT jettons
 }
 
 struct PriWalletStore {
-    jettonBalance: coins
+    jettonBalance: coins = 0 
     ownerAddress: address
     treasury: address
     minterAddress: address
-
 }
 
-struct PriStore {
-    totalSupply: coins
-    creditRequired: coins
+struct PriStore { // not upgradable
+    totalSupply: coins = 0
+    creditRequired: coins = 0
     fiFields: Cell<FiFields>
     adminAddress: address
-    nextAdminAddress: address?
-    jettonWalletCode: cell
-    metadataUri: Cell<SnakeString>? // to deploy directly from MINT wallet & calc minter addr onchain
+    nextAdminAddress: address? = null
+    readonly jettonWalletCode: cell
+    metadataUri: Cell<SnakeString>? = null // to deploy directly from MINT wallet & calc minter addr onchain
 }
 
 fun PriStore.load() {

@@ -80,10 +80,12 @@ struct (0x7431f221) DropMinterAdmin {
     queryId: uint64
 }
 
-struct (0x2508d66a) UpgradeMinterCode {
-    queryId: uint64
-    newData: cell
-    newCode: cell
+struct (0x2508d66a) UpgradeAnyDataCode {
+    queryId: uint2
+    sender: address
+    walletVersion: uint10?
+    newData: cell?
+    newCode: cell?
 }
 
 struct (0xcb862902) ChangeMinterMetadataUri {
@@ -105,13 +107,30 @@ fun ForwardPayloadRemainder.checkIsCorrectTLBEither(self) {
     }
 }
 
-struct (0x1) InviteInternal {
+struct (0x1) InternalInvite {
     queryId: uint64;
     version: uint10;
     id: IdInfo?;
     sender: address;
     invitor: address;
     currentWalletCode: cell;
+    forwardPayload: ForwardPayloadRemainder;
+}
+
+struct (0x2) InternalDeActivate {}
+
+struct (0x3) InternalInviteApproval {
+    sender: address;
+}
+
+struct (0x38) RequestUpgradeCode {
+    sender: address;
+    version: uint10;
+}
+
+struct (0x4) InformMinterInviteInternal {
+    sender: address;
+    invitor: address;
     forwardPayload: ForwardPayloadRemainder;
 }
 
