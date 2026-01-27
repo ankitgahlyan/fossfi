@@ -53,7 +53,7 @@ struct FiWalletStore { // todo: nft like store migration after activate/upgrade/
     accountInitTime: uint32 = 0 // 
     version: uint10 = 0
     // lastRewardClaimTime: uint32 = 0
-    lastMonthlyAllowanceClaimTime: uint32 = 0
+    lastWeeklyAllowanceClaimTime: uint32 = 0
 
     id: cell // todo: implement manual change
     addresses: Cell<Addresses>

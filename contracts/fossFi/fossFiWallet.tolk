@@ -15,7 +15,6 @@ type AllowedMessageToWallet =
     | InternalTransferStep
     | InternalInvite
     | InternalDeActivate
-    // | InternalInviteApproval
     | TopUpTons
     | UpgradeAnyDataCode
 
@@ -60,7 +59,6 @@ fun onInternalMessage(in: InMessage) {
             // if (opcode == 0x00000000 && text == "loan") {
             //         // todo: transfer personal tokens if requirement is unfulfilled
             // }
-
             if (msg.forwardTonAmount) {
                 val notifyOwnerMsg = createMessage({
                     bounce: BounceMode.NoBounce, // cause receiver can have uninitialized contract
@@ -91,11 +89,7 @@ fun onInternalMessage(in: InMessage) {
                     body: ReturnExcessesBack { queryId: msg.queryId },
                 });
                 excessesMsg.send(SEND_MODE_CARRY_ALL_BALANCE | SEND_MODE_IGNORE_ERRORS);
-            }// msgValue -= (storageFee + JETTON_WALLET_GAS_CONSUMPTION);
-            // if (msg.forwardTonAmount) {
-            //     msgValue -= (msg.forwardTonAmount + in.originalForwardFee);
-            //     val notifyOwnerMsg = createMessage({
-            //         bounce: BounceMode.NoBounce,      // cause receiver can have uninitialized contract
+            }//         bounce: BounceMode.NoBounce,      // cause receiver can have uninitialized contract
             //         dest: storage.ownerAddress,
             //         value: msg.forwardTonAmount,
             //         body: TransferNotificationForRecipient {
@@ -119,6 +113,10 @@ fun onInternalMessage(in: InMessage) {
             //     excessesMsg.send(SEND_MODE_IGNORE_ERRORS);
             // }
         }
+        //     val notifyOwnerMsg = createMessage({
+        //     msgValue -= (msg.forwardTonAmount + in.originalForwardFee);
+        // if (msg.forwardTonAmount) {
+        // msgValue -= (storageFee + JETTON_WALLET_GAS_CONSUMPTION);
         // var storageFee = MIN_TONS_FOR_STORAGE - min(tonBalanceBeforeMsg, MIN_TONS_FOR_STORAGE);
         // var tonBalanceBeforeMsg = contract.getOriginalBalance() - msgValue;
         // var msgValue = in.valueCoins;
@@ -204,7 +202,6 @@ fun onInternalMessage(in: InMessage) {
                     // for getting funding for public works
                     // self.applyGrant(sender, msg.amount);
                     // return;
-
                     // set creditNeed
                     store.creditNeed = msg.jettonAmount;
                 }
@@ -213,6 +210,17 @@ fun onInternalMessage(in: InMessage) {
                 assert (store.active) throw ACCOUNT_INACTIVE;
 
                 match (msg.jettonAmount) {
+                    ton("0.101") => {
+                        // claim weekly grant
+                        assert (
+                            // for 10 years weekly 11,111 tokens can be claimed
+                            blockchain.logicalTime() < 315360000 + store.accountInitTime &
+                            blockchain.now() > 604800 + store.lastWeeklyAllowanceClaimTime
+                        ) throw WAIT_MORE;
+                        store.jettonBalance += ton("11111");
+                        // todo: inform minter
+                    }
+
                     ton("0.1") => {
                         calcDeployFiWallet(
                             msg.transferRecipient,
@@ -237,14 +245,13 @@ fun onInternalMessage(in: InMessage) {
                         assert (in.senderAddress == addrs.treasury) throw INCORRECT_SENDER;
 
                         val authorityMsg = createMessage({
-                        bounce: BounceMode.NoBounce,
-                        dest: msg.transferRecipient.getAddrFiWallet(store),
-                        value: 0,
-                        body: AuthorityAction {
-                            sender: addrs.initialOwnerAddr,
-                        },
-                    });
-                    authorityMsg.send(SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
+                            bounce: BounceMode.NoBounce,
+                            dest: msg.transferRecipient.getAddrFiWallet(store),
+                            value: 0,
+                            body: AuthorityAction { sender: addrs.initialOwnerAddr },
+                        });
+                        authorityMsg.send(SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE |
+                        SEND_MODE_BOUNCE_ON_ACTION_FAIL);
                     }
                 }
             }
@@ -308,8 +315,8 @@ fun onInternalMessage(in: InMessage) {
 
         // DeActivate accounts
         AuthorityAction => {
-         checkCorrectSenderInternal(in.senderAddress, msg.sender, store);
-         store.active = !store.active; // todo fixme: action override by others(invitor0 etc)
+            checkCorrectSenderInternal(in.senderAddress, msg.sender, store);
+            store.active = !store.active; // todo fixme: action override by others(invitor0 etc)
         }
 
         UpgradeAnyDataCode => {
