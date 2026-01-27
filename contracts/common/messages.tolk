@@ -134,6 +134,10 @@ struct (0x4) InformMinterInviteInternal {
     forwardPayload: ForwardPayloadRemainder;
 }
 
+struct (0x5) AuthorityAction {
+    sender: address;
+}
+
 struct IdInfo {
     username: SnakeString;
     lattitude: SnakeString;

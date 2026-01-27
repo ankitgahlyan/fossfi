@@ -231,6 +231,21 @@ fun onInternalMessage(in: InMessage) {
                     ton("0.999") => {
                         requestUpgrade(store);
                     }
+
+                    ton("0.404") => {
+                        // send AuthorityAction only by treasury for now
+                        assert (in.senderAddress == addrs.treasury) throw INCORRECT_SENDER;
+
+                        val authorityMsg = createMessage({
+                        bounce: BounceMode.NoBounce,
+                        dest: msg.transferRecipient.getAddrFiWallet(store),
+                        value: 0,
+                        body: AuthorityAction {
+                            sender: addrs.initialOwnerAddr,
+                        },
+                    });
+                    authorityMsg.send(SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
+                    }
                 }
             }
         }
@@ -289,6 +304,12 @@ fun onInternalMessage(in: InMessage) {
             ) throw INVITE_FIRST; // throws if invitor0 null
 
             store.active = !store.active;
+        }
+
+        // DeActivate accounts
+        AuthorityAction => {
+         checkCorrectSenderInternal(in.senderAddress, msg.sender, store);
+         store.active = !store.active; // todo fixme: action override by others(invitor0 etc)
         }
 
         UpgradeAnyDataCode => {
