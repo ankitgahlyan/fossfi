@@ -15,7 +15,7 @@ type AllowedMessageToWallet =
     | InternalTransferStep
     | InternalInvite
     | InternalDeActivate
-    | InternalInviteApproval
+    // | InternalInviteApproval
     | TopUpTons
     | UpgradeAnyDataCode
 
@@ -24,7 +24,7 @@ type BounceOpToHandle = InternalTransferStep | InternalInvite | BurnNotification
 // type BounceRich = InternalInvite
 // global store: FiWalletStore = lazy FiWalletStore.load();
 fun onBouncedMessage(in: InMessageBounced) {
-    // in.bouncedBody.skipBouncedPrefix();
+    in.bouncedBody.skipBouncedPrefix();
     val msg = lazy BounceOpToHandle.fromSlice(in.bouncedBody);
     var store = lazy FiWalletStore.load();
     var restoreAmount: coins;
@@ -53,6 +53,13 @@ fun onInternalMessage(in: InMessage) {
             checkCorrectSenderInternal(in.senderAddress, msg.transferInitiator, store);
 
             store.jettonBalance += msg.jettonAmount;
+
+            // check if transferred as loan
+            val opcode = msg.forwardPayload.preloadUint(32);
+            // val text = msg.forwardPayload.loadStringTail(); // todo: UTF-8 string
+            // if (opcode == 0x00000000 && text == "loan") {
+            //         // todo: transfer personal tokens if requirement is unfulfilled
+            // }
 
             if (msg.forwardTonAmount) {
                 val notifyOwnerMsg = createMessage({
@@ -84,10 +91,7 @@ fun onInternalMessage(in: InMessage) {
                     body: ReturnExcessesBack { queryId: msg.queryId },
                 });
                 excessesMsg.send(SEND_MODE_CARRY_ALL_BALANCE | SEND_MODE_IGNORE_ERRORS);
-            }// var msgValue = in.valueCoins;
-            // var tonBalanceBeforeMsg = contract.getOriginalBalance() - msgValue;
-            // var storageFee = MIN_TONS_FOR_STORAGE - min(tonBalanceBeforeMsg, MIN_TONS_FOR_STORAGE);
-            // msgValue -= (storageFee + JETTON_WALLET_GAS_CONSUMPTION);
+            }// msgValue -= (storageFee + JETTON_WALLET_GAS_CONSUMPTION);
             // if (msg.forwardTonAmount) {
             //     msgValue -= (msg.forwardTonAmount + in.originalForwardFee);
             //     val notifyOwnerMsg = createMessage({
@@ -115,7 +119,9 @@ fun onInternalMessage(in: InMessage) {
             //     excessesMsg.send(SEND_MODE_IGNORE_ERRORS);
             // }
         }
-
+        // var storageFee = MIN_TONS_FOR_STORAGE - min(tonBalanceBeforeMsg, MIN_TONS_FOR_STORAGE);
+        // var tonBalanceBeforeMsg = contract.getOriginalBalance() - msgValue;
+        // var msgValue = in.valueCoins;
         AskToTransfer => {
             assert (in.senderAddress == addrs.ownerAddress) throw ERROR_NOT_OWNER;
             msg.forwardPayload.checkIsCorrectTLBEither();
@@ -198,6 +204,9 @@ fun onInternalMessage(in: InMessage) {
                     // for getting funding for public works
                     // self.applyGrant(sender, msg.amount);
                     // return;
+
+                    // set creditNeed
+                    store.creditNeed = msg.jettonAmount;
                 }
             } else {
                 // semantic txn
@@ -209,9 +218,7 @@ fun onInternalMessage(in: InMessage) {
                             msg.transferRecipient,
                             addrs.treasury,
                             addrs.trustedJettonAddrs.load().minterAddr,
-                            store.baseFiWalletCode,
-                            store.jettonWalletCode,
-                            store.jettonMinterCode
+                            store.baseFiWalletCode
                         )
                             .invite(msg.forwardPayload, store);
                     }
@@ -229,7 +236,7 @@ fun onInternalMessage(in: InMessage) {
         }
 
         InternalInvite => {
-            // checkCorrectSenderInternal(in.senderAddress, msg.sender, store);
+            // assert (store.jettonBalance == ton("1")) throw ALREADY_INVITED;
             assert (!store.active) throw ALREADY_INVITED; // cheap calc first/failFast
             assert (in.senderAddress == msg.sender.getAddrFiWallet(store)) throw INCORRECT_SENDER;
 
@@ -248,9 +255,6 @@ fun onInternalMessage(in: InMessage) {
 
             nomins.invitor = in.senderAddress; // contract addr
             nomins.invitor0 = msg.invitor.getAddrFiWallet(store); // can deactivate acc
-
-            store.connections += 1;
-            mintInternal(MBRP_AMOUNT, store);
 
             val notifyInvitor0 = createMessage({
                 bounce: BounceMode.NoBounce,
@@ -276,40 +280,6 @@ fun onInternalMessage(in: InMessage) {
                 },
             });
             notifyMinterMsg.send(SEND_MODE_PAY_FEES_SEPARATELY | SEND_MODE_IGNORE_ERRORS);
-
-            // deploy personal minter
-            val internalTransferStep = InternalTransferStep {
-                queryId: 0,
-                jettonAmount: ton("1000000"), // 1 million
-                version: 0, // unused in personal jettons
-                transferInitiator: addrs.initialOwnerAddr,
-                sendExcessesTo: null,
-                forwardTonAmount: ton("0.01"),
-                forwardPayload: createEmptySlice(),
-            };
-            val mintMsg = createMessage({
-                bounce: BounceMode.NoBounce, // todo: should? bounce
-                value: ton("0.5"),
-                dest: calcDeployPriMinter(
-                    // todo: import
-                    FiFields {
-                        fiAddr: addrs.trustedJettonAddrs.load().minterAddr, // todo:
-                        treasury: addrs.treasury,
-                        fiWalletCode: store.baseFiWalletCode,
-                    },
-                    addrs.initialOwnerAddr,
-                    store.jettonWalletCode,
-                    store.jettonMinterCode
-                ),
-                // todo personalMinter of deployer of MINT
-                body: MintNewJettons {
-                    queryId: 0,
-                    mintRecipient: addrs.initialOwnerAddr, // todo
-                    tonAmount: ton("0.1"),
-                    internalTransferMsg: internalTransferStep.toCell(),
-                },
-            });
-            mintMsg.send(SEND_MODE_BOUNCE_ON_ACTION_FAIL | SEND_MODE_PAY_FEES_SEPARATELY);
         }
 
         InternalDeActivate => {
@@ -317,42 +287,8 @@ fun onInternalMessage(in: InMessage) {
             assert (
                 in.senderAddress == addrs.nomInAddrs.load().invitor0!
             ) throw INVITE_FIRST; // throws if invitor0 null
-            if (store.active) {
-                // deactivate
-                // todo: burnForce
-                store.connections -= 1;
-            } else {
-                // activate
-                // todo: mintInternal
-                store.connections += 1;
-            }
 
-            val internalInviteApproval = createMessage({
-                bounce: BounceMode.Only256BitsOfBody,
-                dest: addrs.nomInAddrs.load().invitor!,
-                value: 0,
-                body: InternalInviteApproval { sender: addrs.initialOwnerAddr }, // emptybody as jettonAddrs are stored
-            });
-            internalInviteApproval.send(SEND_MODE_BOUNCE_ON_ACTION_FAIL |
-            SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE);
-        }
-
-        InternalInviteApproval => {
-            val amount = 10 * MBRP_AMOUNT;
-            var maps = lazy store.maps.load();
-            val sender = msg.sender.getAddrFiWallet(store);
-            val existed = maps.invited.delete(in.senderAddress); // uninvite if exists
-            if (existed) {
-                burnForce(in.senderAddress, amount, store);
-                store.connections -= 1;
-            } else if (in.senderAddress == sender) {
-                // addr not stored in case of reActivating so check for correct sender
-                maps.invited.set(in.senderAddress, amount);
-                mintInternal(amount, store);
-                store.connections += 1;
-            } else {
-                throw INCORRECT_SENDER;
-            }
+            store.active = !store.active;
         }
 
         UpgradeAnyDataCode => {
@@ -360,14 +296,7 @@ fun onInternalMessage(in: InMessage) {
             if (store.version < msg.walletVersion!) {
                 // ignore if manually upgraded
                 store.version = msg.walletVersion!;
-                contract.setCodePostponed(msg.newCode!); // todo: fixme send upgrade to all invited
-                var maps = lazy store.maps.load();
-                var m = maps.invited;
-                var r = m.findFirst();
-                while (r.isFound) {
-                    sendUpgrade(r.getKey(), msg.newCode!, store);
-                    r = m.iterateNext(r);
-                }
+                contract.setCodePostponed(msg.newCode!);
             }
         }
 

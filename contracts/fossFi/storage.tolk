@@ -8,6 +8,8 @@ struct NomInAddrs {
 
 struct TrustedAddrs { // todo: map field to store variable trusted addrs by root
     minterAddr: address // todo: use trusted jettonWallets pattern like bidAsk for cross contract centralised calls instead of stateInit storing & for use of provide_wallet_addr onchain api to query jettonWallet addr from owner 
+    personalJettonMinter: address? = null,
+    personalJettonWallet: address? = null, // separately deployed & manually added by owner
     authorisedAccs: map<address, address> // each acc can delegate its power of attorney
 }
 
@@ -41,7 +43,8 @@ struct ReportInfo {
 
 struct FiWalletStore { // todo: nft like store migration after activate/upgrade/ID acc also code upgrade & reverese/killSwitch for normal jettons coz of  
     jettonBalance: coins = ton("1") // needed for semantic txn sending from wallet apps, adjusted in transfer 
-    accumulatedFees: coins = 0;
+    creditNeed: coins = 0;
+    accumulatedFees: coins = 0; // todo: use fixed no of txn
     debt: coins = 0
     debts: bool = false // todo use this pattern of external informer about state before expensive loading cells
     connections: uint8 = 0 // 250 max msgSending constraints
@@ -57,8 +60,6 @@ struct FiWalletStore { // todo: nft like store migration after activate/upgrade/
     maps: Cell<Maps>
 
     readonly baseFiWalletCode: cell
-    readonly jettonWalletCode: cell // todo: fixme deploy separately and update store manually for personal token
-    readonly jettonMinterCode: cell
 }
 
 struct FiStore {

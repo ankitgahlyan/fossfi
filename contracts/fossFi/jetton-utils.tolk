@@ -11,8 +11,6 @@ fun calcDeployFiWallet(
     treasury: address,
     minterAddress: address,
     baseFiWalletCode: cell,
-    jettonWalletCode: cell,
-    jettonMinterCode: cell,
 ): AutoDeployAddress {
     val emptyFiWalletStore: FiWalletStore = {
         addresses: Addresses {
@@ -36,8 +34,6 @@ fun calcDeployFiWallet(
         }.toCell(), // todo: learn how to set it default
         id: createEmptyCell(),
         baseFiWalletCode,
-        jettonWalletCode,
-        jettonMinterCode,
     };
 
     return {
@@ -54,28 +50,17 @@ fun address.getAddrFiWallet(self, store: FiWalletStore) {
         self,
         addrs.treasury,
         addrs.trustedJettonAddrs.load().minterAddr,
-        store.baseFiWalletCode,
-        store.jettonWalletCode,
-        store.jettonMinterCode
+        store.baseFiWalletCode
     )
         .calculateAddress();
 }
 
 fun AutoDeployAddress.invite(self, forwardPayload: slice, store: FiWalletStore) {
     val addrs = lazy store.addresses.load();
-    var maps = lazy store.maps.load();
 
     val jettonAddr = self.calculateAddress();
 
     idActionChecks(store); // active, !reported
-    newConnectionChecks(store, jettonAddr); // <250, !connected
-
-    // update stores
-    val reward = 10 * MBRP_AMOUNT;
-    store.jettonBalance += reward; // KISS
-    // mintInternal(reward, store); // todo: fixme without it burns will bounce
-    maps.invited.set(jettonAddr, reward);
-    store.connections += 1;
 
     val inviteInternal = createMessage({
         bounce: BounceMode.Only256BitsOfBody, // 
@@ -113,6 +98,8 @@ fun checkCorrectSenderInternal(sender: address, senderInitOwner: address, store:
     var addrs = lazy store.addresses.load();
     var invitors = lazy addrs.nomInAddrs.load();
 
+    // todo: sync version
+    
     if (sender == senderInitOwner.getAddrFiWallet(store)) {
         // invitees can also send
         assert (
@@ -122,50 +109,12 @@ fun checkCorrectSenderInternal(sender: address, senderInitOwner: address, store:
         assert (sender == addrs.trustedJettonAddrs.load().minterAddr) throw ERROR_NOT_VALID_WALLET;
         if (!store.active) {
             store.active = true;
-            store.connections += 1;
             invitors.invitor = contract.getAddress(); // todo fixme or adapt logic for null also used after accClosed
             invitors.invitor0 = contract.getAddress();
         }
-
-        // deploy personalMinter for deployer
-        val internalTransferStep = InternalTransferStep {
-            queryId: 0,
-            jettonAmount: ton("1000000"), // 1 million
-            version: 0, // unused in personal jettons
-            transferInitiator: senderInitOwner, // todo: ok?
-            sendExcessesTo: null,
-            forwardTonAmount: ton("0.01"),
-            forwardPayload: createEmptySlice(),
-        };
-        val mintMsg = createMessage({
-            bounce: BounceMode.NoBounce,
-            value: ton("0.5"),
-            dest: calcDeployPriMinter(
-                FiFields {
-                    fiAddr: addrs.trustedJettonAddrs.load().minterAddr, // todo:
-                    treasury: addrs.treasury,
-                    fiWalletCode: store.baseFiWalletCode,
-                },
-                senderInitOwner,
-                store.jettonWalletCode,
-                store.jettonMinterCode
-            ),
-            // todo personalMinter of deployer of MINT
-            body: MintNewJettons {
-                queryId: 0,
-                mintRecipient: senderInitOwner, // todo
-                tonAmount: ton("0.1"),
-                internalTransferMsg: internalTransferStep.toCell(),
-            },
-        });
-        mintMsg.send(SEND_MODE_BOUNCE_ON_ACTION_FAIL | SEND_MODE_PAY_FEES_SEPARATELY);
-    }// } else if (version < store.version) {
-    //     // self.sendUpgrade(in.senderAddress)
-    // }
+    }
 }
-//     // todo request code from sender()
-// if (version > store.version) {
-// check version and sync code
+
 fun mintInternal(amount: coins, store: FiWalletStore) {
     amount = deductDebts(amount, store);
     if (amount > 0) {
@@ -308,8 +257,8 @@ fun sendUpgrade(to: address, newCode: cell, store: FiWalletStore) {
             queryId: 0,
             sender: store.addresses.load().initialOwnerAddr,
             walletVersion: store.version,
-            newData: null,
             newCode,
+            newData: null,
         },
     })
         .send(SEND_MODE_PAY_FEES_SEPARATELY | SEND_MODE_IGNORE_ERRORS); // todo don't ignore
