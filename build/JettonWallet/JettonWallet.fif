@@ -1,0 +1,660 @@
+"Asm.fif" include
+// automatically generated from jetton-wallet-contract.tolk, errors.tolk, fees-management.tolk, jetton-utils.tolk, messages.tolk, sharding.tolk, storage.tolk
+PROGRAM{
+  0 DECLMETHOD onInternalMessage()
+  97026 DECLMETHOD get_wallet_data()
+  // 13 functions inlined in-place:
+  // - calculateJettonWalletMinStorageFee (2 calls)
+  // - forwardInitStateOverhead (1 call)
+  // - checkAmountIsEnoughToTransfer (1 call)
+  // - checkAmountIsEnoughToBurn (1 call)
+  // - SnakeString.unpackFromSlice (0 calls)
+  // - SnakeString.packToBuilder (0 calls)
+  // - WalletStorage.load (4 calls)
+  // - WalletStorage.save (4 calls)
+  // - calcDeployedJettonWallet (2 calls)
+  // - calcAddressOfJettonWallet (1 call)
+  // - jettonAutoAddrByOwner (2 calls)
+  // - ForwardPayloadRemainder.checkIsCorrectTLBEither (1 call)
+  // - onBouncedMessage (0 calls)
+  // contracts/privateMinter/jetton-wallet-contract.tolk:27
+  onInternalMessage() PROC:<{ 	//  in.body
+    // 27: fun onInternalMessage(in: InMessage)
+    INMSG_BOUNCED           	//  in.body '1
+    IFJMP:<{                	//  in.body
+      // 14: in.bouncedBody.skipBouncedPrefix()
+      32 LDU
+      NIP                   	//  lazyS
+      // 17: val restoreAmount = match (msg)
+      x{178d4519} SDBEGINSQ 	//  lazyS '17
+      IF:<{                 	//  lazyS
+        // 18: InternalTransferStep => msg.jettonAmount, // safe to fetch jettonAmount, because
+        64 LDU
+        NIP                 	//  lazyS
+        LDGRAMS             	//  '21 lazyS
+        DROP                	//  '16
+      }>ELSE<{              	//  lazyS
+        // 17: val restoreAmount = match (msg)
+        x{7bdd97de} SDBEGINSQ	//  lazyS '17
+        IFNOTJMP:<{         	//  lazyS
+          63 THROW
+        }>                  	//  lazyS
+        // 19: BurnNotificationForMinter => msg.jettonAmount, // it's in the beginning of a message
+        64 LDU
+        NIP                 	//  lazyS
+        LDGRAMS             	//  '25 lazyS
+        DROP                	//  '16
+      }>                    	//  restoreAmount
+      // 51: return WalletStorage.fromCell(contract.getData())
+      c4 PUSH               	//  restoreAmount '32
+      // 22: var storage = lazy WalletStorage.load()
+      CTOS                  	//  restoreAmount lazyS
+      // 23: storage.jettonBalance += restoreAmount
+      LDGRAMS               	//  restoreAmount storage.jettonBalance '37
+      s0 s2 XCHG            	//  '37 storage.jettonBalance restoreAmount
+      ADD                   	//  '37 storage.jettonBalance
+      // 55: contract.setData(self.toCell())
+      NEWC                  	//  '37 storage.jettonBalance b
+      SWAP                  	//  '37 b storage.jettonBalance
+      STGRAMS               	//  '37 b
+      STSLICE               	//  b
+      ENDC                  	//  '41
+      c4 POP                	// 
+    }>                      	//  lazyS
+    // 51: return WalletStorage.fromCell(contract.getData())
+    c4 PUSH                 	//  lazyS '60
+    // 29: var storage = lazy WalletStorage.load()
+    CTOS                    	//  lazyS lazyS
+    // 30: var ext = lazy storage.treasury.load()
+    LDGRAMS                 	//  lazyS storage.jettonBalance lazyS
+    DUP                     	//  lazyS storage.jettonBalance '65 lazyS
+    LDSTDADDR               	//  lazyS storage.jettonBalance '65 storage.ownerAddress lazyS
+    LDSTDADDR               	//  lazyS storage.jettonBalance '65 storage.ownerAddress storage.deployer lazyS
+    LDREF                   	//  lazyS storage.jettonBalance '65 storage.ownerAddress storage.deployer storage.treasury lazyS
+    LDSTDADDR               	//  lazyS storage.jettonBalance '65 storage.ownerAddress storage.deployer storage.treasury '69 lazyS
+    DROP                    	//  lazyS storage.jettonBalance '65 storage.ownerAddress storage.deployer storage.treasury storage.minterAddress
+    SWAP                    	//  lazyS storage.jettonBalance '65 storage.ownerAddress storage.deployer storage.minterAddress storage.treasury
+    CTOS                    	//  lazyS storage.jettonBalance '65 storage.ownerAddress storage.deployer storage.minterAddress lazyS
+    // 31: match (msg)
+    LDSTDADDR               	//  lazyS storage.jettonBalance '65 storage.ownerAddress storage.deployer storage.minterAddress '75 lazyS
+    DROP                    	//  lazyS storage.jettonBalance '65 storage.ownerAddress storage.deployer storage.minterAddress ext
+    s0 s6 XCHG              	//  ext storage.jettonBalance '65 storage.ownerAddress storage.deployer storage.minterAddress lazyS
+    x{178d4519} SDBEGINSQ   	//  ext storage.jettonBalance '65 storage.ownerAddress storage.deployer storage.minterAddress lazyS '76
+    IFJMP:<{                	//  ext storage.jettonBalance '65 storage.ownerAddress storage.deployer storage.minterAddress lazyS
+      // 34: if (in.senderAddress != storage.minterAddress) { // TODO: or treasury
+      64 LDU                	//  ext storage.jettonBalance '65 storage.ownerAddress storage.deployer storage.minterAddress msg.USlot2 lazyS
+      LDGRAMS               	//  ext storage.jettonBalance '65 storage.ownerAddress storage.deployer storage.minterAddress msg.USlot2 msg.USlot3 lazyS
+      LDOPTSTDADDR          	//  ext storage.jettonBalance '65 storage.ownerAddress storage.deployer storage.minterAddress msg.USlot2 msg.USlot3 msg.USlot4 lazyS
+      LDOPTSTDADDR          	//  ext storage.jettonBalance '65 storage.ownerAddress storage.deployer storage.minterAddress msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 lazyS
+      LDGRAMS               	//  ext storage.jettonBalance '65 storage.ownerAddress storage.deployer storage.minterAddress msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 msg.USlot7
+      INMSG_SRC             	//  ext storage.jettonBalance '65 storage.ownerAddress storage.deployer storage.minterAddress msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 msg.USlot7 '86
+      s7 PUSH               	//  ext storage.jettonBalance '65 storage.ownerAddress storage.deployer storage.minterAddress msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 msg.USlot7 '86 storage.minterAddress
+      SDEQ                  	//  ext storage.jettonBalance '65 storage.ownerAddress storage.deployer storage.minterAddress msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 msg.USlot7 '88
+      IFNOT:<{              	//  ext storage.jettonBalance '65 storage.ownerAddress storage.deployer storage.minterAddress msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 msg.USlot7
+        // 36: in.senderAddress ==
+        INMSG_SRC           	//  ext storage.jettonBalance '65 storage.ownerAddress storage.deployer storage.minterAddress msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 msg.USlot7 '90
+        // 42: contract.getCode()
+        MYCODE              	//  ext storage.jettonBalance '65 storage.ownerAddress storage.deployer storage.minterAddress msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 msg.USlot7 '90 '92
+        // 15: treasury: Treasury {addr: treasury}.toCell()
+        s13 PUSH
+        NEWC                	//  ext storage.jettonBalance '65 storage.ownerAddress storage.deployer storage.minterAddress msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 msg.USlot7 '90 '92 ext b
+        STSTDADDR           	//  ext storage.jettonBalance '65 storage.ownerAddress storage.deployer storage.minterAddress msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 msg.USlot7 '90 '92 b
+        ENDC                	//  ext storage.jettonBalance '65 storage.ownerAddress storage.deployer storage.minterAddress msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 msg.USlot7 '90 '92 '109
+        s6 s10 PUSH2        	//  ext storage.jettonBalance '65 storage.ownerAddress storage.deployer emptyWalletStorage.minterAddress msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 msg.USlot7 '90 '92 emptyWalletStorage.treasury emptyWalletStorage.ownerAddress emptyWalletStorage.deployer
+        // 21: stateInit: { code: jettonWalletCode, data: emptyWalletStorage.toCell() }
+        NEWC                	//  ext storage.jettonBalance '65 storage.ownerAddress storage.deployer emptyWalletStorage.minterAddress msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 msg.USlot7 '90 '92 emptyWalletStorage.treasury emptyWalletStorage.ownerAddress emptyWalletStorage.deployer b
+        x{0} STSLICECONST   	//  ext storage.jettonBalance '65 storage.ownerAddress storage.deployer emptyWalletStorage.minterAddress msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 msg.USlot7 '90 '92 emptyWalletStorage.treasury emptyWalletStorage.ownerAddress emptyWalletStorage.deployer b
+        s1 s2 XCHG          	//  ext storage.jettonBalance '65 storage.ownerAddress storage.deployer emptyWalletStorage.minterAddress msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 msg.USlot7 '90 '92 emptyWalletStorage.treasury emptyWalletStorage.deployer emptyWalletStorage.ownerAddress b
+        STSTDADDR           	//  ext storage.jettonBalance '65 storage.ownerAddress storage.deployer emptyWalletStorage.minterAddress msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 msg.USlot7 '90 '92 emptyWalletStorage.treasury emptyWalletStorage.deployer b
+        STSTDADDR           	//  ext storage.jettonBalance '65 storage.ownerAddress storage.deployer emptyWalletStorage.minterAddress msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 msg.USlot7 '90 '92 emptyWalletStorage.treasury b
+        STREF               	//  ext storage.jettonBalance '65 storage.ownerAddress storage.deployer emptyWalletStorage.minterAddress msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 msg.USlot7 '90 '92 b
+        s1 s9 XCHG          	//  ext storage.jettonBalance '65 storage.ownerAddress storage.deployer '92 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 msg.USlot7 '90 emptyWalletStorage.minterAddress b
+        STSTDADDR           	//  ext storage.jettonBalance '65 storage.ownerAddress storage.deployer '92 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 msg.USlot7 '90 b
+        ENDC                	//  ext storage.jettonBalance '65 storage.ownerAddress storage.deployer '92 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 msg.USlot7 '90 '113
+        // 22: toShard: { fixedPrefixLength: SHARD_DEPTH, closeTo: ownerAddress }
+        8 PUSHINT           	//  ext storage.jettonBalance '65 storage.ownerAddress storage.deployer '92 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 msg.USlot7 '90 '113 '115=8
+        // 19: return
+        s6 PUSH             	//  ext storage.jettonBalance '65 storage.ownerAddress storage.deployer 'USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 msg.USlot7 '90 'USlot2 '98=8 '99
+        s2 s10 s2 XC2PU     	//  ext storage.jettonBalance '65 storage.ownerAddress storage.deployer '99 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 msg.USlot7 '90 '98=8 'USlot2 'USlot1 '98=8
+        // 33: return calcDeployedJettonWallet(
+        // ...39: ).calculateAddress()
+        NEWC
+        b{1} STSLICECONST
+        5 STU
+        b{0110} STSLICECONST
+        STREF
+        STREF
+        HASHBU              	//  ext storage.jettonBalance '65 storage.ownerAddress storage.deployer '99 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 msg.USlot7 '90 '98=8 '118
+        248 PUSHPOW2DEC     	//  ext storage.jettonBalance '65 storage.ownerAddress storage.deployer '99 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 msg.USlot7 '90 '98=8 '118 '126
+        AND                 	//  ext storage.jettonBalance '65 storage.ownerAddress storage.deployer '99 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 msg.USlot7 '90 '98=8 '118
+        s1 s9 XCHG
+        11 PUSHINT          	//  ext storage.jettonBalance '65 storage.ownerAddress storage.deployer '98=8 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 msg.USlot7 '90 '99 '118 '131=11
+        s0 s10 XCHG2        	//  ext storage.jettonBalance '65 storage.ownerAddress storage.deployer '118 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 msg.USlot7 '90 '99 '131=11 '98=8
+        SDSUBSTR            	//  ext storage.jettonBalance '65 storage.ownerAddress storage.deployer '118 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 msg.USlot7 '90 '130
+        NEWC                	//  ext storage.jettonBalance '65 storage.ownerAddress storage.deployer '118 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 msg.USlot7 '90 '130 '117
+        b{10000000000} STSLICECONST	//  ext storage.jettonBalance '65 storage.ownerAddress storage.deployer '118 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 msg.USlot7 '90 '130 '117
+        STSLICE             	//  ext storage.jettonBalance '65 storage.ownerAddress storage.deployer '118 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 msg.USlot7 '90 '117
+        s1 s8 XCHG          	//  ext storage.jettonBalance '65 storage.ownerAddress storage.deployer '90 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 msg.USlot7 '118 '117
+        248 STU             	//  ext storage.jettonBalance '65 storage.ownerAddress storage.deployer '90 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 msg.USlot7 '117
+        BTOS                	//  ext storage.jettonBalance '65 storage.ownerAddress storage.deployer '90 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 msg.USlot7 '93
+        // 36: in.senderAddress ==
+        s1 s7 XCHG          	//  ext storage.jettonBalance '65 storage.ownerAddress storage.deployer msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 '90 '93
+        SDEQ                	//  ext storage.jettonBalance '65 storage.ownerAddress storage.deployer msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 '143
+        // 35: assert (
+        // ...44: ) throw ERROR_NOT_VALID_WALLET
+        74 THROWIFNOT       	//  ext storage.jettonBalance '65 storage.ownerAddress storage.deployer msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6
+      }>ELSE<{
+        s6 POP              	//  ext storage.jettonBalance '65 storage.ownerAddress storage.deployer msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6
+      }>
+      s7 s3 PUSH2           	//  ext storage.jettonBalance '65 storage.ownerAddress storage.deployer msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 storage.ownerAddress feeAdjusted
+      // 49: if (storage.ownerAddress == storage.deployer) { // && != treasury???
+      s0 s8 XCHG            	//  ext storage.jettonBalance '65 storage.ownerAddress feeAdjusted msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 storage.ownerAddress storage.deployer
+      SDEQ                  	//  ext storage.jettonBalance '65 storage.ownerAddress feeAdjusted msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 '145
+      IF:<{                 	//  ext storage.jettonBalance '65 storage.ownerAddress feeAdjusted msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6
+        // 50: val fee = msg.jettonAmount / ton("200"); // 0.5% royalty to treasury
+        s3 PUSH
+        200000000000 PUSHINT	//  ext storage.jettonBalance '65 storage.ownerAddress feeAdjusted msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 msg.USlot3 '147=200000000000
+        DIV                 	//  ext storage.jettonBalance '65 storage.ownerAddress feeAdjusted msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 fee
+        s7 s7 XCPU          	//  ext storage.jettonBalance '65 storage.ownerAddress fee msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 feeAdjusted fee
+        // 51: feeAdjusted -= fee
+        SUB                 	//  ext storage.jettonBalance '65 storage.ownerAddress fee msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 feeAdjusted
+        c4 PUSH             	//  ext storage.jettonBalance '65 storage.ownerAddress fee msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 feeAdjusted '168
+        // 43: val st = lazy WalletStorage.load()
+        CTOS                	//  ext storage.jettonBalance '65 storage.ownerAddress fee msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 feeAdjusted lazyS
+        // 44: val tr = st.treasury.load().addr
+        LDGRAMS             	//  ext storage.jettonBalance '65 storage.ownerAddress fee msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 feeAdjusted '172 lazyS
+        NIP                 	//  ext storage.jettonBalance '65 storage.ownerAddress fee msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 feeAdjusted lazyS
+        LDSTDADDR           	//  ext storage.jettonBalance '65 storage.ownerAddress fee msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 feeAdjusted '173 lazyS
+        NIP                 	//  ext storage.jettonBalance '65 storage.ownerAddress fee msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 feeAdjusted lazyS
+        LDSTDADDR           	//  ext storage.jettonBalance '65 storage.ownerAddress fee msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 feeAdjusted st.deployer lazyS
+        LDREF               	//  ext storage.jettonBalance '65 storage.ownerAddress fee msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 feeAdjusted st.deployer st.treasury lazyS
+        LDSTDADDR           	//  ext storage.jettonBalance '65 storage.ownerAddress fee msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 feeAdjusted st.deployer st.treasury '176 lazyS
+        DROP                	//  ext storage.jettonBalance '65 storage.ownerAddress fee msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 feeAdjusted st.deployer st.treasury st.minterAddress
+        SWAP                	//  ext storage.jettonBalance '65 storage.ownerAddress fee msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 feeAdjusted st.deployer st.minterAddress st.treasury
+        CTOS                	//  ext storage.jettonBalance '65 storage.ownerAddress fee msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 feeAdjusted st.deployer st.minterAddress s
+        LDSTDADDR           	//  ext storage.jettonBalance '65 storage.ownerAddress fee msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 feeAdjusted st.deployer st.minterAddress '181 s
+        ENDS                	//  ext storage.jettonBalance '65 storage.ownerAddress fee msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 feeAdjusted st.deployer st.minterAddress tr
+        // 45: return calcDeployedJettonWallet(owner, st.deployer, tr, st.minterAddress, contract.getCode())
+        MYCODE              	//  ext storage.jettonBalance '65 storage.ownerAddress fee msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 feeAdjusted st.deployer st.minterAddress tr '182
+        // 15: treasury: Treasury {addr: treasury}.toCell()
+        SWAP
+        NEWC                	//  ext storage.jettonBalance '65 storage.ownerAddress fee msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 feeAdjusted st.deployer st.minterAddress '182 tr b
+        STSTDADDR           	//  ext storage.jettonBalance '65 storage.ownerAddress fee msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 feeAdjusted st.deployer st.minterAddress '182 b
+        ENDC                	//  ext storage.jettonBalance '65 storage.ownerAddress fee msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 feeAdjusted st.deployer st.minterAddress '182 '198
+        // 11: val emptyWalletStorage: WalletStorage =
+        s15 PUSH            	//  ext storage.jettonBalance '65 storage.ownerAddress fee msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 feeAdjusted emptyWalletStorage.deployer emptyWalletStorage.minterAddress '182 emptyWalletStorage.treasury emptyWalletStorage.ownerAddress
+        // 21: stateInit: { code: jettonWalletCode, data: emptyWalletStorage.toCell() }
+        NEWC                	//  ext storage.jettonBalance '65 storage.ownerAddress fee msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 feeAdjusted emptyWalletStorage.deployer emptyWalletStorage.minterAddress '182 emptyWalletStorage.treasury emptyWalletStorage.ownerAddress b
+        x{0} STSLICECONST   	//  ext storage.jettonBalance '65 storage.ownerAddress fee msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 feeAdjusted emptyWalletStorage.deployer emptyWalletStorage.minterAddress '182 emptyWalletStorage.treasury emptyWalletStorage.ownerAddress b
+        STSTDADDR           	//  ext storage.jettonBalance '65 storage.ownerAddress fee msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 feeAdjusted emptyWalletStorage.deployer emptyWalletStorage.minterAddress '182 emptyWalletStorage.treasury b
+        s1 s4 XCHG          	//  ext storage.jettonBalance '65 storage.ownerAddress fee msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 feeAdjusted emptyWalletStorage.treasury emptyWalletStorage.minterAddress '182 emptyWalletStorage.deployer b
+        STSTDADDR           	//  ext storage.jettonBalance '65 storage.ownerAddress fee msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 feeAdjusted emptyWalletStorage.treasury emptyWalletStorage.minterAddress '182 b
+        s1 s3 XCHG          	//  ext storage.jettonBalance '65 storage.ownerAddress fee msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 feeAdjusted '182 emptyWalletStorage.minterAddress emptyWalletStorage.treasury b
+        STREF               	//  ext storage.jettonBalance '65 storage.ownerAddress fee msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 feeAdjusted '182 emptyWalletStorage.minterAddress b
+        STSTDADDR           	//  ext storage.jettonBalance '65 storage.ownerAddress fee msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 feeAdjusted '182 b
+        ENDC                	//  ext storage.jettonBalance '65 storage.ownerAddress fee msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 feeAdjusted '182 '202
+        // 22: toShard: { fixedPrefixLength: SHARD_DEPTH, closeTo: ownerAddress }
+        8 PUSHINT           	//  '160 storage.jettonBalance '65 storage.ownerAddress fee msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 feeAdjusted 'USlot1 'USlot2 '159=8
+        // 62: sendExcessesTo: null
+        PUSHNULL            	//  '160 storage.jettonBalance '65 storage.ownerAddress fee msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 feeAdjusted 'USlot1 'USlot2 '159=8 '207
+        // 54: createMessage(
+        NEWC                	//  '160 storage.jettonBalance '65 storage.ownerAddress fee msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 feeAdjusted 'USlot1 'USlot2 '159=8 '207 refb
+        x{178d4519} STSLICECONST	//  '160 storage.jettonBalance '65 storage.ownerAddress fee msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 feeAdjusted 'USlot1 'USlot2 '159=8 '207 refb
+        s10 PUSH            	//  '160 storage.jettonBalance '65 storage.ownerAddress fee msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 feeAdjusted 'USlot1 'USlot2 '159=8 '207 refb msg.USlot2
+        64 STUR             	//  '160 storage.jettonBalance '65 storage.ownerAddress fee msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 feeAdjusted 'USlot1 'USlot2 '159=8 '207 refb
+        s0 s12 XCHG2        	//  '160 storage.jettonBalance '65 storage.ownerAddress '207 msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 feeAdjusted 'USlot1 'USlot2 '159=8 refb fee
+        STGRAMS             	//  '160 storage.jettonBalance '65 storage.ownerAddress '207 msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 feeAdjusted 'USlot1 'USlot2 '159=8 refb
+        s12 s(-1) PUXC      	//  '160 storage.jettonBalance '65 storage.ownerAddress '207 msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 feeAdjusted 'USlot1 'USlot2 '159=8 storage.ownerAddress refb
+        STOPTSTDADDR        	//  '160 storage.jettonBalance '65 storage.ownerAddress '207 msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 feeAdjusted 'USlot1 'USlot2 '159=8 refb
+        s1 s11 XCHG         	//  '160 storage.jettonBalance '65 storage.ownerAddress '159=8 msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 feeAdjusted 'USlot1 'USlot2 '207 refb
+        STOPTSTDADDR        	//  '160 storage.jettonBalance '65 storage.ownerAddress '159=8 msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 feeAdjusted 'USlot1 'USlot2 refb
+        x{0} STSLICECONST   	//  '160 storage.jettonBalance '65 storage.ownerAddress '159=8 msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 feeAdjusted 'USlot1 'USlot2 refb
+        s9 PUSH             	//  '160 storage.jettonBalance '65 storage.ownerAddress '159=8 msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 feeAdjusted 'USlot1 'USlot2 refb msg.USlot7
+        STSLICER            	//  '160 storage.jettonBalance '65 storage.ownerAddress '159=8 msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 feeAdjusted 'USlot1 'USlot2 refb
+        ENDC                	//  '160 storage.jettonBalance '65 storage.ownerAddress '159=8 msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 feeAdjusted 'USlot1 'USlot2 '223
+        NEWC                	//  '160 storage.jettonBalance '65 storage.ownerAddress '159=8 msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 feeAdjusted 'USlot1 'USlot2 '223 b
+        b{01000010000000000} STSLICECONST	//  '160 storage.jettonBalance '65 storage.ownerAddress '159=8 msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 feeAdjusted 'USlot1 'USlot2 '223 b
+        s2 s3 s11 PUSH3     	//  '160 storage.jettonBalance '65 storage.ownerAddress '159=8 msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 feeAdjusted 'USlot1 'USlot2 '223 b 'USlot2 'USlot1 '159=8
+        NEWC
+        b{1} STSLICECONST
+        5 STU
+        b{0110} STSLICECONST
+        STREF
+        STREF
+        HASHBU              	//  '160 storage.jettonBalance '65 storage.ownerAddress '159=8 msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 feeAdjusted 'USlot1 'USlot2 '223 b '236
+        248 PUSHPOW2DEC     	//  '160 storage.jettonBalance '65 storage.ownerAddress '159=8 msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 feeAdjusted 'USlot1 'USlot2 '223 b '236 '244
+        AND                 	//  '160 storage.jettonBalance '65 storage.ownerAddress '159=8 msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 feeAdjusted 'USlot1 'USlot2 '223 b '236
+        s0 16 s() XCHG
+        11 PUSHINT          	//  '236 storage.jettonBalance '65 storage.ownerAddress '159=8 msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 feeAdjusted 'USlot1 'USlot2 '223 b '160 '249=11
+        s13 PUSH            	//  '236 storage.jettonBalance '65 storage.ownerAddress '159=8 msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 feeAdjusted 'USlot1 'USlot2 '223 b '160 '249=11 '159=8
+        SDSUBSTR            	//  '236 storage.jettonBalance '65 storage.ownerAddress '159=8 msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 feeAdjusted 'USlot1 'USlot2 '223 b '248
+        s12 POP             	//  '236 storage.jettonBalance '65 storage.ownerAddress '248 msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 feeAdjusted 'USlot1 'USlot2 '223 b
+        s1 s11 XCHG         	//  '236 storage.jettonBalance '65 storage.ownerAddress '223 msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 feeAdjusted 'USlot1 'USlot2 '248 b
+        STSLICE             	//  '236 storage.jettonBalance '65 storage.ownerAddress '223 msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 feeAdjusted 'USlot1 'USlot2 b
+        s1 s14 XCHG         	//  'USlot2 storage.jettonBalance '65 storage.ownerAddress '223 msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 feeAdjusted 'USlot1 '236 b
+        248 STU             	//  'USlot2 storage.jettonBalance '65 storage.ownerAddress '223 msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 feeAdjusted 'USlot1 b
+        5389 PUSHINT
+        122 STUR            	//  'USlot2 storage.jettonBalance '65 storage.ownerAddress '223 msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 feeAdjusted 'USlot1 b
+        STREF               	//  'USlot2 storage.jettonBalance '65 storage.ownerAddress '223 msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 feeAdjusted b
+        s1 s12 XCHG         	//  feeAdjusted storage.jettonBalance '65 storage.ownerAddress '223 msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 'USlot2 b
+        STREF               	//  feeAdjusted storage.jettonBalance '65 storage.ownerAddress '223 msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 msg.USlot6 b
+        s1 s7 XCHG          	//  feeAdjusted storage.jettonBalance '65 storage.ownerAddress msg.USlot6 msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 '223 b
+        STREF               	//  feeAdjusted storage.jettonBalance '65 storage.ownerAddress msg.USlot6 msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 b
+        ENDC                	//  feeAdjusted storage.jettonBalance '65 storage.ownerAddress msg.USlot6 msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 '279
+        // 67: .send(SEND_MODE_PAY_FEES_SEPARATELY | SEND_MODE_IGNORE_ERRORS)
+        3 PUSHINT           	//  feeAdjusted storage.jettonBalance '65 storage.ownerAddress msg.USlot6 msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 '279 '282
+        // 54: createMessage(
+        // ...67: .send(SEND_MODE_PAY_FEES_SEPARATELY | SEND_MODE_IGNORE_ERRORS)
+        SENDRAWMSG          	//  feeAdjusted storage.jettonBalance '65 storage.ownerAddress msg.USlot6 msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5
+        // 49: if (storage.ownerAddress == storage.deployer) { // && != treasury???
+        s5 s9 XCHG          	//  msg.USlot6 storage.jettonBalance '65 storage.ownerAddress feeAdjusted msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5
+      }>ELSE<{
+        s10 POP             	//  msg.USlot6 storage.jettonBalance '65 storage.ownerAddress feeAdjusted msg.USlot7 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5
+      }>
+      s8 s5 XCHG2           	//  msg.USlot6 msg.USlot4 '65 storage.ownerAddress msg.USlot5 msg.USlot7 msg.USlot2 msg.USlot3 storage.jettonBalance feeAdjusted
+      // 70: storage.jettonBalance += feeAdjusted
+      ADD                   	//  msg.USlot6 msg.USlot4 '65 storage.ownerAddress msg.USlot5 msg.USlot7 msg.USlot2 msg.USlot3 storage.jettonBalance
+      // 55: contract.setData(self.toCell())
+      NEWC                  	//  msg.USlot6 msg.USlot4 '65 storage.ownerAddress msg.USlot5 msg.USlot7 msg.USlot2 msg.USlot3 storage.jettonBalance b
+      SWAP                  	//  msg.USlot6 msg.USlot4 '65 storage.ownerAddress msg.USlot5 msg.USlot7 msg.USlot2 msg.USlot3 b storage.jettonBalance
+      STGRAMS               	//  msg.USlot6 msg.USlot4 '65 storage.ownerAddress msg.USlot5 msg.USlot7 msg.USlot2 msg.USlot3 b
+      s1 s6 XCHG            	//  msg.USlot6 msg.USlot4 msg.USlot3 storage.ownerAddress msg.USlot5 msg.USlot7 msg.USlot2 '65 b
+      STSLICE               	//  msg.USlot6 msg.USlot4 msg.USlot3 storage.ownerAddress msg.USlot5 msg.USlot7 msg.USlot2 b
+      ENDC                  	//  msg.USlot6 msg.USlot4 msg.USlot3 storage.ownerAddress msg.USlot5 msg.USlot7 msg.USlot2 '286
+      c4 POP                	//  msg.USlot6 msg.USlot4 msg.USlot3 storage.ownerAddress msg.USlot5 msg.USlot7 msg.USlot2
+      // 73: if (msg.forwardTonAmount)
+      s6 PUSH               	//  msg.USlot6 msg.USlot4 msg.USlot3 storage.ownerAddress msg.USlot5 msg.USlot7 msg.USlot2 msg.USlot6
+      IF:<{                 	//  msg.USlot6 msg.USlot4 msg.USlot3 storage.ownerAddress msg.USlot5 msg.USlot7 msg.USlot2
+        // 74: val notifyOwnerMsg = createMessage(
+        NEWC                	//  msg.USlot6 msg.USlot4 msg.USlot3 storage.ownerAddress msg.USlot5 msg.USlot7 msg.USlot2 refb
+        x{7362d09c} STSLICECONST	//  msg.USlot6 msg.USlot4 msg.USlot3 storage.ownerAddress msg.USlot5 msg.USlot7 msg.USlot2 refb
+        OVER                	//  msg.USlot6 msg.USlot4 msg.USlot3 storage.ownerAddress msg.USlot5 msg.USlot7 msg.USlot2 refb msg.USlot2
+        64 STUR             	//  msg.USlot6 msg.USlot4 msg.USlot3 storage.ownerAddress msg.USlot5 msg.USlot7 msg.USlot2 refb
+        s0 s5 XCHG2         	//  msg.USlot6 msg.USlot4 msg.USlot2 storage.ownerAddress msg.USlot5 msg.USlot7 refb msg.USlot3
+        STGRAMS             	//  msg.USlot6 msg.USlot4 msg.USlot2 storage.ownerAddress msg.USlot5 msg.USlot7 refb
+        s1 s5 XCHG          	//  msg.USlot6 msg.USlot7 msg.USlot2 storage.ownerAddress msg.USlot5 msg.USlot4 refb
+        STOPTSTDADDR        	//  msg.USlot6 msg.USlot7 msg.USlot2 storage.ownerAddress msg.USlot5 refb
+        s1 s4 XCHG          	//  msg.USlot6 msg.USlot5 msg.USlot2 storage.ownerAddress msg.USlot7 refb
+        STSLICE             	//  msg.USlot6 msg.USlot5 msg.USlot2 storage.ownerAddress refb
+        ENDC                	//  msg.USlot6 msg.USlot5 msg.USlot2 storage.ownerAddress '313
+        NEWC                	//  msg.USlot6 msg.USlot5 msg.USlot2 storage.ownerAddress '313 b
+        b{010000} STSLICECONST	//  msg.USlot6 msg.USlot5 msg.USlot2 storage.ownerAddress '313 b
+        s1 s2 XCHG          	//  msg.USlot6 msg.USlot5 msg.USlot2 '313 storage.ownerAddress b
+        STSTDADDR           	//  msg.USlot6 msg.USlot5 msg.USlot2 '313 b
+        s0 s4 XCHG2         	//  '313 msg.USlot5 msg.USlot2 b msg.USlot6
+        STGRAMS             	//  '313 msg.USlot5 msg.USlot2 b
+        1 PUSHINT
+        107 STUR            	//  '313 msg.USlot5 msg.USlot2 b
+        s1 s3 XCHG          	//  msg.USlot2 msg.USlot5 '313 b
+        STREF               	//  msg.USlot2 msg.USlot5 b
+        ENDC                	//  msg.USlot2 msg.USlot5 notifyOwnerMsg
+        // 85: notifyOwnerMsg.send(SEND_MODE_PAY_FEES_SEPARATELY | SEND_MODE_BOUNCE_ON_ACTION_FAIL)
+        17 PUSHINT          	//  msg.USlot2 msg.USlot5 notifyOwnerMsg '372
+        SENDRAWMSG          	//  msg.USlot2 msg.USlot5
+        // 73: if (msg.forwardTonAmount)
+        SWAP                	//  msg.USlot5 msg.USlot2
+      }>ELSE<{
+        s2 s6 XCHG          	//  msg.USlot5 msg.USlot4 msg.USlot3 storage.ownerAddress msg.USlot6 msg.USlot7 msg.USlot2
+        5 1 BLKDROP2        	//  msg.USlot5 msg.USlot2
+      }>
+      // 88: if (msg.sendExcessesTo != null)
+      OVER                  	//  msg.USlot5 msg.USlot2 msg.USlot5
+      ISNULL                	//  msg.USlot5 msg.USlot2 '373
+      IFNOT:<{              	//  msg.USlot5 msg.USlot2
+        // 89: var toLeaveOnBalance = contract.getOriginalBalance() - in.valueCoins +
+        BALANCE
+        FIRST               	//  msg.USlot5 msg.USlot2 '375
+        INMSG_VALUE         	//  msg.USlot5 msg.USlot2 '375 '376
+        SUB                 	//  msg.USlot5 msg.USlot2 '378
+        // 90: contract.getStorageDuePayment()
+        DUEPAYMENT          	//  msg.USlot5 msg.USlot2 '378 '379
+        // 89: var toLeaveOnBalance = contract.getOriginalBalance() - in.valueCoins +
+        // ...90: contract.getStorageDuePayment()
+        ADD                 	//  msg.USlot5 msg.USlot2 toLeaveOnBalance
+        // 35: return calculateStorageFee(MY_WORKCHAIN, MIN_STORAGE_DURATION, STORAGE_SIZE_MaxWallet_bits, STORAGE_SIZE_MaxWallet_cells)
+        3 PUSHINT           	//  msg.USlot5 msg.USlot2 toLeaveOnBalance '382=3
+        1026 PUSHINT        	//  msg.USlot5 msg.USlot2 toLeaveOnBalance '382=3 '383=1026
+        157680000 PUSHINT   	//  msg.USlot5 msg.USlot2 toLeaveOnBalance '382=3 '383=1026 '384=157680000
+        0 PUSHINT           	//  msg.USlot5 msg.USlot2 toLeaveOnBalance '382=3 '383=1026 '384=157680000 '385=0
+        GETSTORAGEFEE       	//  msg.USlot5 msg.USlot2 toLeaveOnBalance '381
+        // 92: max(toLeaveOnBalance, calculateJettonWalletMinStorageFee())
+        MAX                 	//  msg.USlot5 msg.USlot2 '387
+        // 93: RESERVE_MODE_AT_MOST
+        2 PUSHINT           	//  msg.USlot5 msg.USlot2 '387 '388=2
+        // 91: reserveToncoinsOnBalance(
+        RAWRESERVE          	//  msg.USlot5 msg.USlot2
+        // 96: val excessesMsg = createMessage(
+        NEWC                	//  msg.USlot5 msg.USlot2 b
+        b{010000} STSLICECONST	//  msg.USlot5 msg.USlot2 b
+        s1 s2 XCHG          	//  msg.USlot2 msg.USlot5 b
+        STSTDADDR           	//  msg.USlot2 b
+        3576854235 PUSHINT
+        143 STUR            	//  msg.USlot2 b
+        64 STU              	//  b
+        ENDC                	//  excessesMsg
+        // 102: excessesMsg.send(SEND_MODE_CARRY_ALL_BALANCE | SEND_MODE_IGNORE_ERRORS)
+        130 PUSHINT         	//  excessesMsg '471
+        SENDRAWMSG          	// 
+      }>ELSE<{
+        2DROP               	// 
+      }>
+    }>                      	//  ext storage.jettonBalance '65 storage.ownerAddress storage.deployer storage.minterAddress lazyS
+    // 31: match (msg)
+    s2 POP                  	//  ext storage.jettonBalance '65 storage.ownerAddress lazyS storage.minterAddress
+    s5 POP                  	//  storage.minterAddress storage.jettonBalance '65 storage.ownerAddress lazyS
+    x{0f8a7ea5} SDBEGINSQ   	//  storage.minterAddress storage.jettonBalance '65 storage.ownerAddress lazyS '76
+    IFJMP:<{                	//  storage.minterAddress storage.jettonBalance '65 storage.ownerAddress lazyS
+      // 107: msg.forwardPayload.checkIsCorrectTLBEither()
+      s4 POP                	//  lazyS storage.jettonBalance '65 storage.ownerAddress
+      s0 s3 XCHG            	//  storage.ownerAddress storage.jettonBalance '65 lazyS
+      64 LDU                	//  storage.ownerAddress storage.jettonBalance '65 msg.USlot1 lazyS
+      LDGRAMS               	//  storage.ownerAddress storage.jettonBalance '65 msg.USlot1 msg.USlot2 lazyS
+      LDSTDADDR             	//  storage.ownerAddress storage.jettonBalance '65 msg.USlot1 msg.USlot2 msg.USlot3 lazyS
+      LDOPTSTDADDR          	//  storage.ownerAddress storage.jettonBalance '65 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 lazyS
+      SKIPOPTREF            	//  storage.ownerAddress storage.jettonBalance '65 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 lazyS
+      LDGRAMS               	//  storage.ownerAddress storage.jettonBalance '65 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7
+      // 99: var mutableCopy = self
+      DUP                   	//  storage.ownerAddress storage.jettonBalance '65 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7 mutableCopy
+      // 100: if (mutableCopy.loadMaybeRef() != null)
+      LDOPTREF              	//  storage.ownerAddress storage.jettonBalance '65 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7 '484 mutableCopy
+      SWAP                  	//  storage.ownerAddress storage.jettonBalance '65 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7 mutableCopy '484
+      ISNULL                	//  storage.ownerAddress storage.jettonBalance '65 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7 mutableCopy '485
+      IFNOT:<{              	//  storage.ownerAddress storage.jettonBalance '65 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7 mutableCopy
+        // 102: mutableCopy.assertEnd()
+        ENDS                	//  storage.ownerAddress storage.jettonBalance '65 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7
+      }>ELSE<{
+        // 100: if (mutableCopy.loadMaybeRef() != null)
+        DROP                	//  storage.ownerAddress storage.jettonBalance '65 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7
+      }>
+      // 109: msg.transferRecipient.getWorkchain() == MY_WORKCHAIN
+      s3 PUSH               	//  storage.ownerAddress storage.jettonBalance '65 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7 msg.USlot3
+      REWRITESTDADDR
+      DROP                  	//  storage.ownerAddress storage.jettonBalance '65 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7 '487
+      333 THROWIF           	//  storage.ownerAddress storage.jettonBalance '65 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7
+      // 112: in.valueCoins
+      INMSG_VALUE           	//  storage.ownerAddress storage.jettonBalance '65 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7 '490
+      // 114: in.originalForwardFee
+      INMSG_FWDFEE          	//  storage.ownerAddress storage.jettonBalance '65 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7 '490 '492
+      0 PUSHINT             	//  storage.ownerAddress storage.jettonBalance '65 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7 '490 '492 '494=0
+      GETORIGINALFWDFEE     	//  storage.ownerAddress storage.jettonBalance '65 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7 '490 '492
+      // 43: var fwdCount = forwardTonAmount ? 2 : 1; // second sending (forward) will be cheaper that first
+      s3 PUSH
+      2 PUSHINT
+      1 PUSHINT             	//  storage.ownerAddress storage.jettonBalance '65 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7 '490 '492 msg.USlot6 '497=2 '498=1
+      CONDSEL               	//  storage.ownerAddress storage.jettonBalance '65 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7 '490 '492 fwdCount
+      // 45: var jettonWalletGasConsumption = getPrecompiledGasConsumption()
+      GETPRECOMPILEDGAS     	//  storage.ownerAddress storage.jettonBalance '65 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7 '490 '492 fwdCount jettonWalletGasConsumption
+      // 46: var sendTransferGasConsumption = (jettonWalletGasConsumption == null) ? GAS_CONSUMPTION_JettonTransfer : jettonWalletGasConsumption
+      DUP                   	//  storage.ownerAddress storage.jettonBalance '65 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7 '490 '492 fwdCount jettonWalletGasConsumption jettonWalletGasConsumption
+      ISNULL                	//  storage.ownerAddress storage.jettonBalance '65 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7 '490 '492 fwdCount jettonWalletGasConsumption '502
+      6327 PUSHINT          	//  storage.ownerAddress storage.jettonBalance '65 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7 '490 '492 fwdCount jettonWalletGasConsumption '502 '504=6327
+      s2 PUSH               	//  storage.ownerAddress storage.jettonBalance '65 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7 '490 '492 fwdCount jettonWalletGasConsumption '502 '504=6327 jettonWalletGasConsumption
+      CONDSEL               	//  storage.ownerAddress storage.jettonBalance '65 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7 '490 '492 fwdCount jettonWalletGasConsumption sendTransferGasConsumption
+      // 47: var receiveTransferGasConsumption = (jettonWalletGasConsumption == null) ? GAS_CONSUMPTION_JettonReceive : jettonWalletGasConsumption
+      OVER                  	//  storage.ownerAddress storage.jettonBalance '65 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7 '490 '492 fwdCount jettonWalletGasConsumption sendTransferGasConsumption jettonWalletGasConsumption
+      ISNULL                	//  storage.ownerAddress storage.jettonBalance '65 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7 '490 '492 fwdCount jettonWalletGasConsumption sendTransferGasConsumption '506
+      7443 PUSHINT
+      ROT                   	//  storage.ownerAddress storage.jettonBalance '65 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7 '490 '492 fwdCount jettonWalletGasConsumption '506 '508=7443 sendTransferGasConsumption
+      s0 s3 XCHG            	//  storage.ownerAddress storage.jettonBalance '65 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7 '490 '492 fwdCount sendTransferGasConsumption '506 '508=7443 jettonWalletGasConsumption
+      CONDSEL               	//  storage.ownerAddress storage.jettonBalance '65 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7 '490 '492 fwdCount sendTransferGasConsumption receiveTransferGasConsumption
+      s2 s3 XCHG2           	//  storage.ownerAddress storage.jettonBalance '65 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7 '490 receiveTransferGasConsumption sendTransferGasConsumption fwdCount '492
+      // 53: fwdCount * fwdFee +
+      MUL                   	//  storage.ownerAddress storage.jettonBalance '65 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7 '490 receiveTransferGasConsumption sendTransferGasConsumption '510
+      // 50: forwardTonAmount +
+      // ...53: fwdCount * fwdFee
+      s5 PUSH               	//  storage.ownerAddress storage.jettonBalance '65 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7 '490 receiveTransferGasConsumption sendTransferGasConsumption '510 msg.USlot6
+      ADD                   	//  storage.ownerAddress storage.jettonBalance '65 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7 '490 receiveTransferGasConsumption sendTransferGasConsumption '511
+      // 39: return calculateForwardFeeWithoutLumpPrice(MY_WORKCHAIN, STORAGE_SIZE_InitStateWallet_bits, STORAGE_SIZE_InitStateWallet_cells)
+      3 PUSHINT             	//  storage.ownerAddress storage.jettonBalance '65 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7 '490 receiveTransferGasConsumption sendTransferGasConsumption '511 '513=3
+      812 PUSHINT           	//  storage.ownerAddress storage.jettonBalance '65 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7 '490 receiveTransferGasConsumption sendTransferGasConsumption '511 '513=3 '514=812
+      0 PUSHINT             	//  storage.ownerAddress storage.jettonBalance '65 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7 '490 receiveTransferGasConsumption sendTransferGasConsumption '511 '513=3 '514=812 '515=0
+      GETFORWARDFEESIMPLE   	//  storage.ownerAddress storage.jettonBalance '65 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7 '490 receiveTransferGasConsumption sendTransferGasConsumption '511 '512
+      // 50: forwardTonAmount +
+      // ...54: forwardInitStateOverhead()
+      ADD                   	//  storage.ownerAddress storage.jettonBalance '65 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7 '490 receiveTransferGasConsumption sendTransferGasConsumption '517
+      // 55: calculateGasFee(MY_WORKCHAIN, sendTransferGasConsumption) +
+      SWAP
+      0 PUSHINT             	//  storage.ownerAddress storage.jettonBalance '65 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7 '490 receiveTransferGasConsumption '517 sendTransferGasConsumption '518=0
+      GETGASFEE             	//  storage.ownerAddress storage.jettonBalance '65 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7 '490 receiveTransferGasConsumption '517 '519
+      // 50: forwardTonAmount +
+      // ...55: calculateGasFee(MY_WORKCHAIN, sendTransferGasConsumption)
+      ADD                   	//  storage.ownerAddress storage.jettonBalance '65 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7 '490 receiveTransferGasConsumption '520
+      // 56: calculateGasFee(MY_WORKCHAIN, receiveTransferGasConsumption) +
+      SWAP
+      0 PUSHINT             	//  storage.ownerAddress storage.jettonBalance '65 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7 '490 '520 receiveTransferGasConsumption '521=0
+      GETGASFEE             	//  storage.ownerAddress storage.jettonBalance '65 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7 '490 '520 '522
+      // 50: forwardTonAmount +
+      // ...56: calculateGasFee(MY_WORKCHAIN, receiveTransferGasConsumption)
+      ADD                   	//  storage.ownerAddress storage.jettonBalance '65 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7 '490 '523
+      // 35: return calculateStorageFee(MY_WORKCHAIN, MIN_STORAGE_DURATION, STORAGE_SIZE_MaxWallet_bits, STORAGE_SIZE_MaxWallet_cells)
+      3 PUSHINT             	//  storage.ownerAddress storage.jettonBalance '65 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7 '490 '523 '525=3
+      1026 PUSHINT          	//  storage.ownerAddress storage.jettonBalance '65 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7 '490 '523 '525=3 '526=1026
+      157680000 PUSHINT     	//  storage.ownerAddress storage.jettonBalance '65 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7 '490 '523 '525=3 '526=1026 '527=157680000
+      0 PUSHINT             	//  storage.ownerAddress storage.jettonBalance '65 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7 '490 '523 '525=3 '526=1026 '527=157680000 '528=0
+      GETSTORAGEFEE         	//  storage.ownerAddress storage.jettonBalance '65 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7 '490 '523 '524
+      // 50: forwardTonAmount +
+      // ...57: calculateJettonWalletMinStorageFee()
+      ADD                   	//  storage.ownerAddress storage.jettonBalance '65 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7 '490 '530
+      // 49: assert (msgValue >
+      // ...57: calculateJettonWalletMinStorageFee()
+      GREATER               	//  storage.ownerAddress storage.jettonBalance '65 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7 '531
+      // 58: ) throw ERROR_NOT_ENOUGH_GAS
+      48 THROWIFNOT         	//  storage.ownerAddress storage.jettonBalance '65 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7
+      // 118: assert (in.senderAddress == storage.ownerAddress) throw ERROR_NOT_OWNER
+      INMSG_SRC             	//  storage.ownerAddress storage.jettonBalance '65 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7 '533
+      s9 PUSH               	//  storage.ownerAddress storage.jettonBalance '65 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7 '533 storage.ownerAddress
+      SDEQ                  	//  storage.ownerAddress storage.jettonBalance '65 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7 '535
+      73 THROWIFNOT         	//  storage.ownerAddress storage.jettonBalance '65 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7
+      s7 s4 PUSH2           	//  storage.ownerAddress storage.jettonBalance '65 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7 storage.jettonBalance msg.USlot2
+      // 119: assert (storage.jettonBalance >= msg.jettonAmount) throw ERROR_BALANCE_ERROR
+      GEQ                   	//  storage.ownerAddress storage.jettonBalance '65 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7 '537
+      47 THROWIFNOT         	//  storage.ownerAddress storage.jettonBalance '65 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7
+      s7 s4 XCPU            	//  storage.ownerAddress msg.USlot7 '65 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 storage.jettonBalance msg.USlot2
+      // 120: storage.jettonBalance -= msg.jettonAmount
+      SUB                   	//  storage.ownerAddress msg.USlot7 '65 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 storage.jettonBalance
+      // 55: contract.setData(self.toCell())
+      NEWC                  	//  storage.ownerAddress msg.USlot7 '65 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 storage.jettonBalance b
+      SWAP                  	//  storage.ownerAddress msg.USlot7 '65 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 b storage.jettonBalance
+      STGRAMS               	//  storage.ownerAddress msg.USlot7 '65 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 b
+      s1 s6 XCHG            	//  storage.ownerAddress msg.USlot7 msg.USlot6 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 '65 b
+      STSLICE               	//  storage.ownerAddress msg.USlot7 msg.USlot6 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 b
+      ENDC                  	//  storage.ownerAddress msg.USlot7 msg.USlot6 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 '541
+      c4 POP                	//  storage.ownerAddress msg.USlot7 msg.USlot6 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4
+      // 51: return WalletStorage.fromCell(contract.getData())
+      c4 PUSH               	//  storage.ownerAddress msg.USlot7 msg.USlot6 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 '558
+      // 43: val st = lazy WalletStorage.load()
+      CTOS                  	//  storage.ownerAddress msg.USlot7 msg.USlot6 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 lazyS
+      // 44: val tr = st.treasury.load().addr
+      LDGRAMS               	//  storage.ownerAddress msg.USlot7 msg.USlot6 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 '562 lazyS
+      NIP                   	//  storage.ownerAddress msg.USlot7 msg.USlot6 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 lazyS
+      LDSTDADDR             	//  storage.ownerAddress msg.USlot7 msg.USlot6 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 '563 lazyS
+      NIP                   	//  storage.ownerAddress msg.USlot7 msg.USlot6 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 lazyS
+      LDSTDADDR             	//  storage.ownerAddress msg.USlot7 msg.USlot6 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 st.deployer lazyS
+      LDREF                 	//  storage.ownerAddress msg.USlot7 msg.USlot6 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 st.deployer st.treasury lazyS
+      LDSTDADDR             	//  storage.ownerAddress msg.USlot7 msg.USlot6 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 st.deployer st.treasury '566 lazyS
+      DROP                  	//  storage.ownerAddress msg.USlot7 msg.USlot6 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 st.deployer st.treasury st.minterAddress
+      SWAP                  	//  storage.ownerAddress msg.USlot7 msg.USlot6 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 st.deployer st.minterAddress st.treasury
+      CTOS                  	//  storage.ownerAddress msg.USlot7 msg.USlot6 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 st.deployer st.minterAddress s
+      LDSTDADDR             	//  storage.ownerAddress msg.USlot7 msg.USlot6 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 st.deployer st.minterAddress '571 s
+      ENDS                  	//  storage.ownerAddress msg.USlot7 msg.USlot6 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 st.deployer st.minterAddress tr
+      // 45: return calcDeployedJettonWallet(owner, st.deployer, tr, st.minterAddress, contract.getCode())
+      MYCODE                	//  storage.ownerAddress msg.USlot7 msg.USlot6 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 st.deployer st.minterAddress tr '572
+      // 15: treasury: Treasury {addr: treasury}.toCell()
+      SWAP
+      NEWC                  	//  storage.ownerAddress msg.USlot7 msg.USlot6 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 st.deployer st.minterAddress '572 tr b
+      STSTDADDR             	//  storage.ownerAddress msg.USlot7 msg.USlot6 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 st.deployer st.minterAddress '572 b
+      ENDC                  	//  storage.ownerAddress msg.USlot7 msg.USlot6 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 st.deployer st.minterAddress '572 '588
+      // 11: val emptyWalletStorage: WalletStorage =
+      s5 PUSH               	//  storage.ownerAddress msg.USlot7 msg.USlot6 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 emptyWalletStorage.deployer emptyWalletStorage.minterAddress '572 emptyWalletStorage.treasury emptyWalletStorage.ownerAddress
+      // 21: stateInit: { code: jettonWalletCode, data: emptyWalletStorage.toCell() }
+      NEWC                  	//  storage.ownerAddress msg.USlot7 msg.USlot6 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 emptyWalletStorage.deployer emptyWalletStorage.minterAddress '572 emptyWalletStorage.treasury emptyWalletStorage.ownerAddress b
+      x{0} STSLICECONST     	//  storage.ownerAddress msg.USlot7 msg.USlot6 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 emptyWalletStorage.deployer emptyWalletStorage.minterAddress '572 emptyWalletStorage.treasury emptyWalletStorage.ownerAddress b
+      STSTDADDR             	//  storage.ownerAddress msg.USlot7 msg.USlot6 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 emptyWalletStorage.deployer emptyWalletStorage.minterAddress '572 emptyWalletStorage.treasury b
+      s1 s4 XCHG            	//  storage.ownerAddress msg.USlot7 msg.USlot6 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 emptyWalletStorage.treasury emptyWalletStorage.minterAddress '572 emptyWalletStorage.deployer b
+      STSTDADDR             	//  storage.ownerAddress msg.USlot7 msg.USlot6 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 emptyWalletStorage.treasury emptyWalletStorage.minterAddress '572 b
+      s1 s3 XCHG            	//  storage.ownerAddress msg.USlot7 msg.USlot6 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 '572 emptyWalletStorage.minterAddress emptyWalletStorage.treasury b
+      STREF                 	//  storage.ownerAddress msg.USlot7 msg.USlot6 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 '572 emptyWalletStorage.minterAddress b
+      STSTDADDR             	//  storage.ownerAddress msg.USlot7 msg.USlot6 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 '572 b
+      ENDC                  	//  storage.ownerAddress msg.USlot7 msg.USlot6 msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 '572 '592
+      // 22: toShard: { fixedPrefixLength: SHARD_DEPTH, closeTo: ownerAddress }
+      8 PUSHINT             	//  '615 '618 '617 '613 '614 'USlot6 '616 'USlot2 'USlot3 'USlot5=8
+      // 123: val deployMsg = createMessage(
+      NEWC                  	//  '615 '618 '617 '613 '614 'USlot6 '616 'USlot2 'USlot3 'USlot5=8 refb
+      x{178d4519} STSLICECONST	//  '615 '618 '617 '613 '614 'USlot6 '616 'USlot2 'USlot3 'USlot5=8 refb
+      s1 s7 XCHG            	//  '615 '618 '617 'USlot5=8 '614 'USlot6 '616 'USlot2 'USlot3 '613 refb
+      64 STU                	//  '615 '618 '617 'USlot5=8 '614 'USlot6 '616 'USlot2 'USlot3 refb
+      s0 s5 XCHG2           	//  '615 '618 '617 'USlot5=8 'USlot3 'USlot6 '616 'USlot2 refb '614
+      STGRAMS               	//  '615 '618 '617 'USlot5=8 'USlot3 'USlot6 '616 'USlot2 refb
+      s1 s8 XCHG            	//  'USlot2 '618 '617 'USlot5=8 'USlot3 'USlot6 '616 '615 refb
+      STOPTSTDADDR          	//  'USlot2 '618 '617 'USlot5=8 'USlot3 'USlot6 '616 refb
+      STOPTSTDADDR          	//  'USlot2 '618 '617 'USlot5=8 'USlot3 'USlot6 refb
+      s0 s4 XCHG2           	//  'USlot2 '618 'USlot6 'USlot5=8 'USlot3 refb '617
+      STGRAMS               	//  'USlot2 '618 'USlot6 'USlot5=8 'USlot3 refb
+      s1 s4 XCHG            	//  'USlot2 'USlot3 'USlot6 'USlot5=8 '618 refb
+      STSLICE               	//  'USlot2 'USlot3 'USlot6 'USlot5=8 refb
+      ENDC                  	//  'USlot2 'USlot3 'USlot6 'USlot5=8 '633
+      NEWC                  	//  'USlot2 'USlot3 'USlot6 'USlot5=8 '633 b
+      b{01100010000000000} STSLICECONST	//  'USlot2 'USlot3 'USlot6 'USlot5=8 '633 b
+      s4 s5 s2 PUSH3        	//  'USlot2 'USlot3 'USlot6 'USlot5=8 '633 b 'USlot3 'USlot2 'USlot5=8
+      NEWC
+      b{1} STSLICECONST
+      5 STU
+      b{0110} STSLICECONST
+      STREF
+      STREF
+      HASHBU                	//  'USlot2 'USlot3 'USlot6 'USlot5=8 '633 b '646
+      248 PUSHPOW2DEC       	//  'USlot2 'USlot3 'USlot6 'USlot5=8 '633 b '646 '654
+      AND                   	//  'USlot2 'USlot3 'USlot6 'USlot5=8 '633 b '646
+      s0 s4 XCHG
+      11 PUSHINT            	//  'USlot2 'USlot3 '646 'USlot5=8 '633 b 'USlot6 '659=11
+      s4 PUSH               	//  'USlot2 'USlot3 '646 'USlot5=8 '633 b 'USlot6 '659=11 'USlot5=8
+      SDSUBSTR              	//  'USlot2 'USlot3 '646 'USlot5=8 '633 b '658
+      s3 POP                	//  'USlot2 'USlot3 '646 '658 '633 b
+      s1 s2 XCHG            	//  'USlot2 'USlot3 '646 '633 '658 b
+      STSLICE               	//  'USlot2 'USlot3 '646 '633 b
+      s1 s2 XCHG            	//  'USlot2 'USlot3 '633 '646 b
+      248 STU               	//  'USlot2 'USlot3 '633 b
+      5389 PUSHINT
+      122 STUR              	//  'USlot2 'USlot3 '633 b
+      s1 s3 XCHG            	//  '633 'USlot3 'USlot2 b
+      STREF                 	//  '633 'USlot3 b
+      STREF                 	//  '633 b
+      STREF                 	//  b
+      ENDC                  	//  deployMsg
+      // 136: deployMsg.send(SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE |
+      // ...137: SEND_MODE_BOUNCE_ON_ACTION_FAIL
+      80 PUSHINT            	//  deployMsg '692
+      // 137: SEND_MODE_BOUNCE_ON_ACTION_FAIL)
+      SENDRAWMSG            	// 
+    }>                      	//  storage.minterAddress storage.jettonBalance '65 storage.ownerAddress lazyS
+    // 31: match (msg)
+    x{595f07bc} SDBEGINSQ   	//  storage.minterAddress storage.jettonBalance '65 storage.ownerAddress lazyS '76
+    IFJMP:<{                	//  storage.minterAddress storage.jettonBalance '65 storage.ownerAddress lazyS
+      // 141: checkAmountIsEnoughToBurn(in.valueCoins)
+      INMSG_VALUE           	//  storage.minterAddress storage.jettonBalance '65 storage.ownerAddress lazyS '695
+      // 62: var jettonWalletGasConsumption = getPrecompiledGasConsumption()
+      GETPRECOMPILEDGAS     	//  storage.minterAddress storage.jettonBalance '65 storage.ownerAddress lazyS '695 jettonWalletGasConsumption
+      // 63: var sendBurnGasConsumption = (jettonWalletGasConsumption == null) ? GAS_CONSUMPTION_BurnRequest : jettonWalletGasConsumption
+      DUP                   	//  storage.minterAddress storage.jettonBalance '65 storage.ownerAddress lazyS '695 jettonWalletGasConsumption jettonWalletGasConsumption
+      ISNULL                	//  storage.minterAddress storage.jettonBalance '65 storage.ownerAddress lazyS '695 jettonWalletGasConsumption '700
+      4254 PUSHINT
+      ROT                   	//  storage.minterAddress storage.jettonBalance '65 storage.ownerAddress lazyS '695 '700 '702=4254 jettonWalletGasConsumption
+      CONDSEL               	//  storage.minterAddress storage.jettonBalance '65 storage.ownerAddress lazyS '695 sendBurnGasConsumption
+      // 66: calculateForwardFee(MY_WORKCHAIN, MESSAGE_SIZE_BurnNotification_bits, MESSAGE_SIZE_BurnNotification_cells) +
+      1 PUSHINT             	//  storage.minterAddress storage.jettonBalance '65 storage.ownerAddress lazyS '695 sendBurnGasConsumption '704=1
+      754 PUSHINT           	//  storage.minterAddress storage.jettonBalance '65 storage.ownerAddress lazyS '695 sendBurnGasConsumption '704=1 '705=754
+      0 PUSHINT             	//  storage.minterAddress storage.jettonBalance '65 storage.ownerAddress lazyS '695 sendBurnGasConsumption '704=1 '705=754 '706=0
+      GETFORWARDFEE         	//  storage.minterAddress storage.jettonBalance '65 storage.ownerAddress lazyS '695 sendBurnGasConsumption '707
+      // 67: calculateGasFee(MY_WORKCHAIN, sendBurnGasConsumption) +
+      SWAP
+      0 PUSHINT             	//  storage.minterAddress storage.jettonBalance '65 storage.ownerAddress lazyS '695 '707 sendBurnGasConsumption '708=0
+      GETGASFEE             	//  storage.minterAddress storage.jettonBalance '65 storage.ownerAddress lazyS '695 '707 '709
+      // 66: calculateForwardFee(MY_WORKCHAIN, MESSAGE_SIZE_BurnNotification_bits, MESSAGE_SIZE_BurnNotification_cells) +
+      // ...67: calculateGasFee(MY_WORKCHAIN, sendBurnGasConsumption)
+      ADD                   	//  storage.minterAddress storage.jettonBalance '65 storage.ownerAddress lazyS '695 '710
+      // 68: calculateGasFee(MY_WORKCHAIN, GAS_CONSUMPTION_BurnNotification)
+      4071 PUSHINT          	//  storage.minterAddress storage.jettonBalance '65 storage.ownerAddress lazyS '695 '710 '711=4071
+      0 PUSHINT             	//  storage.minterAddress storage.jettonBalance '65 storage.ownerAddress lazyS '695 '710 '711=4071 '712=0
+      GETGASFEE             	//  storage.minterAddress storage.jettonBalance '65 storage.ownerAddress lazyS '695 '710 '713
+      // 66: calculateForwardFee(MY_WORKCHAIN, MESSAGE_SIZE_BurnNotification_bits, MESSAGE_SIZE_BurnNotification_cells) +
+      // ...68: calculateGasFee(MY_WORKCHAIN, GAS_CONSUMPTION_BurnNotification)
+      ADD                   	//  storage.minterAddress storage.jettonBalance '65 storage.ownerAddress lazyS '695 '714
+      // 65: assert (msgValue >
+      // ...68: calculateGasFee(MY_WORKCHAIN, GAS_CONSUMPTION_BurnNotification)
+      GREATER               	//  storage.minterAddress storage.jettonBalance '65 storage.ownerAddress lazyS '715
+      // 69: ) throw ERROR_NOT_ENOUGH_GAS
+      48 THROWIFNOT         	//  storage.minterAddress storage.jettonBalance '65 storage.ownerAddress lazyS
+      // 144: assert (in.senderAddress == storage.ownerAddress) throw ERROR_NOT_OWNER
+      INMSG_SRC             	//  storage.minterAddress storage.jettonBalance '65 storage.ownerAddress lazyS '717
+      s2 PUSH               	//  storage.minterAddress storage.jettonBalance '65 storage.ownerAddress lazyS '717 storage.ownerAddress
+      SDEQ                  	//  storage.minterAddress storage.jettonBalance '65 storage.ownerAddress lazyS '719
+      73 THROWIFNOT         	//  storage.minterAddress storage.jettonBalance '65 storage.ownerAddress lazyS
+      // 145: assert (storage.jettonBalance >= msg.jettonAmount) throw ERROR_BALANCE_ERROR
+      64 LDU                	//  storage.minterAddress storage.jettonBalance '65 storage.ownerAddress msg.USlot4 lazyS
+      LDGRAMS               	//  storage.minterAddress storage.jettonBalance '65 storage.ownerAddress msg.USlot4 msg.USlot5 lazyS
+      LDOPTSTDADDR          	//  storage.minterAddress storage.jettonBalance '65 storage.ownerAddress msg.USlot4 msg.USlot5 '723 lazyS
+      DROP                  	//  storage.minterAddress storage.jettonBalance '65 storage.ownerAddress msg.USlot4 msg.USlot5 msg.USlot6
+      s5 s1 PUSH2           	//  storage.minterAddress storage.jettonBalance '65 storage.ownerAddress msg.USlot4 msg.USlot5 msg.USlot6 storage.jettonBalance msg.USlot5
+      GEQ                   	//  storage.minterAddress storage.jettonBalance '65 storage.ownerAddress msg.USlot4 msg.USlot5 msg.USlot6 '725
+      47 THROWIFNOT         	//  storage.minterAddress storage.jettonBalance '65 storage.ownerAddress msg.USlot4 msg.USlot5 msg.USlot6
+      s5 s1 XCPU            	//  storage.minterAddress msg.USlot6 '65 storage.ownerAddress msg.USlot4 msg.USlot5 storage.jettonBalance msg.USlot5
+      // 146: storage.jettonBalance -= msg.jettonAmount
+      SUB                   	//  storage.minterAddress msg.USlot6 '65 storage.ownerAddress msg.USlot4 msg.USlot5 storage.jettonBalance
+      // 55: contract.setData(self.toCell())
+      NEWC                  	//  storage.minterAddress msg.USlot6 '65 storage.ownerAddress msg.USlot4 msg.USlot5 storage.jettonBalance b
+      SWAP                  	//  storage.minterAddress msg.USlot6 '65 storage.ownerAddress msg.USlot4 msg.USlot5 b storage.jettonBalance
+      STGRAMS               	//  storage.minterAddress msg.USlot6 '65 storage.ownerAddress msg.USlot4 msg.USlot5 b
+      s1 s4 XCHG            	//  storage.minterAddress msg.USlot6 msg.USlot5 storage.ownerAddress msg.USlot4 '65 b
+      STSLICE               	//  storage.minterAddress msg.USlot6 msg.USlot5 storage.ownerAddress msg.USlot4 b
+      ENDC                  	//  storage.minterAddress msg.USlot6 msg.USlot5 storage.ownerAddress msg.USlot4 '729
+      c4 POP                	//  storage.minterAddress msg.USlot6 msg.USlot5 storage.ownerAddress msg.USlot4
+      // 149: val notifyMinterMsg = createMessage(
+      NEWC                  	//  storage.minterAddress msg.USlot6 msg.USlot5 storage.ownerAddress msg.USlot4 refb
+      x{7bdd97de} STSLICECONST	//  storage.minterAddress msg.USlot6 msg.USlot5 storage.ownerAddress msg.USlot4 refb
+      64 STU                	//  storage.minterAddress msg.USlot6 msg.USlot5 storage.ownerAddress refb
+      ROT                   	//  storage.minterAddress msg.USlot6 storage.ownerAddress refb msg.USlot5
+      STGRAMS               	//  storage.minterAddress msg.USlot6 storage.ownerAddress refb
+      STSTDADDR             	//  storage.minterAddress msg.USlot6 refb
+      STOPTSTDADDR          	//  storage.minterAddress refb
+      ENDC                  	//  storage.minterAddress '757
+      NEWC                  	//  storage.minterAddress '757 b
+      b{011000} STSLICECONST	//  storage.minterAddress '757 b
+      s1 s2 XCHG            	//  '757 storage.minterAddress b
+      STSTDADDR             	//  '757 b
+      1 PUSHINT
+      111 STUR              	//  '757 b
+      STREF                 	//  b
+      ENDC                  	//  notifyMinterMsg
+      // 160: notifyMinterMsg.send(SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE |
+      // ...161: SEND_MODE_BOUNCE_ON_ACTION_FAIL
+      80 PUSHINT            	//  notifyMinterMsg '816
+      // 161: SEND_MODE_BOUNCE_ON_ACTION_FAIL)
+      SENDRAWMSG            	// 
+    }>                      	//  storage.minterAddress storage.jettonBalance '65 storage.ownerAddress lazyS
+    4 1 BLKDROP2            	//  lazyS
+    // 31: match (msg)
+    x{d372158c} SDBEGINSQ   	//  lazyS '76
+    NIP                     	//  '76
+    IFJMP:<{                	// 
+    }>                      	// 
+    // 168: else => throw 0xFFFF
+    16 PUSHPOW2DEC
+    THROWANY
+  }>
+  // contracts/privateMinter/jetton-wallet-contract.tolk:179
+  get_wallet_data() PROC:<{   	// 
+    // 51: return WalletStorage.fromCell(contract.getData())
+    c4 PUSH                 	//  '6
+    // 180: val storage = lazy WalletStorage.load()
+    CTOS                    	//  lazyS
+    // 182: return
+    LDGRAMS                 	//  storage.jettonBalance lazyS
+    LDSTDADDR               	//  storage.jettonBalance storage.ownerAddress lazyS
+    LDSTDADDR               	//  storage.jettonBalance storage.ownerAddress '12 lazyS
+    NIP                     	//  storage.jettonBalance storage.ownerAddress lazyS
+    LDSTDADDR               	//  storage.jettonBalance storage.ownerAddress '13 lazyS
+    DROP                    	//  storage.jettonBalance storage.ownerAddress storage.minterAddress
+    // 186: jettonWalletCode: contract.getCode()
+    MYCODE                  	//  storage.jettonBalance storage.ownerAddress storage.minterAddress '14
+  }>
+}END>c

@@ -138,6 +138,11 @@ struct (0x5) AuthorityAction {
     sender: address;
 }
 
+struct (0x6) SetStatus {
+    sender: address;
+    status: uint2;
+}
+
 struct IdInfo {
     username: SnakeString;
     lattitude: SnakeString;

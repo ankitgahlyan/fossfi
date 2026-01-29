@@ -42,7 +42,10 @@ struct ReportInfo {
 }
 
 struct FiWalletStore { // todo: nft like store migration after activate/upgrade/ID acc also code upgrade & reverese/killSwitch for normal jettons coz of  
-    jettonBalance: coins = ton("1") // needed for semantic txn sending from wallet apps, adjusted in transfer 
+    jettonBalance: coins = ton("1") // needed for semantic txn sending from wallet apps, adjusted in transfer
+    txnCount: uint8 = 0 // for fixed fees burns to counter minting
+    status: uint2 = 0 // for granular control
+    isAuthorityAccount: bool = false // for elevated permissions
     creditNeed: coins = 0;
     accumulatedFees: coins = 0; // todo: use fixed no of txn
     debt: coins = 0
@@ -69,8 +72,6 @@ struct FiStore {
     nextAdminAddress: address? = null
     readonly baseFiWalletCode: cell // for address calculation
     latestFiWalletCode: cell // for upgrades
-    readonly jettonWalletCode: cell // todo: or pass to mint method and store in wallet store directly, personal token
-    readonly jettonMinterCode: cell
     metadataUri: cell // Cell<SnakeString> // noNeed2bnull for fossFi minter
 }
 

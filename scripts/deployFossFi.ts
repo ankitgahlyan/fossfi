@@ -1,5 +1,5 @@
 import { toNano, beginCell, Address, SendMode, fromNano } from '@ton/core';
-import { buildJettonMinterFromEnv, content } from '../utils/jetton-helpers';
+import { buildJettonMinterFromEnv, content, envContent } from '../utils/jetton-helpers';
 import { FossFiConfig, MintNewJettons, storeMint } from '../wrappers/FossFi';
 import { getJettonHttpLink, getNetworkFromEnv } from '../utils/utils';
 import { printSeparator } from '../utils/print';
@@ -21,16 +21,11 @@ export async function run(provider: NetworkProvider) {
 
     // ====================================================================================
     const walletCode = await compile('FossFiWallet')
-    const jettonWalletCode = await compile('privateWallet')
-    const jettonMinterCode = await compile('privateMinter')
 
     const fossFiConfig: FossFiConfig = {
         admin_address: deployerAddress,
         base_fi_wallet_code: walletCode,
-        latest_fi_wallet_code: walletCode,
-        jetton_wallet_code: jettonWalletCode,
-        jetton_minter_code: jettonMinterCode,
-        metadata_uri: content
+        metadata_uri: envContent // content
     };
     
     const fossFi = provider.open(FossFi.createFromConfig(fossFiConfig, await compile('FossFi')));

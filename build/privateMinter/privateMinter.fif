@@ -1,0 +1,954 @@
+"Asm.fif" include
+// automatically generated from personal.tolk, fees-management.tolk, jetton-utils.tolk, storage.tolk, errors.tolk, messages.tolk, sharding.tolk, utils.tolk, jetton-utils.tolk, storage.tolk, consts.tolk
+PROGRAM{
+  0 DECLMETHOD onInternalMessage()
+  106029 DECLMETHOD get_jetton_data()
+  103289 DECLMETHOD get_wallet_address()
+  78683 DECLMETHOD get_next_admin_address()
+  // 20 functions inlined in-place:
+  // - calculateJettonWalletMinStorageFee (1 call)
+  // - forwardInitStateOverhead (1 call)
+  // - checkAmountIsEnoughToTransfer (1 call)
+  // - SnakeString.unpackFromSlice (0 calls)
+  // - SnakeString.packToBuilder (0 calls)
+  // - PriStore.load (10 calls)
+  // - PriStore.save (6 calls)
+  // - PriWalletStore.load (1 call)
+  // - calcDeployPriWallet (3 calls)
+  // - autoAddrPriWallet (2 calls)
+  // - calcAddrPriWallet (4 calls)
+  // - ForwardPayloadRemainder.checkIsCorrectTLBEither (1 call)
+  // - calcDeployFiWallet (1 call)
+  // - address.getAddrFiWallet (2 calls)
+  // - address.connected (1 call)
+  // - idActionChecks (1 call)
+  // - onBouncedMessage (0 calls)
+  // - assertSenderIsAdmin (5 calls)
+  // - MapEntry<address,coins>.getKey (1 call)
+  // - MapEntry<address,coins>.loadValue (1 call)
+  // contracts/privateMinter/personal.tolk:42
+  onInternalMessage() PROC:<{ 	//  in.body
+    // 42: fun onInternalMessage(in: InMessage)
+    INMSG_BOUNCED           	//  in.body '1
+    IFJMP:<{                	//  in.body
+      // 22: in.bouncedBody.skipBouncedPrefix()
+      32 LDU
+      NIP                   	//  lazyS
+      // 27: return PriStore.fromCell(contract.getData())
+      c4 PUSH               	//  lazyS '23
+      // 26: var storage = lazy PriStore.load()
+      CTOS                  	//  lazyS lazyS
+      // 27: storage.totalSupply -= msg.jettonAmount
+      SWAP                  	//  lazyS lazyS
+      x{178d4519} SDBEGINSQ 	//  lazyS lazyS '27
+      63 THROWIFNOT         	//  lazyS lazyS
+      64 LDU
+      NIP                   	//  lazyS lazyS
+      LDGRAMS               	//  lazyS '31 lazyS
+      DROP                  	//  lazyS msg.jettonAmount
+      SWAP                  	//  msg.jettonAmount lazyS
+      LDGRAMS               	//  msg.jettonAmount storage.totalSupply '33
+      s0 s2 XCHG            	//  '33 storage.totalSupply msg.jettonAmount
+      SUB                   	//  '33 storage.totalSupply
+      // 31: contract.setData(self.toCell())
+      NEWC                  	//  '33 storage.totalSupply b
+      SWAP                  	//  '33 b storage.totalSupply
+      STGRAMS               	//  '33 b
+      STSLICE               	//  b
+      ENDC                  	//  '37
+      c4 POP                	// 
+    }>                      	//  in.body
+    // 43: val msg = lazy AllowedMessageToMinter.fromSlice(in.body)
+    DUP                     	//  in.body lazyS
+    // 27: return PriStore.fromCell(contract.getData())
+    c4 PUSH                 	//  in.body lazyS '58
+    // 44: var storage = lazy PriStore.load()
+    CTOS                    	//  in.body lazyS lazyS
+    // 46: match (msg)
+    LDGRAMS                 	//  in.body lazyS storage.totalSupply lazyS
+    DUP                     	//  in.body lazyS storage.totalSupply '63 lazyS
+    LDGRAMS                 	//  in.body lazyS storage.totalSupply '63 '64 lazyS
+    NIP                     	//  in.body lazyS storage.totalSupply '63 lazyS
+    LDREF                   	//  in.body lazyS storage.totalSupply '63 storage.fiFields lazyS
+    LDSTDADDR               	//  in.body lazyS storage.totalSupply '63 storage.fiFields storage.adminAddress lazyS
+    PLDREF                  	//  in.body lazyS storage.totalSupply '63 storage.fiFields storage.adminAddress storage.jettonWalletCode
+    s0 s5 XCHG              	//  in.body storage.jettonWalletCode storage.totalSupply '63 storage.fiFields storage.adminAddress lazyS
+    x{178d4519} SDBEGINSQ   	//  in.body storage.jettonWalletCode storage.totalSupply '63 storage.fiFields storage.adminAddress lazyS '68
+    IFJMP:<{                	//  in.body storage.jettonWalletCode storage.totalSupply '63 storage.fiFields storage.adminAddress lazyS
+      // 407: assertEndAfterReading: bool = true
+      s3 POP                	//  in.body storage.jettonWalletCode storage.totalSupply lazyS storage.fiFields storage.adminAddress
+      s3 POP                	//  in.body storage.jettonWalletCode storage.adminAddress lazyS storage.fiFields
+      s4 POP                	//  storage.fiFields storage.jettonWalletCode storage.adminAddress lazyS
+      // 48: val fiFields = storage.fiFields.load(); // MINT wallet deploys this contract on init
+      s3 PUSH               	//  storage.fiFields storage.jettonWalletCode storage.adminAddress lazyS storage.fiFields
+      CTOS                  	//  storage.fiFields storage.jettonWalletCode storage.adminAddress lazyS s
+      LDSTDADDR             	//  storage.fiFields storage.jettonWalletCode storage.adminAddress lazyS '77 s
+      NIP                   	//  storage.fiFields storage.jettonWalletCode storage.adminAddress lazyS s
+      LDSTDADDR             	//  storage.fiFields storage.jettonWalletCode storage.adminAddress lazyS '78 s
+      LDREF                 	//  storage.fiFields storage.jettonWalletCode storage.adminAddress lazyS '78 '79 s
+      NIP                   	//  storage.fiFields storage.jettonWalletCode storage.adminAddress lazyS '78 s
+      ENDS                  	//  storage.fiFields storage.jettonWalletCode storage.adminAddress lazyS fiFields.treasury
+      // 53: assert (
+      // ...63: ) throw ERROR_NOT_VALID_WALLET
+      SWAP                  	//  storage.fiFields storage.jettonWalletCode storage.adminAddress fiFields.treasury lazyS
+      64 LDU                	//  storage.fiFields storage.jettonWalletCode storage.adminAddress fiFields.treasury msg.USlot1 lazyS
+      LDGRAMS               	//  storage.fiFields storage.jettonWalletCode storage.adminAddress fiFields.treasury msg.USlot1 msg.USlot2 lazyS
+      10 LDU
+      NIP                   	//  storage.fiFields storage.jettonWalletCode storage.adminAddress fiFields.treasury msg.USlot1 msg.USlot2 lazyS
+      LDSTDADDR             	//  storage.fiFields storage.jettonWalletCode storage.adminAddress fiFields.treasury msg.USlot1 msg.USlot2 msg.USlot4 lazyS
+      LDOPTSTDADDR          	//  storage.fiFields storage.jettonWalletCode storage.adminAddress fiFields.treasury msg.USlot1 msg.USlot2 msg.USlot4 '85 lazyS
+      NIP                   	//  storage.fiFields storage.jettonWalletCode storage.adminAddress fiFields.treasury msg.USlot1 msg.USlot2 msg.USlot4 lazyS
+      LDGRAMS               	//  storage.fiFields storage.jettonWalletCode storage.adminAddress fiFields.treasury msg.USlot1 msg.USlot2 msg.USlot4 '86 lazyS
+      NIP                   	//  storage.fiFields storage.jettonWalletCode storage.adminAddress fiFields.treasury msg.USlot1 msg.USlot2 msg.USlot4 msg.USlot7
+      // 55: in.senderAddress ==
+      INMSG_SRC             	//  storage.fiFields storage.jettonWalletCode storage.adminAddress fiFields.treasury msg.USlot1 msg.USlot2 msg.USlot4 msg.USlot7 '89
+      // 60: contract.getAddress()
+      MYADDR                	//  storage.fiFields storage.jettonWalletCode storage.adminAddress fiFields.treasury msg.USlot1 msg.USlot2 msg.USlot4 msg.USlot7 '89 '91
+      s3 s6 PUSH2           	//  storage.fiFields storage.jettonWalletCode storage.adminAddress fiFields.treasury msg.USlot1 msg.USlot2 msg.USlot4 msg.USlot7 '89 emptyPriWalletStore.minterAddress emptyPriWalletStore.ownerAddress emptyPriWalletStore.treasury
+      // 18: stateInit: { code: jettonWalletCode, data: emptyPriWalletStore.toCell() }
+      NEWC                  	//  storage.fiFields storage.jettonWalletCode storage.adminAddress fiFields.treasury msg.USlot1 msg.USlot2 msg.USlot4 msg.USlot7 '89 emptyPriWalletStore.minterAddress emptyPriWalletStore.ownerAddress emptyPriWalletStore.treasury b
+      x{0} STSLICECONST     	//  storage.fiFields storage.jettonWalletCode storage.adminAddress fiFields.treasury msg.USlot1 msg.USlot2 msg.USlot4 msg.USlot7 '89 emptyPriWalletStore.minterAddress emptyPriWalletStore.ownerAddress emptyPriWalletStore.treasury b
+      s1 s2 XCHG            	//  storage.fiFields storage.jettonWalletCode storage.adminAddress fiFields.treasury msg.USlot1 msg.USlot2 msg.USlot4 msg.USlot7 '89 emptyPriWalletStore.minterAddress emptyPriWalletStore.treasury emptyPriWalletStore.ownerAddress b
+      STSTDADDR             	//  storage.fiFields storage.jettonWalletCode storage.adminAddress fiFields.treasury msg.USlot1 msg.USlot2 msg.USlot4 msg.USlot7 '89 emptyPriWalletStore.minterAddress emptyPriWalletStore.treasury b
+      STSTDADDR             	//  storage.fiFields storage.jettonWalletCode storage.adminAddress fiFields.treasury msg.USlot1 msg.USlot2 msg.USlot4 msg.USlot7 '89 emptyPriWalletStore.minterAddress b
+      STSTDADDR             	//  storage.fiFields storage.jettonWalletCode storage.adminAddress fiFields.treasury msg.USlot1 msg.USlot2 msg.USlot4 msg.USlot7 '89 b
+      ENDC                  	//  storage.fiFields storage.jettonWalletCode storage.adminAddress fiFields.treasury msg.USlot1 msg.USlot2 msg.USlot4 msg.USlot7 '89 '108
+      // 19: toShard: { fixedPrefixLength: SHARD_DEPTH, closeTo: ownerAddress }
+      8 PUSHINT             	//  storage.fiFields 'USlot1 storage.adminAddress fiFields.treasury msg.USlot1 msg.USlot2 '98 msg.USlot7 '89 'USlot2 '97=8
+      s9 s9 XCPU            	//  storage.fiFields '97=8 storage.adminAddress fiFields.treasury msg.USlot1 msg.USlot2 '98 msg.USlot7 '89 'USlot2 'USlot1 '97=8
+      // 55: return calcDeployPriWallet(ownerAddress, treasury, minterAddress, jettonWalletCode)
+      // ...56: .calculateAddress()
+      NEWC
+      b{1} STSLICECONST
+      5 STU
+      b{0110} STSLICECONST
+      STREF
+      STREF
+      HASHBU                	//  storage.fiFields '97=8 storage.adminAddress fiFields.treasury msg.USlot1 msg.USlot2 '98 msg.USlot7 '89 '113
+      248 PUSHPOW2DEC       	//  storage.fiFields '97=8 storage.adminAddress fiFields.treasury msg.USlot1 msg.USlot2 '98 msg.USlot7 '89 '113 '121
+      AND                   	//  storage.fiFields '97=8 storage.adminAddress fiFields.treasury msg.USlot1 msg.USlot2 '98 msg.USlot7 '89 '113
+      s1 s3 XCHG
+      11 PUSHINT            	//  storage.fiFields '97=8 storage.adminAddress fiFields.treasury msg.USlot1 msg.USlot2 '89 msg.USlot7 '98 '113 '126=11
+      s0 s9 XCHG2           	//  storage.fiFields '113 storage.adminAddress fiFields.treasury msg.USlot1 msg.USlot2 '89 msg.USlot7 '98 '126=11 '97=8
+      SDSUBSTR              	//  storage.fiFields '113 storage.adminAddress fiFields.treasury msg.USlot1 msg.USlot2 '89 msg.USlot7 '125
+      NEWC                  	//  storage.fiFields '113 storage.adminAddress fiFields.treasury msg.USlot1 msg.USlot2 '89 msg.USlot7 '125 '112
+      b{10000000000} STSLICECONST	//  storage.fiFields '113 storage.adminAddress fiFields.treasury msg.USlot1 msg.USlot2 '89 msg.USlot7 '125 '112
+      STSLICE               	//  storage.fiFields '113 storage.adminAddress fiFields.treasury msg.USlot1 msg.USlot2 '89 msg.USlot7 '112
+      s1 s7 XCHG            	//  storage.fiFields msg.USlot7 storage.adminAddress fiFields.treasury msg.USlot1 msg.USlot2 '89 '113 '112
+      248 STU               	//  storage.fiFields msg.USlot7 storage.adminAddress fiFields.treasury msg.USlot1 msg.USlot2 '89 '112
+      BTOS                  	//  storage.fiFields msg.USlot7 storage.adminAddress fiFields.treasury msg.USlot1 msg.USlot2 '89 '92
+      SDEQ                  	//  storage.fiFields msg.USlot7 storage.adminAddress fiFields.treasury msg.USlot1 msg.USlot2 '138
+      // 53: assert (
+      // ...63: ) throw ERROR_NOT_VALID_WALLET
+      74 THROWIFNOT         	//  storage.fiFields msg.USlot7 storage.adminAddress fiFields.treasury msg.USlot1 msg.USlot2
+      // 68: if (storage.adminAddress == storage.fiFields.load().treasury)
+      s0 s5 XCHG            	//  msg.USlot2 msg.USlot7 storage.adminAddress fiFields.treasury msg.USlot1 storage.fiFields
+      CTOS                  	//  msg.USlot2 msg.USlot7 storage.adminAddress fiFields.treasury msg.USlot1 s
+      LDSTDADDR             	//  msg.USlot2 msg.USlot7 storage.adminAddress fiFields.treasury msg.USlot1 '143 s
+      NIP                   	//  msg.USlot2 msg.USlot7 storage.adminAddress fiFields.treasury msg.USlot1 s
+      LDSTDADDR             	//  msg.USlot2 msg.USlot7 storage.adminAddress fiFields.treasury msg.USlot1 '144 s
+      LDREF                 	//  msg.USlot2 msg.USlot7 storage.adminAddress fiFields.treasury msg.USlot1 '144 '145 s
+      NIP                   	//  msg.USlot2 msg.USlot7 storage.adminAddress fiFields.treasury msg.USlot1 '144 s
+      ENDS                  	//  msg.USlot2 msg.USlot7 storage.adminAddress fiFields.treasury msg.USlot1 '144
+      s3 PUSH               	//  msg.USlot2 msg.USlot7 storage.adminAddress fiFields.treasury msg.USlot1 '144 storage.adminAddress
+      SDEQ                  	//  msg.USlot2 msg.USlot7 storage.adminAddress fiFields.treasury msg.USlot1 '146
+      IF:<{                 	//  msg.USlot2 msg.USlot7 storage.adminAddress fiFields.treasury msg.USlot1
+        // 70: val fee = msg.jettonAmount / ton("200"); // 0.5% royalty to treasury
+        s0 s4 XCHG
+        200000000000 PUSHINT	//  msg.USlot1 msg.USlot7 storage.adminAddress fiFields.treasury msg.USlot2 '148=200000000000
+        DIV                 	//  msg.USlot1 msg.USlot7 storage.adminAddress fiFields.treasury fee
+        // 35: return PriWalletStore.fromCell(contract.getData())
+        c4 PUSH             	//  msg.USlot1 msg.USlot7 storage.adminAddress fiFields.treasury fee '168
+        // 41: val st = lazy PriWalletStore.load()
+        CTOS                	//  msg.USlot1 msg.USlot7 storage.adminAddress fiFields.treasury fee lazyS
+        // 42: return calcDeployPriWallet(owner, st.treasury, st.minterAddress, contract.getCode())
+        LDGRAMS             	//  msg.USlot1 msg.USlot7 storage.adminAddress fiFields.treasury fee '172 lazyS
+        NIP                 	//  msg.USlot1 msg.USlot7 storage.adminAddress fiFields.treasury fee lazyS
+        LDSTDADDR           	//  msg.USlot1 msg.USlot7 storage.adminAddress fiFields.treasury fee '173 lazyS
+        NIP                 	//  msg.USlot1 msg.USlot7 storage.adminAddress fiFields.treasury fee lazyS
+        LDSTDADDR           	//  msg.USlot1 msg.USlot7 storage.adminAddress fiFields.treasury fee st.treasury lazyS
+        LDSTDADDR           	//  msg.USlot1 msg.USlot7 storage.adminAddress fiFields.treasury fee st.treasury '175 lazyS
+        DROP                	//  msg.USlot1 msg.USlot7 storage.adminAddress fiFields.treasury fee st.treasury st.minterAddress
+        MYCODE              	//  msg.USlot1 msg.USlot7 storage.adminAddress fiFields.treasury fee st.treasury st.minterAddress '176
+        // 10: val emptyPriWalletStore: PriWalletStore =
+        s4 PUSH             	//  msg.USlot1 msg.USlot7 storage.adminAddress fiFields.treasury fee emptyPriWalletStore.treasury emptyPriWalletStore.minterAddress '176 emptyPriWalletStore.ownerAddress
+        // 18: stateInit: { code: jettonWalletCode, data: emptyPriWalletStore.toCell() }
+        NEWC                	//  msg.USlot1 msg.USlot7 storage.adminAddress fiFields.treasury fee emptyPriWalletStore.treasury emptyPriWalletStore.minterAddress '176 emptyPriWalletStore.ownerAddress b
+        x{0} STSLICECONST   	//  msg.USlot1 msg.USlot7 storage.adminAddress fiFields.treasury fee emptyPriWalletStore.treasury emptyPriWalletStore.minterAddress '176 emptyPriWalletStore.ownerAddress b
+        STSTDADDR           	//  msg.USlot1 msg.USlot7 storage.adminAddress fiFields.treasury fee emptyPriWalletStore.treasury emptyPriWalletStore.minterAddress '176 b
+        s1 s3 XCHG          	//  msg.USlot1 msg.USlot7 storage.adminAddress fiFields.treasury fee '176 emptyPriWalletStore.minterAddress emptyPriWalletStore.treasury b
+        STSTDADDR           	//  msg.USlot1 msg.USlot7 storage.adminAddress fiFields.treasury fee '176 emptyPriWalletStore.minterAddress b
+        STSTDADDR           	//  msg.USlot1 msg.USlot7 storage.adminAddress fiFields.treasury fee '176 b
+        ENDC                	//  msg.USlot1 msg.USlot7 storage.adminAddress fiFields.treasury fee '176 '192
+        // 19: toShard: { fixedPrefixLength: SHARD_DEPTH, closeTo: ownerAddress }
+        8 PUSHINT           	//  msg.USlot1 msg.USlot7 storage.adminAddress '161 fee 'USlot1 'USlot2 '160=8
+        // 83: sendExcessesTo: null
+        PUSHNULL            	//  msg.USlot1 msg.USlot7 storage.adminAddress '161 fee 'USlot1 'USlot2 '160=8 '198
+        // 74: createMessage(
+        NEWC                	//  msg.USlot1 msg.USlot7 storage.adminAddress '161 fee 'USlot1 'USlot2 '160=8 '198 refb
+        x{178d4519} STSLICECONST	//  msg.USlot1 msg.USlot7 storage.adminAddress '161 fee 'USlot1 'USlot2 '160=8 '198 refb
+        s1 s9 XCHG          	//  '198 msg.USlot7 storage.adminAddress '161 fee 'USlot1 'USlot2 '160=8 msg.USlot1 refb
+        64 STU              	//  '198 msg.USlot7 storage.adminAddress '161 fee 'USlot1 'USlot2 '160=8 refb
+        s0 s4 XCHG2         	//  '198 msg.USlot7 storage.adminAddress '161 '160=8 'USlot1 'USlot2 refb fee
+        STGRAMS             	//  '198 msg.USlot7 storage.adminAddress '161 '160=8 'USlot1 'USlot2 refb
+        b{0000000000} STSLICECONST	//  '198 msg.USlot7 storage.adminAddress '161 '160=8 'USlot1 'USlot2 refb
+        s1 s5 XCHG          	//  '198 msg.USlot7 'USlot2 '161 '160=8 'USlot1 storage.adminAddress refb
+        STSTDADDR           	//  '198 msg.USlot7 'USlot2 '161 '160=8 'USlot1 refb
+        s1 s6 XCHG          	//  'USlot1 msg.USlot7 'USlot2 '161 '160=8 '198 refb
+        STOPTSTDADDR        	//  'USlot1 msg.USlot7 'USlot2 '161 '160=8 refb
+        x{0} STSLICECONST   	//  'USlot1 msg.USlot7 'USlot2 '161 '160=8 refb
+        s1 s4 XCHG          	//  'USlot1 '160=8 'USlot2 '161 msg.USlot7 refb
+        STSLICE             	//  'USlot1 '160=8 'USlot2 '161 refb
+        ENDC                	//  'USlot1 '160=8 'USlot2 '161 '215
+        NEWC                	//  'USlot1 '160=8 'USlot2 '161 '215 b
+        b{01000010000000000} STSLICECONST	//  'USlot1 '160=8 'USlot2 '161 '215 b
+        s3 s5 s4 PUSH3      	//  'USlot1 '160=8 'USlot2 '161 '215 b 'USlot2 'USlot1 '160=8
+        NEWC
+        b{1} STSLICECONST
+        5 STU
+        b{0110} STSLICECONST
+        STREF
+        STREF
+        HASHBU              	//  'USlot1 '160=8 'USlot2 '161 '215 b '228
+        248 PUSHPOW2DEC     	//  'USlot1 '160=8 'USlot2 '161 '215 b '228 '236
+        AND                 	//  'USlot1 '160=8 'USlot2 '161 '215 b '228
+        s0 s3 XCHG
+        11 PUSHINT          	//  'USlot1 '160=8 'USlot2 '228 '215 b '161 '241=11
+        s6 PUSH             	//  'USlot1 '160=8 'USlot2 '228 '215 b '161 '241=11 '160=8
+        SDSUBSTR            	//  'USlot1 '160=8 'USlot2 '228 '215 b '240
+        s5 POP              	//  'USlot1 '240 'USlot2 '228 '215 b
+        s1 s4 XCHG          	//  'USlot1 '215 'USlot2 '228 '240 b
+        STSLICE             	//  'USlot1 '215 'USlot2 '228 b
+        248 STU             	//  'USlot1 '215 'USlot2 b
+        5389 PUSHINT
+        122 STUR            	//  'USlot1 '215 'USlot2 b
+        s1 s3 XCHG          	//  'USlot2 '215 'USlot1 b
+        STREF               	//  'USlot2 '215 b
+        s1 s2 XCHG          	//  '215 'USlot2 b
+        STREF               	//  '215 b
+        STREF               	//  b
+        ENDC                	//  '271
+        // 88: .send(SEND_MODE_PAY_FEES_SEPARATELY | SEND_MODE_IGNORE_ERRORS)
+        3 PUSHINT           	//  '271 '274
+        // 74: createMessage(
+        // ...88: .send(SEND_MODE_PAY_FEES_SEPARATELY | SEND_MODE_IGNORE_ERRORS)
+        SENDRAWMSG          	// 
+      }>ELSE<{
+        5 BLKDROP           	// 
+      }>
+    }>                      	//  in.body storage.jettonWalletCode storage.totalSupply '63 storage.fiFields storage.adminAddress lazyS
+    // 46: match (msg)
+    NIP                     	//  in.body storage.jettonWalletCode storage.totalSupply '63 storage.fiFields lazyS
+    x{7bdd97de} SDBEGINSQ   	//  in.body storage.jettonWalletCode storage.totalSupply '63 storage.fiFields lazyS '68
+    IFJMP:<{                	//  in.body storage.jettonWalletCode storage.totalSupply '63 storage.fiFields lazyS
+      // 123: assert (
+      // ...131: ) throw ERROR_NOT_VALID_WALLET
+      s5 POP                	//  lazyS storage.jettonWalletCode storage.totalSupply '63 storage.fiFields
+      s0 s4 XCHG            	//  storage.fiFields storage.jettonWalletCode storage.totalSupply '63 lazyS
+      64 LDU                	//  storage.fiFields storage.jettonWalletCode storage.totalSupply '63 msg.USlot4 lazyS
+      LDGRAMS               	//  storage.fiFields storage.jettonWalletCode storage.totalSupply '63 msg.USlot4 msg.USlot5 lazyS
+      LDSTDADDR             	//  storage.fiFields storage.jettonWalletCode storage.totalSupply '63 msg.USlot4 msg.USlot5 msg.USlot6 lazyS
+      LDOPTSTDADDR          	//  storage.fiFields storage.jettonWalletCode storage.totalSupply '63 msg.USlot4 msg.USlot5 msg.USlot6 '281 lazyS
+      DROP                  	//  storage.fiFields storage.jettonWalletCode storage.totalSupply '63 msg.USlot4 msg.USlot5 msg.USlot6 msg.USlot7
+      // 124: in.senderAddress ==
+      INMSG_SRC             	//  storage.fiFields storage.jettonWalletCode storage.totalSupply '63 msg.USlot4 msg.USlot5 msg.USlot6 msg.USlot7 '283
+      // 127: storage.fiFields.load().treasury
+      s0 s8 XCHG            	//  '283 storage.jettonWalletCode storage.totalSupply '63 msg.USlot4 msg.USlot5 msg.USlot6 msg.USlot7 storage.fiFields
+      CTOS                  	//  '283 storage.jettonWalletCode storage.totalSupply '63 msg.USlot4 msg.USlot5 msg.USlot6 msg.USlot7 s
+      LDSTDADDR             	//  '283 storage.jettonWalletCode storage.totalSupply '63 msg.USlot4 msg.USlot5 msg.USlot6 msg.USlot7 '288 s
+      NIP                   	//  '283 storage.jettonWalletCode storage.totalSupply '63 msg.USlot4 msg.USlot5 msg.USlot6 msg.USlot7 s
+      LDSTDADDR             	//  '283 storage.jettonWalletCode storage.totalSupply '63 msg.USlot4 msg.USlot5 msg.USlot6 msg.USlot7 '289 s
+      LDREF                 	//  '283 storage.jettonWalletCode storage.totalSupply '63 msg.USlot4 msg.USlot5 msg.USlot6 msg.USlot7 '289 '290 s
+      NIP                   	//  '283 storage.jettonWalletCode storage.totalSupply '63 msg.USlot4 msg.USlot5 msg.USlot6 msg.USlot7 '289 s
+      ENDS                  	//  '283 storage.jettonWalletCode storage.totalSupply '63 msg.USlot4 msg.USlot5 msg.USlot6 msg.USlot7 '289
+      // 128: contract.getAddress()
+      MYADDR                	//  '283 storage.jettonWalletCode storage.totalSupply '63 msg.USlot4 msg.USlot5 msg.USlot6 msg.USlot7 '289 '291
+      // 10: val emptyPriWalletStore: PriWalletStore =
+      s3 PUSH               	//  '283 storage.jettonWalletCode storage.totalSupply '63 msg.USlot4 msg.USlot5 msg.USlot6 msg.USlot7 emptyPriWalletStore.treasury emptyPriWalletStore.minterAddress emptyPriWalletStore.ownerAddress
+      // 18: stateInit: { code: jettonWalletCode, data: emptyPriWalletStore.toCell() }
+      NEWC                  	//  '283 storage.jettonWalletCode storage.totalSupply '63 msg.USlot4 msg.USlot5 msg.USlot6 msg.USlot7 emptyPriWalletStore.treasury emptyPriWalletStore.minterAddress emptyPriWalletStore.ownerAddress b
+      x{0} STSLICECONST     	//  '283 storage.jettonWalletCode storage.totalSupply '63 msg.USlot4 msg.USlot5 msg.USlot6 msg.USlot7 emptyPriWalletStore.treasury emptyPriWalletStore.minterAddress emptyPriWalletStore.ownerAddress b
+      STSTDADDR             	//  '283 storage.jettonWalletCode storage.totalSupply '63 msg.USlot4 msg.USlot5 msg.USlot6 msg.USlot7 emptyPriWalletStore.treasury emptyPriWalletStore.minterAddress b
+      s1 s2 XCHG            	//  '283 storage.jettonWalletCode storage.totalSupply '63 msg.USlot4 msg.USlot5 msg.USlot6 msg.USlot7 emptyPriWalletStore.minterAddress emptyPriWalletStore.treasury b
+      STSTDADDR             	//  '283 storage.jettonWalletCode storage.totalSupply '63 msg.USlot4 msg.USlot5 msg.USlot6 msg.USlot7 emptyPriWalletStore.minterAddress b
+      STSTDADDR             	//  '283 storage.jettonWalletCode storage.totalSupply '63 msg.USlot4 msg.USlot5 msg.USlot6 msg.USlot7 b
+      ENDC                  	//  '283 storage.jettonWalletCode storage.totalSupply '63 msg.USlot4 msg.USlot5 msg.USlot6 msg.USlot7 '308
+      // 19: toShard: { fixedPrefixLength: SHARD_DEPTH, closeTo: ownerAddress }
+      8 PUSHINT             	//  '283 'USlot1 storage.totalSupply '63 msg.USlot4 msg.USlot5 '298 msg.USlot7 'USlot2 '297=8
+      s8 s8 XCPU            	//  '283 '297=8 storage.totalSupply '63 msg.USlot4 msg.USlot5 '298 msg.USlot7 'USlot2 'USlot1 '297=8
+      // 55: return calcDeployPriWallet(ownerAddress, treasury, minterAddress, jettonWalletCode)
+      // ...56: .calculateAddress()
+      NEWC
+      b{1} STSLICECONST
+      5 STU
+      b{0110} STSLICECONST
+      STREF
+      STREF
+      HASHBU                	//  '283 '297=8 storage.totalSupply '63 msg.USlot4 msg.USlot5 '298 msg.USlot7 '313
+      248 PUSHPOW2DEC       	//  '283 '297=8 storage.totalSupply '63 msg.USlot4 msg.USlot5 '298 msg.USlot7 '313 '321
+      AND                   	//  '283 '297=8 storage.totalSupply '63 msg.USlot4 msg.USlot5 '298 msg.USlot7 '313
+      s1 s2 XCHG
+      11 PUSHINT            	//  '283 '297=8 storage.totalSupply '63 msg.USlot4 msg.USlot5 msg.USlot7 '298 '313 '326=11
+      s0 s8 XCHG2           	//  '283 '313 storage.totalSupply '63 msg.USlot4 msg.USlot5 msg.USlot7 '298 '326=11 '297=8
+      SDSUBSTR              	//  '283 '313 storage.totalSupply '63 msg.USlot4 msg.USlot5 msg.USlot7 '325
+      NEWC                  	//  '283 '313 storage.totalSupply '63 msg.USlot4 msg.USlot5 msg.USlot7 '325 '312
+      b{10000000000} STSLICECONST	//  '283 '313 storage.totalSupply '63 msg.USlot4 msg.USlot5 msg.USlot7 '325 '312
+      STSLICE               	//  '283 '313 storage.totalSupply '63 msg.USlot4 msg.USlot5 msg.USlot7 '312
+      s1 s6 XCHG            	//  '283 msg.USlot7 storage.totalSupply '63 msg.USlot4 msg.USlot5 '313 '312
+      248 STU               	//  '283 msg.USlot7 storage.totalSupply '63 msg.USlot4 msg.USlot5 '312
+      BTOS                  	//  '283 msg.USlot7 storage.totalSupply '63 msg.USlot4 msg.USlot5 '292
+      // 124: in.senderAddress ==
+      s1 s6 XCHG            	//  msg.USlot5 msg.USlot7 storage.totalSupply '63 msg.USlot4 '283 '292
+      SDEQ                  	//  msg.USlot5 msg.USlot7 storage.totalSupply '63 msg.USlot4 '338
+      // 123: assert (
+      // ...131: ) throw ERROR_NOT_VALID_WALLET
+      74 THROWIFNOT         	//  msg.USlot5 msg.USlot7 storage.totalSupply '63 msg.USlot4
+      s2 s4 XCHG2           	//  msg.USlot4 msg.USlot7 '63 storage.totalSupply msg.USlot5
+      // 132: storage.totalSupply -= msg.jettonAmount
+      SUB                   	//  msg.USlot4 msg.USlot7 '63 storage.totalSupply
+      // 31: contract.setData(self.toCell())
+      NEWC                  	//  msg.USlot4 msg.USlot7 '63 storage.totalSupply b
+      SWAP                  	//  msg.USlot4 msg.USlot7 '63 b storage.totalSupply
+      STGRAMS               	//  msg.USlot4 msg.USlot7 '63 b
+      STSLICE               	//  msg.USlot4 msg.USlot7 b
+      ENDC                  	//  msg.USlot4 msg.USlot7 '342
+      c4 POP                	//  msg.USlot4 msg.USlot7
+      // 135: if (msg.sendExcessesTo == null)
+      DUP                   	//  msg.USlot4 msg.USlot7 msg.USlot7
+      ISNULL                	//  msg.USlot4 msg.USlot7 '343
+      IFJMP:<{              	//  msg.USlot4 msg.USlot7
+        2DROP               	// 
+      }>                    	//  msg.USlot4 msg.USlot7
+      // 139: val excessesMsg = createMessage(
+      NEWC                  	//  msg.USlot4 msg.USlot7 b
+      b{010000} STSLICECONST	//  msg.USlot4 msg.USlot7 b
+      STSTDADDR             	//  msg.USlot4 b
+      3576854235 PUSHINT
+      143 STUR              	//  msg.USlot4 b
+      64 STU                	//  b
+      ENDC                  	//  excessesMsg
+      // 145: excessesMsg.send(SEND_MODE_IGNORE_ERRORS | SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE)
+      66 PUSHINT            	//  excessesMsg '426
+      SENDRAWMSG            	// 
+    }>                      	//  in.body storage.jettonWalletCode storage.totalSupply '63 storage.fiFields lazyS
+    2 2 BLKDROP2            	//  in.body storage.jettonWalletCode storage.fiFields lazyS
+    // 46: match (msg)
+    x{2c76b973} SDBEGINSQ   	//  in.body storage.jettonWalletCode storage.fiFields lazyS '68
+    IFJMP:<{                	//  in.body storage.jettonWalletCode storage.fiFields lazyS
+      // 149: val ownerAddress: Cell<address>? = msg.includeOwnerAddress
+      // ...151: : null
+      s3 POP                	//  lazyS storage.jettonWalletCode storage.fiFields
+      s0 s2 XCHG            	//  storage.fiFields storage.jettonWalletCode lazyS
+      64 LDU                	//  storage.fiFields storage.jettonWalletCode msg.USlot5 lazyS
+      LDSTDADDR             	//  storage.fiFields storage.jettonWalletCode msg.USlot5 msg.USlot6 lazyS
+      1 PLDI                	//  storage.fiFields storage.jettonWalletCode msg.USlot5 msg.USlot6 msg.USlot7
+      // 151: : null
+      IF:<{                 	//  storage.fiFields storage.jettonWalletCode msg.USlot5 msg.USlot6
+        // 150: ? msg.ownerAddress.toCell()
+        DUP
+        NEWC                	//  storage.fiFields storage.jettonWalletCode msg.USlot5 msg.USlot6 msg.USlot6 b
+        STSTDADDR           	//  storage.fiFields storage.jettonWalletCode msg.USlot5 msg.USlot6 b
+        ENDC                	//  storage.fiFields storage.jettonWalletCode msg.USlot5 msg.USlot6 '435
+      }>ELSE<{              	//  storage.fiFields storage.jettonWalletCode msg.USlot5 msg.USlot6
+        // 151: : null
+        PUSHNULL            	//  storage.fiFields storage.jettonWalletCode msg.USlot5 msg.USlot6 '435
+      }>                    	//  storage.fiFields storage.jettonWalletCode msg.USlot5 msg.USlot6 ownerAddress
+      // 153: var jettonWalletAddress: address? = null
+      PUSHNULL              	//  storage.fiFields storage.jettonWalletCode msg.USlot5 msg.USlot6 ownerAddress jettonWalletAddress
+      // 154: if (msg.ownerAddress.getWorkchain() == MY_WORKCHAIN)
+      s2 PUSH               	//  storage.fiFields storage.jettonWalletCode msg.USlot5 msg.USlot6 ownerAddress jettonWalletAddress msg.USlot6
+      REWRITESTDADDR
+      DROP                  	//  storage.fiFields storage.jettonWalletCode msg.USlot5 msg.USlot6 ownerAddress jettonWalletAddress '442
+      0 EQINT               	//  storage.fiFields storage.jettonWalletCode msg.USlot5 msg.USlot6 ownerAddress jettonWalletAddress '444
+      IF:<{                 	//  storage.fiFields storage.jettonWalletCode msg.USlot5 msg.USlot6 ownerAddress jettonWalletAddress
+        // 407: assertEndAfterReading: bool = true
+        DROP                	//  storage.fiFields storage.jettonWalletCode msg.USlot5 msg.USlot6 ownerAddress
+        // 157: storage.fiFields.load().treasury
+        s0 s4 XCHG          	//  ownerAddress storage.jettonWalletCode msg.USlot5 msg.USlot6 storage.fiFields
+        CTOS                	//  ownerAddress storage.jettonWalletCode msg.USlot5 msg.USlot6 s
+        LDSTDADDR           	//  ownerAddress storage.jettonWalletCode msg.USlot5 msg.USlot6 '448 s
+        NIP                 	//  ownerAddress storage.jettonWalletCode msg.USlot5 msg.USlot6 s
+        LDSTDADDR           	//  ownerAddress storage.jettonWalletCode msg.USlot5 msg.USlot6 '449 s
+        LDREF               	//  ownerAddress storage.jettonWalletCode msg.USlot5 msg.USlot6 '449 '450 s
+        NIP                 	//  ownerAddress storage.jettonWalletCode msg.USlot5 msg.USlot6 '449 s
+        ENDS                	//  ownerAddress storage.jettonWalletCode msg.USlot5 msg.USlot6 '449
+        // 158: contract.getAddress()
+        MYADDR              	//  ownerAddress storage.jettonWalletCode msg.USlot5 msg.USlot6 '449 '451
+        // 10: val emptyPriWalletStore: PriWalletStore =
+        s2 PUSH             	//  ownerAddress storage.jettonWalletCode msg.USlot5 msg.USlot6 emptyPriWalletStore.treasury emptyPriWalletStore.minterAddress emptyPriWalletStore.ownerAddress
+        // 18: stateInit: { code: jettonWalletCode, data: emptyPriWalletStore.toCell() }
+        NEWC                	//  ownerAddress storage.jettonWalletCode msg.USlot5 msg.USlot6 emptyPriWalletStore.treasury emptyPriWalletStore.minterAddress emptyPriWalletStore.ownerAddress b
+        x{0} STSLICECONST   	//  ownerAddress storage.jettonWalletCode msg.USlot5 msg.USlot6 emptyPriWalletStore.treasury emptyPriWalletStore.minterAddress emptyPriWalletStore.ownerAddress b
+        STSTDADDR           	//  ownerAddress storage.jettonWalletCode msg.USlot5 msg.USlot6 emptyPriWalletStore.treasury emptyPriWalletStore.minterAddress b
+        s1 s2 XCHG          	//  ownerAddress storage.jettonWalletCode msg.USlot5 msg.USlot6 emptyPriWalletStore.minterAddress emptyPriWalletStore.treasury b
+        STSTDADDR           	//  ownerAddress storage.jettonWalletCode msg.USlot5 msg.USlot6 emptyPriWalletStore.minterAddress b
+        STSTDADDR           	//  ownerAddress storage.jettonWalletCode msg.USlot5 msg.USlot6 b
+        ENDC                	//  ownerAddress storage.jettonWalletCode msg.USlot5 msg.USlot6 '468
+        // 19: toShard: { fixedPrefixLength: SHARD_DEPTH, closeTo: ownerAddress }
+        8 PUSHINT           	//  ownerAddress 'USlot1 msg.USlot5 '458 'USlot2 '457=8
+        s4 s4 XCPU          	//  ownerAddress '457=8 msg.USlot5 '458 'USlot2 'USlot1 '457=8
+        // 55: return calcDeployPriWallet(ownerAddress, treasury, minterAddress, jettonWalletCode)
+        // ...56: .calculateAddress()
+        NEWC
+        b{1} STSLICECONST
+        5 STU
+        b{0110} STSLICECONST
+        STREF
+        STREF
+        HASHBU              	//  ownerAddress '457=8 msg.USlot5 '458 '473
+        248 PUSHPOW2DEC     	//  ownerAddress '457=8 msg.USlot5 '458 '473 '481
+        AND                 	//  ownerAddress '457=8 msg.USlot5 '458 '473
+        11 PUSHINT          	//  ownerAddress '457=8 msg.USlot5 '458 '473 '486=11
+        s0 s4 XCHG2         	//  ownerAddress '473 msg.USlot5 '458 '486=11 '457=8
+        SDSUBSTR            	//  ownerAddress '473 msg.USlot5 '485
+        NEWC                	//  ownerAddress '473 msg.USlot5 '485 '472
+        b{10000000000} STSLICECONST	//  ownerAddress '473 msg.USlot5 '485 '472
+        STSLICE             	//  ownerAddress '473 msg.USlot5 '472
+        s1 s2 XCHG          	//  ownerAddress msg.USlot5 '473 '472
+        248 STU             	//  ownerAddress msg.USlot5 '472
+        BTOS                	//  ownerAddress msg.USlot5 jettonWalletAddress
+        -ROT                	//  jettonWalletAddress ownerAddress msg.USlot5
+      }>ELSE<{
+        s5 POP
+        s3 POP              	//  jettonWalletAddress ownerAddress msg.USlot5 msg.USlot6
+        // 154: if (msg.ownerAddress.getWorkchain() == MY_WORKCHAIN)
+        DROP                	//  jettonWalletAddress ownerAddress msg.USlot5
+      }>
+      // 165: dest: in.senderAddress
+      INMSG_SRC             	//  jettonWalletAddress ownerAddress msg.USlot5 '504
+      // 163: val respondMsg = createMessage(
+      NEWC                  	//  jettonWalletAddress ownerAddress msg.USlot5 '504 b
+      b{010000} STSLICECONST	//  jettonWalletAddress ownerAddress msg.USlot5 '504 b
+      STSTDADDR             	//  jettonWalletAddress ownerAddress msg.USlot5 b
+      3513996288 PUSHINT
+      143 STUR              	//  jettonWalletAddress ownerAddress msg.USlot5 b
+      64 STU                	//  jettonWalletAddress ownerAddress b
+      s1 s2 XCHG            	//  ownerAddress jettonWalletAddress b
+      STOPTSTDADDR          	//  ownerAddress b
+      STOPTREF              	//  b
+      ENDC                  	//  respondMsg
+      // 173: respondMsg.send(SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE |
+      // ...174: SEND_MODE_BOUNCE_ON_ACTION_FAIL
+      80 PUSHINT            	//  respondMsg '582
+      // 174: SEND_MODE_BOUNCE_ON_ACTION_FAIL)
+      SENDRAWMSG            	// 
+    }>                      	//  in.body storage.jettonWalletCode storage.fiFields lazyS
+    2 1 BLKDROP2            	//  in.body lazyS
+    // 46: match (msg)
+    x{642b7d07} SDBEGINSQ   	//  in.body lazyS '68
+    IFJMP:<{                	//  in.body lazyS
+      // 27: return PriStore.fromCell(contract.getData())
+      NIP                   	//  lazyS
+      c4 PUSH               	//  lazyS '593
+      // 178: var storage = lazy PriStore.load()
+      CTOS                  	//  lazyS lazyS
+      // 179: assertSenderIsAdmin(in.senderAddress, storage.adminAddress)
+      LDGRAMS               	//  lazyS storage.totalSupply lazyS
+      DUP                   	//  lazyS storage.totalSupply '598 lazyS
+      LDGRAMS               	//  lazyS storage.totalSupply '598 '599 lazyS
+      NIP                   	//  lazyS storage.totalSupply '598 lazyS
+      LDREF                 	//  lazyS storage.totalSupply '598 storage.fiFields lazyS
+      LDSTDADDR             	//  lazyS storage.totalSupply '598 storage.fiFields storage.adminAddress lazyS
+      PLDREF                	//  lazyS storage.totalSupply '598 storage.fiFields storage.adminAddress storage.jettonWalletCode
+      INMSG_SRC             	//  lazyS storage.totalSupply '598 storage.fiFields storage.adminAddress storage.jettonWalletCode '603
+      ROT                   	//  lazyS storage.totalSupply '598 storage.fiFields storage.jettonWalletCode '603 storage.adminAddress
+      // 38: senderAddress == adminAddress!
+      SDEQ                  	//  lazyS storage.totalSupply '598 storage.fiFields storage.jettonWalletCode '606
+      // 37: assert (
+      // ...39: ) throw ERROR_NOT_OWNER
+      73 THROWIFNOT         	//  lazyS storage.totalSupply '598 storage.fiFields storage.jettonWalletCode
+      // 180: assert (msg.mintRecipient.getWorkchain() == MY_WORKCHAIN) throw ERROR_WRONG_WORKCHAIN
+      s0 s4 XCHG            	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields lazyS
+      64 LDU
+      NIP                   	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields lazyS
+      LDSTDADDR             	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 lazyS
+      LDGRAMS               	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 lazyS
+      PLDREF                	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7
+      s2 PUSH               	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 msg.USlot5
+      REWRITESTDADDR
+      DROP                  	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 '612
+      333 THROWIF           	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7
+      // 182: val internalTransferMsg = lazy msg.internalTransferMsg.load(
+      DUP                   	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 msg.USlot7
+      CTOS                  	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 lazyS
+      // 185: var forwardTonAmount = internalTransferMsg.forwardTonAmount
+      x{178d4519} SDBEGINSQ 	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 lazyS '626
+      72 THROWIFNOT         	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 lazyS
+      64 LDU
+      NIP                   	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 lazyS
+      LDGRAMS               	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount lazyS
+      10 LDU
+      NIP                   	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount lazyS
+      LDSTDADDR             	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount '632 lazyS
+      NIP                   	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount lazyS
+      LDOPTSTDADDR          	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount '633 lazyS
+      NIP                   	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount lazyS
+      LDGRAMS               	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount forwardTonAmount mutableCopy
+      // 104: if (mutableCopy.loadMaybeRef() != null)
+      LDOPTREF              	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount forwardTonAmount '640 mutableCopy
+      SWAP                  	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount forwardTonAmount mutableCopy '640
+      ISNULL                	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount forwardTonAmount mutableCopy '641
+      IFNOT:<{              	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount forwardTonAmount mutableCopy
+        // 106: mutableCopy.assertEnd()
+        ENDS                	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount forwardTonAmount
+      }>ELSE<{
+        // 104: if (mutableCopy.loadMaybeRef() != null)
+        DROP                	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount forwardTonAmount
+      }>
+      // 189: checkAmountIsEnoughToTransfer(msg.tonAmount, forwardTonAmount, in.originalForwardFee)
+      INMSG_FWDFEE          	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount forwardTonAmount '642
+      0 PUSHINT             	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount forwardTonAmount '642 '644=0
+      GETORIGINALFWDFEE     	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount forwardTonAmount '642
+      // 43: var fwdCount = forwardTonAmount ? 2 : 1; // second sending (forward) will be cheaper that first
+      OVER
+      2 PUSHINT
+      1 PUSHINT             	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount forwardTonAmount '642 forwardTonAmount '647=2 '648=1
+      CONDSEL               	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount forwardTonAmount '642 fwdCount
+      // 45: var jettonWalletGasConsumption = getPrecompiledGasConsumption()
+      GETPRECOMPILEDGAS     	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount forwardTonAmount '642 fwdCount jettonWalletGasConsumption
+      // 46: var sendTransferGasConsumption = (jettonWalletGasConsumption == null) ? GAS_CONSUMPTION_JettonTransfer : jettonWalletGasConsumption
+      DUP                   	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount forwardTonAmount '642 fwdCount jettonWalletGasConsumption jettonWalletGasConsumption
+      ISNULL                	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount forwardTonAmount '642 fwdCount jettonWalletGasConsumption '652
+      6327 PUSHINT          	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount forwardTonAmount '642 fwdCount jettonWalletGasConsumption '652 '654=6327
+      s2 PUSH               	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount forwardTonAmount '642 fwdCount jettonWalletGasConsumption '652 '654=6327 jettonWalletGasConsumption
+      CONDSEL               	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount forwardTonAmount '642 fwdCount jettonWalletGasConsumption sendTransferGasConsumption
+      // 47: var receiveTransferGasConsumption = (jettonWalletGasConsumption == null) ? GAS_CONSUMPTION_JettonReceive : jettonWalletGasConsumption
+      OVER                  	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount forwardTonAmount '642 fwdCount jettonWalletGasConsumption sendTransferGasConsumption jettonWalletGasConsumption
+      ISNULL                	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount forwardTonAmount '642 fwdCount jettonWalletGasConsumption sendTransferGasConsumption '656
+      7443 PUSHINT
+      ROT                   	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount forwardTonAmount '642 fwdCount jettonWalletGasConsumption '656 '658=7443 sendTransferGasConsumption
+      s0 s3 XCHG            	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount forwardTonAmount '642 fwdCount sendTransferGasConsumption '656 '658=7443 jettonWalletGasConsumption
+      CONDSEL               	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount forwardTonAmount '642 fwdCount sendTransferGasConsumption receiveTransferGasConsumption
+      s2 s3 XCHG2           	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount forwardTonAmount receiveTransferGasConsumption sendTransferGasConsumption fwdCount '642
+      // 53: fwdCount * fwdFee +
+      MUL                   	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount forwardTonAmount receiveTransferGasConsumption sendTransferGasConsumption '660
+      // 50: forwardTonAmount +
+      // ...53: fwdCount * fwdFee
+      s1 s3 XCHG            	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount sendTransferGasConsumption receiveTransferGasConsumption forwardTonAmount '660
+      ADD                   	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount sendTransferGasConsumption receiveTransferGasConsumption '661
+      // 39: return calculateForwardFeeWithoutLumpPrice(MY_WORKCHAIN, STORAGE_SIZE_InitStateWallet_bits, STORAGE_SIZE_InitStateWallet_cells)
+      3 PUSHINT             	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount sendTransferGasConsumption receiveTransferGasConsumption '661 '663=3
+      812 PUSHINT           	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount sendTransferGasConsumption receiveTransferGasConsumption '661 '663=3 '664=812
+      0 PUSHINT             	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount sendTransferGasConsumption receiveTransferGasConsumption '661 '663=3 '664=812 '665=0
+      GETFORWARDFEESIMPLE   	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount sendTransferGasConsumption receiveTransferGasConsumption '661 '662
+      // 50: forwardTonAmount +
+      // ...54: forwardInitStateOverhead()
+      ADD                   	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount sendTransferGasConsumption receiveTransferGasConsumption '667
+      // 55: calculateGasFee(MY_WORKCHAIN, sendTransferGasConsumption) +
+      s0 s2 XCHG
+      0 PUSHINT             	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount '667 receiveTransferGasConsumption sendTransferGasConsumption '668=0
+      GETGASFEE             	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount '667 receiveTransferGasConsumption '669
+      // 50: forwardTonAmount +
+      // ...55: calculateGasFee(MY_WORKCHAIN, sendTransferGasConsumption)
+      s1 s2 XCHG            	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount receiveTransferGasConsumption '667 '669
+      ADD                   	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount receiveTransferGasConsumption '670
+      // 56: calculateGasFee(MY_WORKCHAIN, receiveTransferGasConsumption) +
+      SWAP
+      0 PUSHINT             	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount '670 receiveTransferGasConsumption '671=0
+      GETGASFEE             	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount '670 '672
+      // 50: forwardTonAmount +
+      // ...56: calculateGasFee(MY_WORKCHAIN, receiveTransferGasConsumption)
+      ADD                   	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount '673
+      // 35: return calculateStorageFee(MY_WORKCHAIN, MIN_STORAGE_DURATION, STORAGE_SIZE_MaxWallet_bits, STORAGE_SIZE_MaxWallet_cells)
+      3 PUSHINT             	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount '673 '675=3
+      1026 PUSHINT          	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount '673 '675=3 '676=1026
+      157680000 PUSHINT     	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount '673 '675=3 '676=1026 '677=157680000
+      0 PUSHINT             	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount '673 '675=3 '676=1026 '677=157680000 '678=0
+      GETSTORAGEFEE         	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount '673 '674
+      // 50: forwardTonAmount +
+      // ...57: calculateJettonWalletMinStorageFee()
+      ADD                   	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount '680
+      // 49: assert (msgValue >
+      // ...57: calculateJettonWalletMinStorageFee()
+      s3 PUSH               	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount '680 msg.USlot6
+      LESS                  	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount '681
+      // 58: ) throw ERROR_NOT_ENOUGH_GAS
+      48 THROWIFNOT         	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount
+      // 191: storage.totalSupply += internalTransferMsg.jettonAmount
+      s1 s6 XCHG            	//  storage.jettonWalletCode msg.USlot7 '598 storage.fiFields msg.USlot5 msg.USlot6 storage.totalSupply internalTransferMsg.jettonAmount
+      ADD                   	//  storage.jettonWalletCode msg.USlot7 '598 storage.fiFields msg.USlot5 msg.USlot6 storage.totalSupply
+      // 31: contract.setData(self.toCell())
+      NEWC                  	//  storage.jettonWalletCode msg.USlot7 '598 storage.fiFields msg.USlot5 msg.USlot6 storage.totalSupply b
+      SWAP                  	//  storage.jettonWalletCode msg.USlot7 '598 storage.fiFields msg.USlot5 msg.USlot6 b storage.totalSupply
+      STGRAMS               	//  storage.jettonWalletCode msg.USlot7 '598 storage.fiFields msg.USlot5 msg.USlot6 b
+      s1 s4 XCHG            	//  storage.jettonWalletCode msg.USlot7 msg.USlot6 storage.fiFields msg.USlot5 '598 b
+      STSLICE               	//  storage.jettonWalletCode msg.USlot7 msg.USlot6 storage.fiFields msg.USlot5 b
+      ENDC                  	//  storage.jettonWalletCode msg.USlot7 msg.USlot6 storage.fiFields msg.USlot5 '685
+      c4 POP                	//  storage.jettonWalletCode msg.USlot7 msg.USlot6 storage.fiFields msg.USlot5
+      // 194: reserveToncoinsOnBalance(ton("0.01"), RESERVE_MODE_EXACT_AMOUNT); // reserve for storage fees
+      10000000 PUSHINT      	//  storage.jettonWalletCode msg.USlot7 msg.USlot6 storage.fiFields msg.USlot5 '686=10000000
+      0 PUSHINT             	//  storage.jettonWalletCode msg.USlot7 msg.USlot6 storage.fiFields msg.USlot5 '686=10000000 '687=0
+      RAWRESERVE            	//  storage.jettonWalletCode msg.USlot7 msg.USlot6 storage.fiFields msg.USlot5
+      // 200: storage.fiFields.load().treasury
+      SWAP                  	//  storage.jettonWalletCode msg.USlot7 msg.USlot6 msg.USlot5 storage.fiFields
+      CTOS                  	//  storage.jettonWalletCode msg.USlot7 msg.USlot6 msg.USlot5 s
+      LDSTDADDR             	//  storage.jettonWalletCode msg.USlot7 msg.USlot6 msg.USlot5 '694 s
+      NIP                   	//  storage.jettonWalletCode msg.USlot7 msg.USlot6 msg.USlot5 s
+      LDSTDADDR             	//  storage.jettonWalletCode msg.USlot7 msg.USlot6 msg.USlot5 '695 s
+      LDREF                 	//  storage.jettonWalletCode msg.USlot7 msg.USlot6 msg.USlot5 '695 '696 s
+      NIP                   	//  storage.jettonWalletCode msg.USlot7 msg.USlot6 msg.USlot5 '695 s
+      ENDS                  	//  storage.jettonWalletCode msg.USlot7 msg.USlot6 msg.USlot5 '695
+      // 201: contract.getAddress()
+      MYADDR                	//  storage.jettonWalletCode msg.USlot7 msg.USlot6 msg.USlot5 '695 '697
+      // 10: val emptyPriWalletStore: PriWalletStore =
+      s2 PUSH               	//  storage.jettonWalletCode msg.USlot7 msg.USlot6 msg.USlot5 emptyPriWalletStore.treasury emptyPriWalletStore.minterAddress emptyPriWalletStore.ownerAddress
+      // 18: stateInit: { code: jettonWalletCode, data: emptyPriWalletStore.toCell() }
+      NEWC                  	//  storage.jettonWalletCode msg.USlot7 msg.USlot6 msg.USlot5 emptyPriWalletStore.treasury emptyPriWalletStore.minterAddress emptyPriWalletStore.ownerAddress b
+      x{0} STSLICECONST     	//  storage.jettonWalletCode msg.USlot7 msg.USlot6 msg.USlot5 emptyPriWalletStore.treasury emptyPriWalletStore.minterAddress emptyPriWalletStore.ownerAddress b
+      STSTDADDR             	//  storage.jettonWalletCode msg.USlot7 msg.USlot6 msg.USlot5 emptyPriWalletStore.treasury emptyPriWalletStore.minterAddress b
+      s1 s2 XCHG            	//  storage.jettonWalletCode msg.USlot7 msg.USlot6 msg.USlot5 emptyPriWalletStore.minterAddress emptyPriWalletStore.treasury b
+      STSTDADDR             	//  storage.jettonWalletCode msg.USlot7 msg.USlot6 msg.USlot5 emptyPriWalletStore.minterAddress b
+      STSTDADDR             	//  storage.jettonWalletCode msg.USlot7 msg.USlot6 msg.USlot5 b
+      ENDC                  	//  storage.jettonWalletCode msg.USlot7 msg.USlot6 msg.USlot5 '713
+      // 19: toShard: { fixedPrefixLength: SHARD_DEPTH, closeTo: ownerAddress }
+      8 PUSHINT             	//  'USlot2 '733 'USlot2 'USlot6 'USlot3 'USlot5=8
+      // 196: val deployMsg = createMessage(
+      NEWC                  	//  'USlot2 '733 'USlot2 'USlot6 'USlot3 'USlot5=8 b
+      b{01100010000000000} STSLICECONST	//  'USlot2 '733 'USlot2 'USlot6 'USlot3 'USlot5=8 b
+      s2 s6 s1 PUSH3        	//  'USlot2 '733 'USlot2 'USlot6 'USlot3 'USlot5=8 b 'USlot3 'USlot2 'USlot5=8
+      NEWC
+      b{1} STSLICECONST
+      5 STU
+      b{0110} STSLICECONST
+      STREF
+      STREF
+      HASHBU                	//  'USlot2 '733 'USlot2 'USlot6 'USlot3 'USlot5=8 b '754
+      248 PUSHPOW2DEC       	//  'USlot2 '733 'USlot2 'USlot6 'USlot3 'USlot5=8 b '754 '762
+      AND                   	//  'USlot2 '733 'USlot2 'USlot6 'USlot3 'USlot5=8 b '754
+      s0 s4 XCHG
+      11 PUSHINT            	//  'USlot2 '733 'USlot2 '754 'USlot3 'USlot5=8 b 'USlot6 '767=11
+      s3 PUSH               	//  'USlot2 '733 'USlot2 '754 'USlot3 'USlot5=8 b 'USlot6 '767=11 'USlot5=8
+      SDSUBSTR              	//  'USlot2 '733 'USlot2 '754 'USlot3 'USlot5=8 b '766
+      s2 POP                	//  'USlot2 '733 'USlot2 '754 'USlot3 '766 b
+      STSLICE               	//  'USlot2 '733 'USlot2 '754 'USlot3 b
+      s1 s2 XCHG            	//  'USlot2 '733 'USlot2 'USlot3 '754 b
+      248 STU               	//  'USlot2 '733 'USlot2 'USlot3 b
+      ROT                   	//  'USlot2 '733 'USlot3 b 'USlot2
+      STGRAMS               	//  'USlot2 '733 'USlot3 b
+      5389 PUSHINT
+      118 STUR              	//  'USlot2 '733 'USlot3 b
+      s1 s3 XCHG            	//  'USlot3 '733 'USlot2 b
+      STREF                 	//  'USlot3 '733 b
+      s1 s2 XCHG            	//  '733 'USlot3 b
+      STREF                 	//  '733 b
+      STREF                 	//  b
+      ENDC                  	//  deployMsg
+      // 207: deployMsg.send(SEND_MODE_PAY_FEES_SEPARATELY | SEND_MODE_BOUNCE_ON_ACTION_FAIL)
+      17 PUSHINT            	//  deployMsg '800
+      SENDRAWMSG            	// 
+    }>                      	//  in.body lazyS
+    // 46: match (msg)
+    x{6501f354} SDBEGINSQ   	//  in.body lazyS '68
+    IFJMP:<{                	//  in.body lazyS
+      // 27: return PriStore.fromCell(contract.getData())
+      NIP                   	//  lazyS
+      c4 PUSH               	//  lazyS '811
+      // 211: var storage = lazy PriStore.load()
+      CTOS                  	//  lazyS lazyS
+      // 212: assertSenderIsAdmin(in.senderAddress, storage.adminAddress)
+      LDGRAMS               	//  lazyS '815 lazyS
+      LDGRAMS               	//  lazyS '815 '816 lazyS
+      LDREF                 	//  lazyS '815 '816 '817 lazyS
+      LDSTDADDR             	//  lazyS '815 '816 '817 storage.adminAddress lazyS
+      LDOPTSTDADDR          	//  lazyS '815 '816 '817 storage.adminAddress '819 lazyS
+      NIP                   	//  lazyS '815 '816 '817 storage.adminAddress '820
+      INMSG_SRC             	//  lazyS '815 '816 '817 storage.adminAddress '820 '821
+      // 38: senderAddress == adminAddress!
+      s2 PUSH               	//  lazyS '815 '816 '817 storage.adminAddress '820 '821 storage.adminAddress
+      SDEQ                  	//  lazyS '815 '816 '817 storage.adminAddress '820 '824
+      // 37: assert (
+      // ...39: ) throw ERROR_NOT_OWNER
+      73 THROWIFNOT         	//  lazyS '815 '816 '817 storage.adminAddress '820
+      // 213: storage.nextAdminAddress = msg.newAdminAddress
+      s0 s5 XCHG            	//  '820 '815 '816 '817 storage.adminAddress lazyS
+      64 LDU
+      NIP                   	//  '820 '815 '816 '817 storage.adminAddress lazyS
+      LDSTDADDR             	//  '820 '815 '816 '817 storage.adminAddress '826 lazyS
+      DROP                  	//  '820 '815 '816 '817 storage.adminAddress storage.nextAdminAddress
+      // 31: contract.setData(self.toCell())
+      NEWC                  	//  '820 '815 '816 '817 storage.adminAddress storage.nextAdminAddress b
+      s0 s5 XCHG2           	//  '820 storage.nextAdminAddress '816 '817 storage.adminAddress b '815
+      STGRAMS               	//  '820 storage.nextAdminAddress '816 '817 storage.adminAddress b
+      s0 s3 XCHG2           	//  '820 storage.nextAdminAddress storage.adminAddress '817 b '816
+      STGRAMS               	//  '820 storage.nextAdminAddress storage.adminAddress '817 b
+      STREF                 	//  '820 storage.nextAdminAddress storage.adminAddress b
+      STSTDADDR             	//  '820 storage.nextAdminAddress b
+      STOPTSTDADDR          	//  '820 b
+      STSLICE               	//  b
+      ENDC                  	//  '829
+      c4 POP                	// 
+    }>                      	//  in.body lazyS
+    // 46: match (msg)
+    x{fb88e119} SDBEGINSQ   	//  in.body lazyS '68
+    IFJMP:<{                	//  in.body lazyS
+      2DROP                 	// 
+      // 27: return PriStore.fromCell(contract.getData())
+      c4 PUSH               	//  '840
+      // 218: var storage = lazy PriStore.load()
+      CTOS                  	//  lazyS
+      // 219: assertSenderIsAdmin(in.senderAddress, storage.nextAdminAddress)
+      LDGRAMS               	//  '844 lazyS
+      LDGRAMS               	//  '844 '845 lazyS
+      LDREF                 	//  '844 '845 '846 lazyS
+      LDSTDADDR             	//  '844 '845 '846 '847 lazyS
+      NIP                   	//  '844 '845 '846 lazyS
+      LDOPTSTDADDR          	//  '844 '845 '846 storage.nextAdminAddress '849
+      INMSG_SRC             	//  '844 '845 '846 storage.nextAdminAddress '849 '850
+      // 38: senderAddress == adminAddress!
+      s2 PUSH               	//  '844 '845 '846 storage.nextAdminAddress '849 '850 storage.nextAdminAddress
+      SDEQ                  	//  '844 '845 '846 storage.nextAdminAddress '849 '853
+      // 37: assert (
+      // ...39: ) throw ERROR_NOT_OWNER
+      73 THROWIFNOT         	//  '844 '845 '846 storage.adminAddress '849
+      // 221: storage.nextAdminAddress = null
+      PUSHNULL              	//  '844 '845 '846 storage.adminAddress '849 storage.nextAdminAddress
+      // 31: contract.setData(self.toCell())
+      NEWC                  	//  '844 '845 '846 storage.adminAddress '849 storage.nextAdminAddress b
+      s0 s6 XCHG2           	//  storage.nextAdminAddress '845 '846 storage.adminAddress '849 b '844
+      STGRAMS               	//  storage.nextAdminAddress '845 '846 storage.adminAddress '849 b
+      s0 s4 XCHG2           	//  storage.nextAdminAddress '849 '846 storage.adminAddress b '845
+      STGRAMS               	//  storage.nextAdminAddress '849 '846 storage.adminAddress b
+      s1 s2 XCHG            	//  storage.nextAdminAddress '849 storage.adminAddress '846 b
+      STREF                 	//  storage.nextAdminAddress '849 storage.adminAddress b
+      STSTDADDR             	//  storage.nextAdminAddress '849 b
+      s1 s2 XCHG            	//  '849 storage.nextAdminAddress b
+      STOPTSTDADDR          	//  '849 b
+      STSLICE               	//  b
+      ENDC                  	//  '857
+      c4 POP                	// 
+    }>                      	//  in.body lazyS
+    // 46: match (msg)
+    x{cb862902} SDBEGINSQ   	//  in.body lazyS '68
+    IFJMP:<{                	//  in.body lazyS
+      // 27: return PriStore.fromCell(contract.getData())
+      NIP                   	//  lazyS
+      c4 PUSH               	//  lazyS '868
+      // 233: var storage = lazy PriStore.load()
+      CTOS                  	//  lazyS lazyS
+      // 234: assertSenderIsAdmin(in.senderAddress, storage.adminAddress)
+      LDGRAMS               	//  lazyS '872 lazyS
+      LDGRAMS               	//  lazyS '872 '873 lazyS
+      LDREF                 	//  lazyS '872 '873 '874 lazyS
+      LDSTDADDR             	//  lazyS '872 '873 '874 storage.adminAddress lazyS
+      LDOPTSTDADDR          	//  lazyS '872 '873 '874 storage.adminAddress '876 lazyS
+      PLDREF                	//  lazyS '872 '873 '874 storage.adminAddress '876 '877
+      INMSG_SRC             	//  lazyS '872 '873 '874 storage.adminAddress '876 '877 '879
+      // 38: senderAddress == adminAddress!
+      s3 PUSH               	//  lazyS '872 '873 '874 storage.adminAddress '876 '877 '879 storage.adminAddress
+      SDEQ                  	//  lazyS '872 '873 '874 storage.adminAddress '876 '877 '882
+      // 37: assert (
+      // ...39: ) throw ERROR_NOT_OWNER
+      73 THROWIFNOT         	//  lazyS '872 '873 '874 storage.adminAddress '876 '877
+      // 235: storage.metadataUri = msg.newMetadataUri.toCell()
+      s0 s6 XCHG            	//  '877 '872 '873 '874 storage.adminAddress '876 lazyS
+      64 LDU
+      NIP                   	//  '877 '872 '873 '874 storage.adminAddress '876 msg.USlot7
+      NEWC                  	//  '877 '872 '873 '874 storage.adminAddress '876 msg.USlot7 b
+      // 17: b.storeSlice(self)
+      STSLICE               	//  '877 '872 '873 '874 storage.adminAddress '876 b
+      // 235: storage.metadataUri = msg.newMetadataUri.toCell()
+      ENDC                  	//  '877 '872 '873 '874 storage.adminAddress '876 storage.metadataUri
+      // 31: contract.setData(self.toCell())
+      NEWC                  	//  '877 '872 '873 '874 storage.adminAddress '876 storage.metadataUri b
+      s0 s6 XCHG2           	//  '877 storage.metadataUri '873 '874 storage.adminAddress '876 b '872
+      STGRAMS               	//  '877 storage.metadataUri '873 '874 storage.adminAddress '876 b
+      s0 s4 XCHG2           	//  '877 storage.metadataUri '876 '874 storage.adminAddress b '873
+      STGRAMS               	//  '877 storage.metadataUri '876 '874 storage.adminAddress b
+      s1 s2 XCHG            	//  '877 storage.metadataUri '876 storage.adminAddress '874 b
+      STREF                 	//  '877 storage.metadataUri '876 storage.adminAddress b
+      STSTDADDR             	//  '877 storage.metadataUri '876 b
+      STOPTSTDADDR          	//  '877 storage.metadataUri b
+      s1 s2 XCHG            	//  storage.metadataUri '877 b
+      STREF                 	//  storage.metadataUri b
+      STOPTREF              	//  b
+      ENDC                  	//  '897
+      c4 POP                	// 
+    }>                      	//  in.body lazyS
+    // 46: match (msg)
+    x{2508d66a} SDBEGINSQ   	//  in.body lazyS '68
+    IFJMP:<{                	//  in.body lazyS
+      // 27: return PriStore.fromCell(contract.getData())
+      NIP                   	//  lazyS
+      c4 PUSH               	//  lazyS '908
+      // 240: var storage = lazy PriStore.load()
+      CTOS                  	//  lazyS lazyS
+      // 241: assertSenderIsAdmin(in.senderAddress, storage.adminAddress)
+      LDGRAMS               	//  lazyS '912 lazyS
+      NIP                   	//  lazyS lazyS
+      LDGRAMS               	//  lazyS '913 lazyS
+      NIP                   	//  lazyS lazyS
+      LDSTDADDR             	//  lazyS '914 lazyS
+      DROP                  	//  lazyS storage.adminAddress
+      INMSG_SRC             	//  lazyS storage.adminAddress '915
+      // 38: senderAddress == adminAddress!
+      SDEQ                  	//  lazyS '918
+      // 37: assert (
+      // ...39: ) throw ERROR_NOT_OWNER
+      73 THROWIFNOT         	//  lazyS
+      // 242: contract.setCodePostponed(msg.newCode!)
+      2 LDU
+      NIP                   	//  lazyS
+      LDSTDADDR             	//  '920 lazyS
+      NIP                   	//  lazyS
+      1 LDU                 	//  '922 lazyS
+      SWAP                  	//  lazyS '922
+      IF:<{                 	//  lazyS
+        10 LDU
+        NIP                 	//  lazyS
+      }>                    	//  lazyS
+      LDOPTREF              	//  msg.USlot6 lazyS
+      PLDOPTREF             	//  msg.USlot6 msg.USlot7
+      SETCODE               	//  msg.USlot6
+      // 243: contract.setData(msg.newData!)
+      c4 POP                	// 
+    }>                      	//  in.body lazyS
+    // 46: match (msg)
+    x{d372158c} SDBEGINSQ   	//  in.body lazyS '68
+    NIP                     	//  in.body '68
+    IFJMP:<{                	//  in.body
+      DROP                  	// 
+    }>                      	//  in.body
+    // 253: assert (in.body.isEmpty()) throw 0xFFFF
+    16 PUSHPOW2DEC          	//  in.body '928=65535
+    SWAP                    	//  '928=65535 in.body
+    SEMPTY                  	//  '928=65535 '929
+    THROWANYIFNOT           	// 
+  }>
+  // contracts/privateMinter/personal.tolk:274
+  get_jetton_data() PROC:<{   	// 
+    // 27: return PriStore.fromCell(contract.getData())
+    c4 PUSH                 	//  '8
+    // 275: val storage = lazy PriStore.load()
+    CTOS                    	//  lazyS
+    // 277: var metadata: OnchainMetadataReply = { contentDict: createEmptyMap() }
+    NEWDICT                 	//  lazyS metadata
+    // 278: if (storage.metadataUri != null)
+    SWAP                    	//  metadata lazyS
+    LDGRAMS                 	//  metadata storage.totalSupply lazyS
+    LDGRAMS                 	//  metadata storage.totalSupply '15 lazyS
+    NIP                     	//  metadata storage.totalSupply lazyS
+    LDREF                   	//  metadata storage.totalSupply '16 lazyS
+    NIP                     	//  metadata storage.totalSupply lazyS
+    LDSTDADDR               	//  metadata storage.totalSupply storage.adminAddress lazyS
+    LDOPTSTDADDR            	//  metadata storage.totalSupply storage.adminAddress '18 lazyS
+    NIP                     	//  metadata storage.totalSupply storage.adminAddress lazyS
+    LDREF                   	//  metadata storage.totalSupply storage.adminAddress storage.jettonWalletCode lazyS
+    PLDOPTREF               	//  metadata storage.totalSupply storage.adminAddress storage.jettonWalletCode storage.metadataUri
+    DUP                     	//  metadata storage.totalSupply storage.adminAddress storage.jettonWalletCode storage.metadataUri storage.metadataUri
+    ISNULL                  	//  metadata storage.totalSupply storage.adminAddress storage.jettonWalletCode storage.metadataUri '21
+    IFNOT:<{                	//  metadata storage.totalSupply storage.adminAddress storage.jettonWalletCode storage.metadataUri
+      // 280: stringSha256("uri")
+      51065135818459385347574250312853146822620586594996463797054414300406918686668 PUSHINT	//  metadata storage.totalSupply storage.adminAddress storage.jettonWalletCode storage.metadataUri '22=51065135818459385347574250312853146822620586594996463797054414300406918686668
+      // 281: SnakeDataReply { string: storage.metadataUri.load() }.toCell()
+      SWAP                  	//  metadata storage.totalSupply storage.adminAddress storage.jettonWalletCode '22=51065135818459385347574250312853146822620586594996463797054414300406918686668 storage.metadataUri
+      CTOS                  	//  metadata storage.totalSupply storage.adminAddress storage.jettonWalletCode '22=51065135818459385347574250312853146822620586594996463797054414300406918686668 '28
+      NEWC                  	//  metadata storage.totalSupply storage.adminAddress storage.jettonWalletCode '22=51065135818459385347574250312853146822620586594996463797054414300406918686668 '28 b
+      x{00} STSLICECONST    	//  metadata storage.totalSupply storage.adminAddress storage.jettonWalletCode '22=51065135818459385347574250312853146822620586594996463797054414300406918686668 '28 b
+      // 17: b.storeSlice(self)
+      STSLICE               	//  metadata storage.totalSupply storage.adminAddress storage.jettonWalletCode '22=51065135818459385347574250312853146822620586594996463797054414300406918686668 b
+      // 281: SnakeDataReply { string: storage.metadataUri.load() }.toCell()
+      ENDC                  	//  metadata storage.totalSupply storage.adminAddress storage.jettonWalletCode '22=51065135818459385347574250312853146822620586594996463797054414300406918686668 '38
+      s0 s1 s5 XCHG3
+      // 279: metadata.contentDict.set(
+      8 PUSHPOW2            	//  storage.jettonWalletCode storage.totalSupply storage.adminAddress '38 '22=51065135818459385347574250312853146822620586594996463797054414300406918686668 metadata '41=256
+      DICTUSETREF           	//  storage.jettonWalletCode storage.totalSupply storage.adminAddress metadata
+      // 283: metadata.contentDict.set(stringSha256("decimals"), SnakeDataReply { string: "9" }.toCell())
+      107878361799212983662495570378745491379550006934010968359181619763835345146430 PUSHINT	//  storage.jettonWalletCode storage.totalSupply storage.adminAddress metadata '42=107878361799212983662495570378745491379550006934010968359181619763835345146430
+      x{39} PUSHSLICE       	//  storage.jettonWalletCode storage.totalSupply storage.adminAddress metadata '42=107878361799212983662495570378745491379550006934010968359181619763835345146430 '43
+      NEWC                  	//  storage.jettonWalletCode storage.totalSupply storage.adminAddress metadata '42=107878361799212983662495570378745491379550006934010968359181619763835345146430 '43 b
+      x{00} STSLICECONST    	//  storage.jettonWalletCode storage.totalSupply storage.adminAddress metadata '42=107878361799212983662495570378745491379550006934010968359181619763835345146430 '43 b
+      // 17: b.storeSlice(self)
+      STSLICE               	//  storage.jettonWalletCode storage.totalSupply storage.adminAddress metadata '42=107878361799212983662495570378745491379550006934010968359181619763835345146430 b
+      // 283: metadata.contentDict.set(stringSha256("decimals"), SnakeDataReply { string: "9" }.toCell())
+      ENDC                  	//  storage.jettonWalletCode storage.totalSupply storage.adminAddress metadata '42=107878361799212983662495570378745491379550006934010968359181619763835345146430 '51
+      s0 s2 XCHG
+      8 PUSHPOW2            	//  storage.jettonWalletCode storage.totalSupply storage.adminAddress '51 '42=107878361799212983662495570378745491379550006934010968359181619763835345146430 metadata '54=256
+      DICTUSETREF           	//  storage.jettonWalletCode storage.totalSupply storage.adminAddress metadata
+      // 278: if (storage.metadataUri != null)
+      s0 s3 XCHG            	//  metadata storage.totalSupply storage.adminAddress storage.jettonWalletCode
+    }>ELSE<{
+      DROP                  	//  metadata storage.totalSupply storage.adminAddress storage.jettonWalletCode
+    }>
+    // 288: mintable: true
+    TRUE                    	//  metadata storage.totalSupply storage.adminAddress storage.jettonWalletCode '55
+    // 290: jettonContent: metadata.toCell()
+    NEWC                    	//  metadata storage.totalSupply storage.adminAddress storage.jettonWalletCode '55 b
+    x{00} STSLICECONST      	//  metadata storage.totalSupply storage.adminAddress storage.jettonWalletCode '55 b
+    s1 s5 XCHG              	//  '55 storage.totalSupply storage.adminAddress storage.jettonWalletCode metadata b
+    STOPTREF                	//  '55 storage.totalSupply storage.adminAddress storage.jettonWalletCode b
+    ENDC                    	//  '55 storage.totalSupply storage.adminAddress storage.jettonWalletCode '60
+    // 286: return
+    s3 s4 XCHG              	//  storage.totalSupply '55 storage.adminAddress storage.jettonWalletCode '60
+    SWAP                    	//  storage.totalSupply '55 storage.adminAddress '60 storage.jettonWalletCode
+  }>
+  // contracts/privateMinter/personal.tolk:295
+  get_wallet_address() PROC:<{	//  ownerAddress
+    // 27: return PriStore.fromCell(contract.getData())
+    c4 PUSH                 	//  ownerAddress '9
+    // 296: val storage = lazy PriStore.load()
+    CTOS                    	//  ownerAddress lazyS
+    // 297: return calcAddrPriWallet(
+    LDREF                   	//  ownerAddress storage.fiFields lazyS
+    PLDREF                  	//  ownerAddress storage.fiFields storage.jettonWalletCode
+    // 299: storage.fiFields.load().treasury
+    SWAP                    	//  ownerAddress storage.jettonWalletCode storage.fiFields
+    CTOS                    	//  ownerAddress storage.jettonWalletCode s
+    LDSTDADDR               	//  ownerAddress storage.jettonWalletCode '18 s
+    NIP                     	//  ownerAddress storage.jettonWalletCode s
+    LDSTDADDR               	//  ownerAddress storage.jettonWalletCode '19 s
+    LDREF                   	//  ownerAddress storage.jettonWalletCode '19 '20 s
+    NIP                     	//  ownerAddress storage.jettonWalletCode '19 s
+    ENDS                    	//  ownerAddress storage.jettonWalletCode '19
+    // 300: contract.getAddress()
+    MYADDR                  	//  ownerAddress storage.jettonWalletCode '19 '21
+    // 10: val emptyPriWalletStore: PriWalletStore =
+    s3 PUSH                 	//  ownerAddress storage.jettonWalletCode emptyPriWalletStore.treasury emptyPriWalletStore.minterAddress emptyPriWalletStore.ownerAddress
+    // 18: stateInit: { code: jettonWalletCode, data: emptyPriWalletStore.toCell() }
+    NEWC                    	//  ownerAddress storage.jettonWalletCode emptyPriWalletStore.treasury emptyPriWalletStore.minterAddress emptyPriWalletStore.ownerAddress b
+    x{0} STSLICECONST       	//  ownerAddress storage.jettonWalletCode emptyPriWalletStore.treasury emptyPriWalletStore.minterAddress emptyPriWalletStore.ownerAddress b
+    STSTDADDR               	//  ownerAddress storage.jettonWalletCode emptyPriWalletStore.treasury emptyPriWalletStore.minterAddress b
+    s1 s2 XCHG              	//  ownerAddress storage.jettonWalletCode emptyPriWalletStore.minterAddress emptyPriWalletStore.treasury b
+    STSTDADDR               	//  ownerAddress storage.jettonWalletCode emptyPriWalletStore.minterAddress b
+    STSTDADDR               	//  ownerAddress storage.jettonWalletCode b
+    ENDC                    	//  ownerAddress storage.jettonWalletCode '38
+    // 19: toShard: { fixedPrefixLength: SHARD_DEPTH, closeTo: ownerAddress }
+    8 PUSHINT               	//  '28 'USlot1 'USlot2 '27=8
+    s2 s2 XCPU              	//  '28 '27=8 'USlot2 'USlot1 '27=8
+    // 55: return calcDeployPriWallet(ownerAddress, treasury, minterAddress, jettonWalletCode)
+    // ...56: .calculateAddress()
+    NEWC
+    b{1} STSLICECONST
+    5 STU
+    b{0110} STSLICECONST
+    STREF
+    STREF
+    HASHBU                  	//  '28 '27=8 '43
+    248 PUSHPOW2DEC         	//  '28 '27=8 '43 '51
+    AND                     	//  '28 '27=8 '43
+    s1 s2 XCHG
+    11 PUSHINT              	//  '27=8 '28 '43 '56=11
+    s0 s3 XCHG2             	//  '43 '28 '56=11 '27=8
+    SDSUBSTR                	//  '43 '55
+    NEWC                    	//  '43 '55 '42
+    b{10000000000} STSLICECONST	//  '43 '55 '42
+    STSLICE                 	//  '43 '42
+    248 STU                 	//  '42
+    BTOS                    	//  '22
+  }>
+  // contracts/privateMinter/personal.tolk:305
+  get_next_admin_address() PROC:<{	// 
+    // 27: return PriStore.fromCell(contract.getData())
+    c4 PUSH                 	//  '8
+    // 306: val storage = lazy PriStore.load()
+    CTOS                    	//  lazyS
+    // 307: return storage.nextAdminAddress
+    LDGRAMS                 	//  '12 lazyS
+    NIP                     	//  lazyS
+    LDGRAMS                 	//  '13 lazyS
+    NIP                     	//  lazyS
+    LDSTDADDR               	//  '14 lazyS
+    NIP                     	//  lazyS
+    LDOPTSTDADDR            	//  '15 lazyS
+    DROP                    	//  storage.nextAdminAddress
+  }>
+}END>c
