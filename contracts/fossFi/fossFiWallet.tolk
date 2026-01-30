@@ -377,3 +377,7 @@ get fun get_wallet_data(): JettonWalletDataReply {
         jettonWalletCode: store.baseFiWalletCode, // init code
     };
 }
+
+get fun get_wallet_data_all(): FiWalletStore {
+    return FiWalletStore.load();
+}

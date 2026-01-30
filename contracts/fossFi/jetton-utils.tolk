@@ -95,19 +95,17 @@ fun address.connected(self, store: FiWalletStore) {
 }
 
 fun checkCorrectSenderInternal(sender: address, senderInitOwner: address, store: FiWalletStore) {
-    var addrs = lazy store.addresses.load();
-    var invitors = lazy addrs.nomInAddrs.load();
-
     // todo: sync version
-    
     if (sender == senderInitOwner.getAddrFiWallet(store)) {
         // invitees can also send
         assert (
             store.active
         ) throw ACCOUNT_INACTIVE; // active or invitingMsgOnly(seperateCheckIn InviteInternal)
     } else {
+        var addrs = lazy store.addresses.load();
         assert (sender == addrs.trustedJettonAddrs.load().minterAddr) throw ERROR_NOT_VALID_WALLET;
         if (!store.active) {
+            var invitors = lazy addrs.nomInAddrs.load();
             store.active = true;
             store.accountInitTime = blockchain.now();
             invitors.invitor = contract.getAddress(); // todo fixme or adapt logic for null also used after accClosed

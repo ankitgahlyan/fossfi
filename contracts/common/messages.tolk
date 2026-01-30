@@ -81,10 +81,10 @@ struct (0x7431f221) DropMinterAdmin {
 }
 
 struct (0x2508d66a) UpgradeAnyDataCode {
-    queryId: uint2
+    queryId: uint2 = 1
     sender: address
     walletVersion: uint10?
-    newData: cell?
+    newData: cell? = null
     newCode: cell?
 }
 

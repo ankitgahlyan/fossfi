@@ -1077,7 +1077,7 @@ PROGRAM{
                       IF:<{ 	//  store.latestFiWalletCode store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode
                         // 182: sendUpgradeMinter(in.senderAddress, store)
                         INMSG_SRC	//  store.latestFiWalletCode store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode '1094
-                        // 276: newData: null
+                        // 87: newData: cell? = null
                         PUSHNULL	//  store.latestFiWalletCode store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode '1094 '1110
                         // 267: val upgradeMsg = createMessage( { // bounce for collecting fees back
                         NEWC	//  store.latestFiWalletCode store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode '1094 '1110 refb
@@ -1105,7 +1105,7 @@ PROGRAM{
                         111 STUR	//  store.latestFiWalletCode store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode '1131 b
                         STREF	//  store.latestFiWalletCode store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode b
                         ENDC	//  store.latestFiWalletCode store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode upgradeMsg
-                        // 279: upgradeMsg.send(SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE | SEND_MODE_IGNORE_ERRORS)
+                        // 277: upgradeMsg.send(SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE | SEND_MODE_IGNORE_ERRORS)
                         66 PUSHINT	//  store.latestFiWalletCode store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode upgradeMsg '1190
                         SENDRAWMSG	//  store.latestFiWalletCode store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode
                       }>    	//  store.latestFiWalletCode store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode

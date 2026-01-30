@@ -4,6 +4,7 @@ PROGRAM{
   DECLPROC checkCorrectSenderInternal()
   0 DECLMETHOD onInternalMessage()
   97026 DECLMETHOD get_wallet_data()
+  122089 DECLMETHOD get_wallet_data_all()
   // 22 functions inlined in-place:
   // - calculateJettonWalletMinStorageFee (3 calls)
   // - forwardInitStateOverhead (1 call)
@@ -11,7 +12,7 @@ PROGRAM{
   // - checkAmountIsEnoughToBurn (1 call)
   // - SnakeString.unpackFromSlice (0 calls)
   // - SnakeString.packToBuilder (0 calls)
-  // - FiWalletStore.load (3 calls)
+  // - FiWalletStore.load (4 calls)
   // - FiWalletStore.save (2 calls)
   // - ForwardPayloadRemainder.checkIsCorrectTLBEither (1 call)
   // - PriWalletStore.load (1 call)
@@ -29,7 +30,7 @@ PROGRAM{
   // - MapEntry<address,coins>.loadValue (1 call)
   // contracts/fossFi/jetton-utils.tolk:97
   checkCorrectSenderInternal() PROC:<{	//  sender senderInitOwner store.jettonBalance store.txnCount store.status store.isAuthorityAccount store.creditNeed store.accumulatedFees store.debt store.debts store.connections store.active store.mintable store.accountInitTime store.version store.lastWeeklyAllowanceClaimTime store.id store.addresses store.maps store.baseFiWalletCode
-    // 98: var addrs = lazy store.addresses.load()
+    // 48: val addrs = lazy store.addresses.load()
     NIP                     	//  sender senderInitOwner store.jettonBalance store.txnCount store.status store.isAuthorityAccount store.creditNeed store.accumulatedFees store.debt store.debts store.connections store.active store.mintable store.accountInitTime store.version store.lastWeeklyAllowanceClaimTime store.id store.addresses store.baseFiWalletCode
     s8 s9 XCHG2
     7 BLKDROP               	//  sender senderInitOwner store.jettonBalance store.txnCount store.status store.isAuthorityAccount store.creditNeed store.accumulatedFees store.debt store.baseFiWalletCode store.addresses store.active
@@ -37,128 +38,121 @@ PROGRAM{
     s3 POP                  	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses
     DUP                     	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses store.addresses
     CTOS                    	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses lazyS
-    // 99: var invitors = lazy addrs.nomInAddrs.load()
-    LDREF                   	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses '29 lazyS
-    NIP                     	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses lazyS
-    PLDREF                  	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses addrs.trustedJettonAddrs
-    // 48: val addrs = lazy store.addresses.load()
-    SWAP                    	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs store.addresses
-    CTOS                    	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs lazyS
     // 49: return calcDeployFiWallet(
     // ...55: .calculateAddress()
-    LDSTDADDR               	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs '48 lazyS
-    NIP                     	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs lazyS
-    LDSTDADDR               	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs addrs.treasury lazyS
-    LDREF                   	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs addrs.treasury '50 lazyS
-    NIP                     	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs addrs.treasury lazyS
-    PLDREF                  	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs addrs.treasury addrs.trustedJettonAddrs
+    LDSTDADDR               	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses '30 lazyS
+    NIP                     	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses lazyS
+    LDSTDADDR               	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses addrs.treasury lazyS
+    LDREF                   	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses addrs.treasury '32 lazyS
+    NIP                     	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses addrs.treasury lazyS
+    PLDREF                  	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses addrs.treasury addrs.trustedJettonAddrs
     // 52: addrs.trustedJettonAddrs.load().minterAddr
-    CTOS                    	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs addrs.treasury s
-    LDSTDADDR               	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs addrs.treasury '55 s
-    LDOPTSTDADDR            	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs addrs.treasury '55 '56 s
-    NIP                     	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs addrs.treasury '55 s
-    LDOPTSTDADDR            	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs addrs.treasury '55 '57 s
-    NIP                     	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs addrs.treasury '55 s
-    LDOPTREF                	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs addrs.treasury '55 '58 s
-    NIP                     	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs addrs.treasury '55 s
-    ENDS                    	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs addrs.treasury '55
+    CTOS                    	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses addrs.treasury s
+    LDSTDADDR               	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses addrs.treasury '37 s
+    LDOPTSTDADDR            	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses addrs.treasury '37 '38 s
+    NIP                     	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses addrs.treasury '37 s
+    LDOPTSTDADDR            	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses addrs.treasury '37 '39 s
+    NIP                     	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses addrs.treasury '37 s
+    LDOPTREF                	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses addrs.treasury '37 '40 s
+    NIP                     	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses addrs.treasury '37 s
+    ENDS                    	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses addrs.treasury '37
     // 45: jettonBalance: coins = ton("1") // needed for semantic txn sending from wallet apps, adjusted in transfer
-    1000000000 PUSHINT      	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs addrs.treasury '55 '84=1000000000
+    1000000000 PUSHINT      	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses addrs.treasury '37 '66=1000000000
     // 35: id: createEmptyCell()
-    <b b> PUSHREF           	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs addrs.treasury '55 '84=1000000000 '98
+    <b b> PUSHREF           	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses addrs.treasury '37 '66=1000000000 '80
     // 4: nominee: address? = null
-    PUSHNULL                	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs addrs.treasury '55 '84=1000000000 '98 '99
+    PUSHNULL                	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses addrs.treasury '37 '66=1000000000 '80 '81
     // 5: invitor: address? = null
-    PUSHNULL                	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs addrs.treasury '55 '84=1000000000 '98 '99 '100
+    PUSHNULL                	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses addrs.treasury '37 '66=1000000000 '80 '81 '82
     // 6: invitor0: address? = null
-    PUSHNULL                	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs addrs.treasury '55 '84=1000000000 '98 '99 '100 '101
+    PUSHNULL                	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses addrs.treasury '37 '66=1000000000 '80 '81 '82 '83
     // 20: nomInAddrs: NomInAddrs {}.toCell()
     s0 s2 XCHG
-    NEWC                    	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs addrs.treasury '55 '84=1000000000 '98 '101 '100 '99 b
-    STOPTSTDADDR            	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs addrs.treasury '55 '84=1000000000 '98 '101 '100 b
-    STOPTSTDADDR            	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs addrs.treasury '55 '84=1000000000 '98 '101 b
-    STOPTSTDADDR            	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs addrs.treasury '55 '84=1000000000 '98 b
-    ENDC                    	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs addrs.treasury '55 '84=1000000000 '98 '104
+    NEWC                    	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses addrs.treasury '37 '66=1000000000 '80 '83 '82 '81 b
+    STOPTSTDADDR            	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses addrs.treasury '37 '66=1000000000 '80 '83 '82 b
+    STOPTSTDADDR            	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses addrs.treasury '37 '66=1000000000 '80 '83 b
+    STOPTSTDADDR            	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses addrs.treasury '37 '66=1000000000 '80 b
+    ENDC                    	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses addrs.treasury '37 '66=1000000000 '80 '86
     // 11: personalJettonMinter: address? = null
-    PUSHNULL                	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs addrs.treasury '55 '84=1000000000 '98 '104 '105
+    PUSHNULL                	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses addrs.treasury '37 '66=1000000000 '80 '86 '87
     // 12: personalJettonWallet: address? = null, // separately deployed & manually added by owner
-    PUSHNULL                	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs addrs.treasury '55 '84=1000000000 '98 '104 '105 '106
+    PUSHNULL                	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses addrs.treasury '37 '66=1000000000 '80 '86 '87 '88
     // 23: authorisedAccs: createEmptyMap()
-    NEWDICT                 	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs addrs.treasury '55 '84=1000000000 '98 '104 '105 '106 '107
+    NEWDICT                 	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses addrs.treasury '37 '66=1000000000 '80 '86 '87 '88 '89
     // 21: trustedJettonAddrs: TrustedAddrs
     // ...24: .toCell()
     s0 s6 XCHG
-    NEWC                    	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs addrs.treasury '107 '84=1000000000 '98 '104 '105 '106 '55 b
-    STSTDADDR               	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs addrs.treasury '107 '84=1000000000 '98 '104 '105 '106 b
-    s1 s2 XCHG              	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs addrs.treasury '107 '84=1000000000 '98 '104 '106 '105 b
-    STOPTSTDADDR            	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs addrs.treasury '107 '84=1000000000 '98 '104 '106 b
-    STOPTSTDADDR            	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs addrs.treasury '107 '84=1000000000 '98 '104 b
-    s1 s4 XCHG              	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs addrs.treasury '104 '84=1000000000 '98 '107 b
-    STOPTREF                	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs addrs.treasury '104 '84=1000000000 '98 b
-    ENDC                    	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs addrs.treasury '104 '84=1000000000 '98 '110
+    NEWC                    	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses addrs.treasury '89 '66=1000000000 '80 '86 '87 '88 '37 b
+    STSTDADDR               	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses addrs.treasury '89 '66=1000000000 '80 '86 '87 '88 b
+    s1 s2 XCHG              	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses addrs.treasury '89 '66=1000000000 '80 '86 '88 '87 b
+    STOPTSTDADDR            	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses addrs.treasury '89 '66=1000000000 '80 '86 '88 b
+    STOPTSTDADDR            	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses addrs.treasury '89 '66=1000000000 '80 '86 b
+    s1 s4 XCHG              	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses addrs.treasury '86 '66=1000000000 '80 '89 b
+    STOPTREF                	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses addrs.treasury '86 '66=1000000000 '80 b
+    ENDC                    	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses addrs.treasury '86 '66=1000000000 '80 '92
     // 16: addresses: Addresses
     // ...25: .toCell()
     s8 PUSH
-    NEWC                    	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs addrs.treasury '104 '84=1000000000 '98 '110 senderInitOwner b
-    STSTDADDR               	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs addrs.treasury '104 '84=1000000000 '98 '110 b
-    s1 s5 XCHG              	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs '110 '104 '84=1000000000 '98 addrs.treasury b
-    STSTDADDR               	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs '110 '104 '84=1000000000 '98 b
-    s8 s(-1) PUXC           	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs '110 '104 '84=1000000000 '98 senderInitOwner b
-    STSTDADDR               	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs '110 '104 '84=1000000000 '98 b
-    s1 s3 XCHG              	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs '110 '98 '84=1000000000 '104 b
-    STREF                   	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs '110 '98 '84=1000000000 b
-    s1 s3 XCHG              	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs '84=1000000000 '98 '110 b
-    STREF                   	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs '84=1000000000 '98 b
-    ENDC                    	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs '84=1000000000 '98 '113
+    NEWC                    	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses addrs.treasury '86 '66=1000000000 '80 '92 senderInitOwner b
+    STSTDADDR               	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses addrs.treasury '86 '66=1000000000 '80 '92 b
+    s1 s5 XCHG              	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses '92 '86 '66=1000000000 '80 addrs.treasury b
+    STSTDADDR               	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses '92 '86 '66=1000000000 '80 b
+    s8 s(-1) PUXC           	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses '92 '86 '66=1000000000 '80 senderInitOwner b
+    STSTDADDR               	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses '92 '86 '66=1000000000 '80 b
+    s1 s3 XCHG              	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses '92 '80 '66=1000000000 '86 b
+    STREF                   	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses '92 '80 '66=1000000000 b
+    s1 s3 XCHG              	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses '66=1000000000 '80 '92 b
+    STREF                   	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses '66=1000000000 '80 b
+    ENDC                    	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses '66=1000000000 '80 '95
     // 27: friends: createEmptyMap()
-    NEWDICT                 	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs '84=1000000000 '98 '113 '114
+    NEWDICT                 	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses '66=1000000000 '80 '95 '96
     // 28: followers: createEmptyMap()
-    NEWDICT                 	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs '84=1000000000 '98 '113 '114 '115
+    NEWDICT                 	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses '66=1000000000 '80 '95 '96 '97
     // 29: followings: createEmptyMap()
-    NEWDICT                 	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs '84=1000000000 '98 '113 '114 '115 '116
+    NEWDICT                 	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses '66=1000000000 '80 '95 '96 '97 '98
     // 30: invited: createEmptyMap()
-    NEWDICT                 	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs '84=1000000000 '98 '113 '114 '115 '116 '117
+    NEWDICT                 	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses '66=1000000000 '80 '95 '96 '97 '98 '99
     // 31: allowances: createEmptyMap()
-    NEWDICT                 	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs '84=1000000000 '98 '113 '114 '115 '116 '117 '118
+    NEWDICT                 	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses '66=1000000000 '80 '95 '96 '97 '98 '99 '100
     // 32: debts: createEmptyMap()
-    NEWDICT                 	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs '84=1000000000 '98 '113 '114 '115 '116 '117 '118 '119
+    NEWDICT                 	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses '66=1000000000 '80 '95 '96 '97 '98 '99 '100 '101
     // 33: reportInfo: ReportInfo { reports: createEmptyMap() }.toCell()
-    NEWDICT                 	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs '84=1000000000 '98 '113 '114 '115 '116 '117 '118 '119 '120
-    NEWC                    	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs '84=1000000000 '98 '113 '114 '115 '116 '117 '118 '119 '120 b
-    STOPTREF                	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs '84=1000000000 '98 '113 '114 '115 '116 '117 '118 '119 b
+    NEWDICT                 	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses '66=1000000000 '80 '95 '96 '97 '98 '99 '100 '101 '102
+    NEWC                    	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses '66=1000000000 '80 '95 '96 '97 '98 '99 '100 '101 '102 b
+    STOPTREF                	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses '66=1000000000 '80 '95 '96 '97 '98 '99 '100 '101 b
     0 PUSHINT
-    53 STUR                 	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs '84=1000000000 '98 '113 '114 '115 '116 '117 '118 '119 b
-    ENDC                    	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs '84=1000000000 '98 '113 '114 '115 '116 '117 '118 '119 '130
+    53 STUR                 	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses '66=1000000000 '80 '95 '96 '97 '98 '99 '100 '101 b
+    ENDC                    	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses '66=1000000000 '80 '95 '96 '97 '98 '99 '100 '101 '112
     // 26: maps: Maps
     // ...34: .toCell()
     s0 s6 XCHG
-    NEWC                    	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs '84=1000000000 '98 '113 '130 '115 '116 '117 '118 '119 '114 b
-    STOPTREF                	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs '84=1000000000 '98 '113 '130 '115 '116 '117 '118 '119 b
-    s1 s5 XCHG              	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs '84=1000000000 '98 '113 '130 '119 '116 '117 '118 '115 b
-    STOPTREF                	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs '84=1000000000 '98 '113 '130 '119 '116 '117 '118 b
-    s1 s3 XCHG              	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs '84=1000000000 '98 '113 '130 '119 '118 '117 '116 b
-    STOPTREF                	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs '84=1000000000 '98 '113 '130 '119 '118 '117 b
-    STOPTREF                	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs '84=1000000000 '98 '113 '130 '119 '118 b
-    STOPTREF                	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs '84=1000000000 '98 '113 '130 '119 b
-    STOPTREF                	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs '84=1000000000 '98 '113 '130 b
-    STREF                   	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs '84=1000000000 '98 '113 b
-    ENDC                    	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs '84=1000000000 '98 '113 '133
+    NEWC                    	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses '66=1000000000 '80 '95 '112 '97 '98 '99 '100 '101 '96 b
+    STOPTREF                	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses '66=1000000000 '80 '95 '112 '97 '98 '99 '100 '101 b
+    s1 s5 XCHG              	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses '66=1000000000 '80 '95 '112 '101 '98 '99 '100 '97 b
+    STOPTREF                	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses '66=1000000000 '80 '95 '112 '101 '98 '99 '100 b
+    s1 s3 XCHG              	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses '66=1000000000 '80 '95 '112 '101 '100 '99 '98 b
+    STOPTREF                	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses '66=1000000000 '80 '95 '112 '101 '100 '99 b
+    STOPTREF                	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses '66=1000000000 '80 '95 '112 '101 '100 b
+    STOPTREF                	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses '66=1000000000 '80 '95 '112 '101 b
+    STOPTREF                	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses '66=1000000000 '80 '95 '112 b
+    STREF                   	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses '66=1000000000 '80 '95 b
+    ENDC                    	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses '66=1000000000 '80 '95 '115
     // 15: val emptyFiWalletStore: FiWalletStore =
-    s5 PUSH                 	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs emptyFiWalletStore.jettonBalance=1000000000 emptyFiWalletStore.id emptyFiWalletStore.addresses emptyFiWalletStore.maps emptyFiWalletStore.baseFiWalletCode
+    s5 PUSH                 	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses emptyFiWalletStore.jettonBalance=1000000000 emptyFiWalletStore.id emptyFiWalletStore.addresses emptyFiWalletStore.maps emptyFiWalletStore.baseFiWalletCode
     // 41: stateInit: { code: baseFiWalletCode, data: emptyFiWalletStore.toCell() }
-    NEWC                    	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs emptyFiWalletStore.jettonBalance=1000000000 emptyFiWalletStore.id emptyFiWalletStore.addresses emptyFiWalletStore.maps emptyFiWalletStore.baseFiWalletCode b
-    s0 s5 XCHG2             	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs emptyFiWalletStore.baseFiWalletCode emptyFiWalletStore.id emptyFiWalletStore.addresses emptyFiWalletStore.maps b emptyFiWalletStore.jettonBalance=1000000000
-    STGRAMS                 	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs emptyFiWalletStore.baseFiWalletCode emptyFiWalletStore.id emptyFiWalletStore.addresses emptyFiWalletStore.maps b
-    x{000000004000000000000000000} STSLICECONST	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs emptyFiWalletStore.baseFiWalletCode emptyFiWalletStore.id emptyFiWalletStore.addresses emptyFiWalletStore.maps b
-    s1 s3 XCHG              	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs emptyFiWalletStore.baseFiWalletCode emptyFiWalletStore.maps emptyFiWalletStore.addresses emptyFiWalletStore.id b
-    STREF                   	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs emptyFiWalletStore.baseFiWalletCode emptyFiWalletStore.maps emptyFiWalletStore.addresses b
-    STREF                   	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs emptyFiWalletStore.baseFiWalletCode emptyFiWalletStore.maps b
-    STREF                   	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs emptyFiWalletStore.baseFiWalletCode b
-    STREF                   	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs b
-    ENDC                    	//  sender senderInitOwner store.active store.baseFiWalletCode addrs.trustedJettonAddrs '143
+    NEWC                    	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses emptyFiWalletStore.jettonBalance=1000000000 emptyFiWalletStore.id emptyFiWalletStore.addresses emptyFiWalletStore.maps emptyFiWalletStore.baseFiWalletCode b
+    s0 s5 XCHG2             	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses emptyFiWalletStore.baseFiWalletCode emptyFiWalletStore.id emptyFiWalletStore.addresses emptyFiWalletStore.maps b emptyFiWalletStore.jettonBalance=1000000000
+    STGRAMS                 	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses emptyFiWalletStore.baseFiWalletCode emptyFiWalletStore.id emptyFiWalletStore.addresses emptyFiWalletStore.maps b
+    x{000000004000000000000000000} STSLICECONST	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses emptyFiWalletStore.baseFiWalletCode emptyFiWalletStore.id emptyFiWalletStore.addresses emptyFiWalletStore.maps b
+    s1 s3 XCHG              	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses emptyFiWalletStore.baseFiWalletCode emptyFiWalletStore.maps emptyFiWalletStore.addresses emptyFiWalletStore.id b
+    STREF                   	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses emptyFiWalletStore.baseFiWalletCode emptyFiWalletStore.maps emptyFiWalletStore.addresses b
+    STREF                   	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses emptyFiWalletStore.baseFiWalletCode emptyFiWalletStore.maps b
+    STREF                   	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses emptyFiWalletStore.baseFiWalletCode b
+    STREF                   	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses b
+    ENDC                    	//  sender senderInitOwner store.active store.baseFiWalletCode store.addresses '125
     // 42: toShard: { fixedPrefixLength: SHARD_DEPTH, closeTo: ownerAddress }, // todo: initialOwnerAddr?
-    8 PUSHINT               	//  sender '64 store.active 'USlot1 addrs.trustedJettonAddrs 'USlot2 '63=8
-    s3 s3 XCPU              	//  sender '64 store.active '63=8 addrs.trustedJettonAddrs 'USlot2 'USlot1 '63=8
+    8 PUSHINT               	//  sender '46 store.active 'USlot1 store.addresses 'USlot2 '45=8
+    s3 s3 XCPU              	//  sender '46 store.active '45=8 store.addresses 'USlot2 'USlot1 '45=8
     // 49: return calcDeployFiWallet(
     // ...55: .calculateAddress()
     NEWC
@@ -167,42 +161,47 @@ PROGRAM{
     b{0110} STSLICECONST
     STREF
     STREF
-    HASHBU                  	//  sender '64 store.active '63=8 addrs.trustedJettonAddrs '148
-    248 PUSHPOW2DEC         	//  sender '64 store.active '63=8 addrs.trustedJettonAddrs '148 '156
-    AND                     	//  sender '64 store.active '63=8 addrs.trustedJettonAddrs '148
+    HASHBU                  	//  sender '46 store.active '45=8 store.addresses '130
+    248 PUSHPOW2DEC         	//  sender '46 store.active '45=8 store.addresses '130 '138
+    AND                     	//  sender '46 store.active '45=8 store.addresses '130
     s1 s4 XCHG
-    11 PUSHINT              	//  sender addrs.trustedJettonAddrs store.active '63=8 '64 '148 '161=11
-    s0 s3 XCHG2             	//  sender addrs.trustedJettonAddrs store.active '148 '64 '161=11 '63=8
-    SDSUBSTR                	//  sender addrs.trustedJettonAddrs store.active '148 '160
-    NEWC                    	//  sender addrs.trustedJettonAddrs store.active '148 '160 '147
-    b{10000000000} STSLICECONST	//  sender addrs.trustedJettonAddrs store.active '148 '160 '147
-    STSLICE                 	//  sender addrs.trustedJettonAddrs store.active '148 '147
-    248 STU                 	//  sender addrs.trustedJettonAddrs store.active '147
-    BTOS                    	//  sender addrs.trustedJettonAddrs store.active '38
-    // 103: if (sender == senderInitOwner.getAddrFiWallet(store))
-    s3 PUSH                 	//  sender addrs.trustedJettonAddrs store.active '38 sender
-    SDEQ                    	//  sender addrs.trustedJettonAddrs store.active '173
-    IFJMP:<{                	//  sender addrs.trustedJettonAddrs store.active
+    11 PUSHINT              	//  sender store.addresses store.active '45=8 '46 '130 '143=11
+    s0 s3 XCHG2             	//  sender store.addresses store.active '130 '46 '143=11 '45=8
+    SDSUBSTR                	//  sender store.addresses store.active '130 '142
+    NEWC                    	//  sender store.addresses store.active '130 '142 '129
+    b{10000000000} STSLICECONST	//  sender store.addresses store.active '130 '142 '129
+    STSLICE                 	//  sender store.addresses store.active '130 '129
+    248 STU                 	//  sender store.addresses store.active '129
+    BTOS                    	//  sender store.addresses store.active '20
+    // 99: if (sender == senderInitOwner.getAddrFiWallet(store))
+    s3 PUSH                 	//  sender store.addresses store.active '20 sender
+    SDEQ                    	//  sender store.addresses store.active '155
+    IFJMP:<{                	//  sender store.addresses store.active
       2 1 BLKDROP2          	//  store.active
-      // 105: assert (
-      // ...107: ) throw ACCOUNT_INACTIVE
+      // 101: assert (
+      // ...103: ) throw ACCOUNT_INACTIVE
       702 THROWIFNOT        	// 
-    }>                      	//  sender addrs.trustedJettonAddrs store.active
-    // 109: assert (sender == addrs.trustedJettonAddrs.load().minterAddr) throw ERROR_NOT_VALID_WALLET
-    SWAP                    	//  sender store.active addrs.trustedJettonAddrs
+    }>                      	//  sender store.addresses store.active
+    // 105: var addrs = lazy store.addresses.load()
+    SWAP                    	//  sender store.active store.addresses
+    CTOS                    	//  sender store.active lazyS
+    // 106: assert (sender == addrs.trustedJettonAddrs.load().minterAddr) throw ERROR_NOT_VALID_WALLET
+    LDREF                   	//  sender store.active '166 lazyS
+    NIP                     	//  sender store.active lazyS
+    PLDREF                  	//  sender store.active addrs.trustedJettonAddrs
     CTOS                    	//  sender store.active s
-    LDSTDADDR               	//  sender store.active '179 s
-    LDOPTSTDADDR            	//  sender store.active '179 '180 s
-    NIP                     	//  sender store.active '179 s
-    LDOPTSTDADDR            	//  sender store.active '179 '181 s
-    NIP                     	//  sender store.active '179 s
-    LDOPTREF                	//  sender store.active '179 '182 s
-    NIP                     	//  sender store.active '179 s
-    ENDS                    	//  sender store.active '179
-    s1 s2 XCHG              	//  store.active sender '179
-    SDEQ                    	//  store.active '183
+    LDSTDADDR               	//  sender store.active '172 s
+    LDOPTSTDADDR            	//  sender store.active '172 '173 s
+    NIP                     	//  sender store.active '172 s
+    LDOPTSTDADDR            	//  sender store.active '172 '174 s
+    NIP                     	//  sender store.active '172 s
+    LDOPTREF                	//  sender store.active '172 '175 s
+    NIP                     	//  sender store.active '172 s
+    ENDS                    	//  sender store.active '172
+    s1 s2 XCHG              	//  store.active sender '172
+    SDEQ                    	//  store.active '176
     74 THROWIFNOT           	//  store.active
-    // 110: if (!store.active)
+    // 107: if (!store.active)
     IFNOT:<{                	// 
     }>                      	// 
   }>
@@ -981,10 +980,10 @@ PROGRAM{
               // 59: val addrs = lazy store.addresses.load()
               s0 s4 XCHG    	//  '759 msg.USlot11 store.jettonBalance store.txnCount store.status store.isAuthorityAccount store.creditNeed store.accumulatedFees store.debt store.debts store.connections store.active store.mintable store.accountInitTime store.version store.lastWeeklyAllowanceClaimTime store.id '163 '758=8 store.maps 'USlot1 'USlot2 store.addresses
               CTOS          	//  '759 msg.USlot11 store.jettonBalance store.txnCount store.status store.isAuthorityAccount store.creditNeed store.accumulatedFees store.debt store.debts store.connections store.active store.mintable store.accountInitTime store.version store.lastWeeklyAllowanceClaimTime store.id '163 '758=8 store.maps 'USlot1 'USlot2 lazyS
-              // 186: val reports = lazy store.maps.load()
+              // 184: val reports = lazy store.maps.load()
               s0 s3 XCHG    	//  '759 msg.USlot11 store.jettonBalance store.txnCount store.status store.isAuthorityAccount store.creditNeed store.accumulatedFees store.debt store.debts store.connections store.active store.mintable store.accountInitTime store.version store.lastWeeklyAllowanceClaimTime store.id '163 '758=8 lazyS 'USlot1 'USlot2 store.maps
               CTOS          	//  '759 msg.USlot11 store.jettonBalance store.txnCount store.status store.isAuthorityAccount store.creditNeed store.accumulatedFees store.debt store.debts store.connections store.active store.mintable store.accountInitTime store.version store.lastWeeklyAllowanceClaimTime store.id '163 '758=8 lazyS 'USlot1 'USlot2 lazyS
-              // 187: val reportInfo = lazy reports.reportInfo.load()
+              // 185: val reportInfo = lazy reports.reportInfo.load()
               SKIPOPTREF    	//  '759 msg.USlot11 store.jettonBalance store.txnCount store.status store.isAuthorityAccount store.creditNeed store.accumulatedFees store.debt store.debts store.connections store.active store.mintable store.accountInitTime store.version store.lastWeeklyAllowanceClaimTime store.id '163 '758=8 lazyS 'USlot1 'USlot2 lazyS
               SKIPOPTREF    	//  '759 msg.USlot11 store.jettonBalance store.txnCount store.status store.isAuthorityAccount store.creditNeed store.accumulatedFees store.debt store.debts store.connections store.active store.mintable store.accountInitTime store.version store.lastWeeklyAllowanceClaimTime store.id '163 '758=8 lazyS 'USlot1 'USlot2 lazyS
               SKIPOPTREF    	//  '759 msg.USlot11 store.jettonBalance store.txnCount store.status store.isAuthorityAccount store.creditNeed store.accumulatedFees store.debt store.debts store.connections store.active store.mintable store.accountInitTime store.version store.lastWeeklyAllowanceClaimTime store.id '163 '758=8 lazyS 'USlot1 'USlot2 lazyS
@@ -993,11 +992,11 @@ PROGRAM{
               SKIPOPTREF    	//  '759 msg.USlot11 store.jettonBalance store.txnCount store.status store.isAuthorityAccount store.creditNeed store.accumulatedFees store.debt store.debts store.connections store.active store.mintable store.accountInitTime store.version store.lastWeeklyAllowanceClaimTime store.id '163 '758=8 lazyS 'USlot1 'USlot2 lazyS
               PLDREF        	//  '759 msg.USlot11 store.jettonBalance store.txnCount store.status store.isAuthorityAccount store.creditNeed store.accumulatedFees store.debt store.debts store.connections store.active store.mintable store.accountInitTime store.version store.lastWeeklyAllowanceClaimTime store.id '163 '758=8 lazyS 'USlot1 'USlot2 reports.reportInfo
               CTOS          	//  '759 msg.USlot11 store.jettonBalance store.txnCount store.status store.isAuthorityAccount store.creditNeed store.accumulatedFees store.debt store.debts store.connections store.active store.mintable store.accountInitTime store.version store.lastWeeklyAllowanceClaimTime store.id '163 '758=8 lazyS 'USlot1 'USlot2 lazyS
-              // 188: assert (
-              // ...190: ) throw ACCOUNT_INACTIVE
+              // 186: assert (
+              // ...188: ) throw ACCOUNT_INACTIVE
               s11 PUSH      	//  '759 msg.USlot11 store.jettonBalance store.txnCount store.status store.isAuthorityAccount store.creditNeed store.accumulatedFees store.debt store.debts store.connections store.active store.mintable store.accountInitTime store.version store.lastWeeklyAllowanceClaimTime store.id '163 '758=8 lazyS 'USlot1 'USlot2 lazyS store.active
               702 THROWIFNOT	//  '759 msg.USlot11 store.jettonBalance store.txnCount store.status store.isAuthorityAccount store.creditNeed store.accumulatedFees store.debt store.debts store.connections store.active store.mintable store.accountInitTime store.version store.lastWeeklyAllowanceClaimTime store.id '163 '758=8 lazyS 'USlot1 'USlot2 lazyS
-              // 191: assert (reportInfo.reporterCount < 1) throw ALREADY_REPORTED; // reported IDs can't act
+              // 189: assert (reportInfo.reporterCount < 1) throw ALREADY_REPORTED; // reported IDs can't act
               SKIPOPTREF    	//  '759 msg.USlot11 store.jettonBalance store.txnCount store.status store.isAuthorityAccount store.creditNeed store.accumulatedFees store.debt store.debts store.connections store.active store.mintable store.accountInitTime store.version store.lastWeeklyAllowanceClaimTime store.id '163 '758=8 lazyS 'USlot1 'USlot2 lazyS
               1 LDU
               NIP           	//  '759 msg.USlot11 store.jettonBalance store.txnCount store.status store.isAuthorityAccount store.creditNeed store.accumulatedFees store.debt store.debts store.connections store.active store.mintable store.accountInitTime store.version store.lastWeeklyAllowanceClaimTime store.id '163 '758=8 lazyS 'USlot1 'USlot2 lazyS
@@ -1077,7 +1076,7 @@ PROGRAM{
               230000000 PUSHINT	//  addrs.treasury msg.USlot7 store.jettonBalance store.txnCount store.status store.isAuthorityAccount store.creditNeed store.accumulatedFees store.debt store.debts store.connections store.active store.mintable store.accountInitTime store.version store.lastWeeklyAllowanceClaimTime store.id '163 store.addresses msg.USlot6 store.baseFiWalletCode addrs.initialOwnerAddr msg.USlot6 '1018=230000000
               EQUAL         	//  addrs.treasury msg.USlot7 store.jettonBalance store.txnCount store.status store.isAuthorityAccount store.creditNeed store.accumulatedFees store.debt store.debts store.connections store.active store.mintable store.accountInitTime store.version store.lastWeeklyAllowanceClaimTime store.id '163 store.addresses msg.USlot6 store.baseFiWalletCode addrs.initialOwnerAddr '1019
               IF:<{         	//  addrs.treasury msg.USlot7 store.jettonBalance store.txnCount store.status store.isAuthorityAccount store.creditNeed store.accumulatedFees store.debt store.debts store.connections store.active store.mintable store.accountInitTime store.version store.lastWeeklyAllowanceClaimTime store.id '163 store.addresses msg.USlot6 store.baseFiWalletCode addrs.initialOwnerAddr
-                // 202: assert (store.active) throw ACCOUNT_INACTIVE
+                // 200: assert (store.active) throw ACCOUNT_INACTIVE
                 DROP        	//  addrs.treasury msg.USlot7 store.jettonBalance store.txnCount store.status store.isAuthorityAccount store.creditNeed store.accumulatedFees store.debt store.debts store.connections store.active store.mintable store.accountInitTime store.version store.lastWeeklyAllowanceClaimTime store.id '163 store.addresses msg.USlot6 store.baseFiWalletCode
                 NIP         	//  addrs.treasury msg.USlot7 store.jettonBalance store.txnCount store.status store.isAuthorityAccount store.creditNeed store.accumulatedFees store.debt store.debts store.connections store.active store.mintable store.accountInitTime store.version store.lastWeeklyAllowanceClaimTime store.id '163 store.addresses store.baseFiWalletCode
                 19 s() POP  	//  store.baseFiWalletCode msg.USlot7 store.jettonBalance store.txnCount store.status store.isAuthorityAccount store.creditNeed store.accumulatedFees store.debt store.debts store.connections store.active store.mintable store.accountInitTime store.version store.lastWeeklyAllowanceClaimTime store.id '163 store.addresses
@@ -1224,17 +1223,17 @@ PROGRAM{
                 s1 17 s() XCHG	//  store.id '163 store.jettonBalance store.txnCount store.status store.isAuthorityAccount store.creditNeed store.accumulatedFees store.debt store.debts store.connections store.active store.mintable store.accountInitTime store.version store.lastWeeklyAllowanceClaimTime '1134 '1133
                 248 STU     	//  store.id '163 store.jettonBalance store.txnCount store.status store.isAuthorityAccount store.creditNeed store.accumulatedFees store.debt store.debts store.connections store.active store.mintable store.accountInitTime store.version store.lastWeeklyAllowanceClaimTime '1133
                 BTOS        	//  store.id '163 store.jettonBalance store.txnCount store.status store.isAuthorityAccount store.creditNeed store.accumulatedFees store.debt store.debts store.connections store.active store.mintable store.accountInitTime store.version store.lastWeeklyAllowanceClaimTime 'USlot7
-                // 203: val internalDeActivate = createMessage(
+                // 201: val internalDeActivate = createMessage(
                 NEWC        	//  store.id '163 store.jettonBalance store.txnCount store.status store.isAuthorityAccount store.creditNeed store.accumulatedFees store.debt store.debts store.connections store.active store.mintable store.accountInitTime store.version store.lastWeeklyAllowanceClaimTime 'USlot7 b
                 b{011000} STSLICECONST	//  store.id '163 store.jettonBalance store.txnCount store.status store.isAuthorityAccount store.creditNeed store.accumulatedFees store.debt store.debts store.connections store.active store.mintable store.accountInitTime store.version store.lastWeeklyAllowanceClaimTime 'USlot7 b
                 STSTDADDR   	//  store.id '163 store.jettonBalance store.txnCount store.status store.isAuthorityAccount store.creditNeed store.accumulatedFees store.debt store.debts store.connections store.active store.mintable store.accountInitTime store.version store.lastWeeklyAllowanceClaimTime b
                 2 PUSHINT
                 115 STUR    	//  store.id '163 store.jettonBalance store.txnCount store.status store.isAuthorityAccount store.creditNeed store.accumulatedFees store.debt store.debts store.connections store.active store.mintable store.accountInitTime store.version store.lastWeeklyAllowanceClaimTime b
                 ENDC        	//  store.id '163 store.jettonBalance store.txnCount store.status store.isAuthorityAccount store.creditNeed store.accumulatedFees store.debt store.debts store.connections store.active store.mintable store.accountInitTime store.version store.lastWeeklyAllowanceClaimTime internalDeActivate
-                // 209: internalDeActivate.send(SEND_MODE_BOUNCE_ON_ACTION_FAIL |
-                // ...210: SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE
+                // 207: internalDeActivate.send(SEND_MODE_BOUNCE_ON_ACTION_FAIL |
+                // ...208: SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE
                 80 PUSHINT  	//  store.id '163 store.jettonBalance store.txnCount store.status store.isAuthorityAccount store.creditNeed store.accumulatedFees store.debt store.debts store.connections store.active store.mintable store.accountInitTime store.version store.lastWeeklyAllowanceClaimTime internalDeActivate '1250
-                // 210: SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE)
+                // 208: SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE)
                 SENDRAWMSG  	//  store.id '163 store.jettonBalance store.txnCount store.status store.isAuthorityAccount store.creditNeed store.accumulatedFees store.debt store.debts store.connections store.active store.mintable store.accountInitTime store.version store.lastWeeklyAllowanceClaimTime
               }>ELSE<{      	//  addrs.treasury msg.USlot7 store.jettonBalance store.txnCount store.status store.isAuthorityAccount store.creditNeed store.accumulatedFees store.debt store.debts store.connections store.active store.mintable store.accountInitTime store.version store.lastWeeklyAllowanceClaimTime store.id '163 store.addresses msg.USlot6 store.baseFiWalletCode addrs.initialOwnerAddr
                 // 228: ton("0.999") =>
@@ -1243,13 +1242,13 @@ PROGRAM{
                 EQUAL       	//  addrs.treasury msg.USlot7 store.jettonBalance store.txnCount store.status store.isAuthorityAccount store.creditNeed store.accumulatedFees store.debt store.debts store.connections store.active store.mintable store.accountInitTime store.version store.lastWeeklyAllowanceClaimTime store.id '163 store.addresses msg.USlot6 store.baseFiWalletCode addrs.initialOwnerAddr '1252
                 IF:<{       	//  addrs.treasury msg.USlot7 store.jettonBalance store.txnCount store.status store.isAuthorityAccount store.creditNeed store.accumulatedFees store.debt store.debts store.connections store.active store.mintable store.accountInitTime store.version store.lastWeeklyAllowanceClaimTime store.id '163 store.addresses msg.USlot6 store.baseFiWalletCode addrs.initialOwnerAddr
                   3 BLKDROP 	//  addrs.treasury msg.USlot7 store.jettonBalance store.txnCount store.status store.isAuthorityAccount store.creditNeed store.accumulatedFees store.debt store.debts store.connections store.active store.mintable store.accountInitTime store.version store.lastWeeklyAllowanceClaimTime store.id '163 store.addresses
-                  // 215: val addrs = lazy store.addresses.load()
+                  // 213: val addrs = lazy store.addresses.load()
                   17 s() POP	//  addrs.treasury store.addresses store.jettonBalance store.txnCount store.status store.isAuthorityAccount store.creditNeed store.accumulatedFees store.debt store.debts store.connections store.active store.mintable store.accountInitTime store.version store.lastWeeklyAllowanceClaimTime store.id '163
                   17 s() POP	//  '163 store.addresses store.jettonBalance store.txnCount store.status store.isAuthorityAccount store.creditNeed store.accumulatedFees store.debt store.debts store.connections store.active store.mintable store.accountInitTime store.version store.lastWeeklyAllowanceClaimTime store.id
                   s0 s15 XCHG	//  '163 store.id store.jettonBalance store.txnCount store.status store.isAuthorityAccount store.creditNeed store.accumulatedFees store.debt store.debts store.connections store.active store.mintable store.accountInitTime store.version store.lastWeeklyAllowanceClaimTime store.addresses
                   CTOS      	//  '163 store.id store.jettonBalance store.txnCount store.status store.isAuthorityAccount store.creditNeed store.accumulatedFees store.debt store.debts store.connections store.active store.mintable store.accountInitTime store.version store.lastWeeklyAllowanceClaimTime lazyS
-                  // 216: createMessage(
-                  // ...222: .send(SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE | SEND_MODE_IGNORE_ERRORS)
+                  // 214: createMessage(
+                  // ...220: .send(SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE | SEND_MODE_IGNORE_ERRORS)
                   LDSTDADDR 	//  '163 store.id store.jettonBalance store.txnCount store.status store.isAuthorityAccount store.creditNeed store.accumulatedFees store.debt store.debts store.connections store.active store.mintable store.accountInitTime store.version store.lastWeeklyAllowanceClaimTime '1262 lazyS
                   NIP       	//  '163 store.id store.jettonBalance store.txnCount store.status store.isAuthorityAccount store.creditNeed store.accumulatedFees store.debt store.debts store.connections store.active store.mintable store.accountInitTime store.version store.lastWeeklyAllowanceClaimTime lazyS
                   LDSTDADDR 	//  '163 store.id store.jettonBalance store.txnCount store.status store.isAuthorityAccount store.creditNeed store.accumulatedFees store.debt store.debts store.connections store.active store.mintable store.accountInitTime store.version store.lastWeeklyAllowanceClaimTime '1263 lazyS
@@ -1258,7 +1257,7 @@ PROGRAM{
                   LDREF     	//  '163 store.id store.jettonBalance store.txnCount store.status store.isAuthorityAccount store.creditNeed store.accumulatedFees store.debt store.debts store.connections store.active store.mintable store.accountInitTime store.version store.lastWeeklyAllowanceClaimTime addrs.initialOwnerAddr '1265 lazyS
                   NIP       	//  '163 store.id store.jettonBalance store.txnCount store.status store.isAuthorityAccount store.creditNeed store.accumulatedFees store.debt store.debts store.connections store.active store.mintable store.accountInitTime store.version store.lastWeeklyAllowanceClaimTime addrs.initialOwnerAddr lazyS
                   PLDREF    	//  '163 store.id store.jettonBalance store.txnCount store.status store.isAuthorityAccount store.creditNeed store.accumulatedFees store.debt store.debts store.connections store.active store.mintable store.accountInitTime store.version store.lastWeeklyAllowanceClaimTime addrs.initialOwnerAddr addrs.trustedJettonAddrs
-                  // 217: dest: addrs.trustedJettonAddrs.load().minterAddr
+                  // 215: dest: addrs.trustedJettonAddrs.load().minterAddr
                   CTOS      	//  '163 store.id store.jettonBalance store.txnCount store.status store.isAuthorityAccount store.creditNeed store.accumulatedFees store.debt store.debts store.connections store.active store.mintable store.accountInitTime store.version store.lastWeeklyAllowanceClaimTime addrs.initialOwnerAddr s
                   LDSTDADDR 	//  '163 store.id store.jettonBalance store.txnCount store.status store.isAuthorityAccount store.creditNeed store.accumulatedFees store.debt store.debts store.connections store.active store.mintable store.accountInitTime store.version store.lastWeeklyAllowanceClaimTime addrs.initialOwnerAddr '1275 s
                   LDOPTSTDADDR	//  '163 store.id store.jettonBalance store.txnCount store.status store.isAuthorityAccount store.creditNeed store.accumulatedFees store.debt store.debts store.connections store.active store.mintable store.accountInitTime store.version store.lastWeeklyAllowanceClaimTime addrs.initialOwnerAddr '1275 '1276 s
@@ -1268,7 +1267,7 @@ PROGRAM{
                   LDOPTREF  	//  '163 store.id store.jettonBalance store.txnCount store.status store.isAuthorityAccount store.creditNeed store.accumulatedFees store.debt store.debts store.connections store.active store.mintable store.accountInitTime store.version store.lastWeeklyAllowanceClaimTime addrs.initialOwnerAddr '1275 '1278 s
                   NIP       	//  '163 store.id store.jettonBalance store.txnCount store.status store.isAuthorityAccount store.creditNeed store.accumulatedFees store.debt store.debts store.connections store.active store.mintable store.accountInitTime store.version store.lastWeeklyAllowanceClaimTime addrs.initialOwnerAddr '1275 s
                   ENDS      	//  '163 store.id store.jettonBalance store.txnCount store.status store.isAuthorityAccount store.creditNeed store.accumulatedFees store.debt store.debts store.connections store.active store.mintable store.accountInitTime store.version store.lastWeeklyAllowanceClaimTime addrs.initialOwnerAddr '1275
-                  // 216: createMessage(
+                  // 214: createMessage(
                   NEWC      	//  '163 store.id store.jettonBalance store.txnCount store.status store.isAuthorityAccount store.creditNeed store.accumulatedFees store.debt store.debts store.connections store.active store.mintable store.accountInitTime store.version store.lastWeeklyAllowanceClaimTime addrs.initialOwnerAddr '1275 b
                   b{010000} STSLICECONST	//  '163 store.id store.jettonBalance store.txnCount store.status store.isAuthorityAccount store.creditNeed store.accumulatedFees store.debt store.debts store.connections store.active store.mintable store.accountInitTime store.version store.lastWeeklyAllowanceClaimTime addrs.initialOwnerAddr '1275 b
                   STSTDADDR 	//  '163 store.id store.jettonBalance store.txnCount store.status store.isAuthorityAccount store.creditNeed store.accumulatedFees store.debt store.debts store.connections store.active store.mintable store.accountInitTime store.version store.lastWeeklyAllowanceClaimTime addrs.initialOwnerAddr b
@@ -1278,10 +1277,10 @@ PROGRAM{
                   s2 PUSH   	//  '163 store.id store.jettonBalance store.txnCount store.status store.isAuthorityAccount store.creditNeed store.accumulatedFees store.debt store.debts store.connections store.active store.mintable store.accountInitTime store.version store.lastWeeklyAllowanceClaimTime b store.version
                   10 STUR   	//  '163 store.id store.jettonBalance store.txnCount store.status store.isAuthorityAccount store.creditNeed store.accumulatedFees store.debt store.debts store.connections store.active store.mintable store.accountInitTime store.version store.lastWeeklyAllowanceClaimTime b
                   ENDC      	//  '163 store.id store.jettonBalance store.txnCount store.status store.isAuthorityAccount store.creditNeed store.accumulatedFees store.debt store.debts store.connections store.active store.mintable store.accountInitTime store.version store.lastWeeklyAllowanceClaimTime '1352
-                  // 222: .send(SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE | SEND_MODE_IGNORE_ERRORS)
+                  // 220: .send(SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE | SEND_MODE_IGNORE_ERRORS)
                   66 PUSHINT	//  '163 store.id store.jettonBalance store.txnCount store.status store.isAuthorityAccount store.creditNeed store.accumulatedFees store.debt store.debts store.connections store.active store.mintable store.accountInitTime store.version store.lastWeeklyAllowanceClaimTime '1352 '1355
-                  // 216: createMessage(
-                  // ...222: .send(SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE | SEND_MODE_IGNORE_ERRORS)
+                  // 214: createMessage(
+                  // ...220: .send(SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE | SEND_MODE_IGNORE_ERRORS)
                   SENDRAWMSG	//  '163 store.id store.jettonBalance store.txnCount store.status store.isAuthorityAccount store.creditNeed store.accumulatedFees store.debt store.debts store.connections store.active store.mintable store.accountInitTime store.version store.lastWeeklyAllowanceClaimTime
                 }>ELSE<{    	//  addrs.treasury msg.USlot7 store.jettonBalance store.txnCount store.status store.isAuthorityAccount store.creditNeed store.accumulatedFees store.debt store.debts store.connections store.active store.mintable store.accountInitTime store.version store.lastWeeklyAllowanceClaimTime store.id '163 store.addresses msg.USlot6 store.baseFiWalletCode addrs.initialOwnerAddr
                   // 232: ton("0.404") =>
@@ -2130,5 +2129,30 @@ PROGRAM{
     NIP                     	//  store.jettonBalance store.baseFiWalletCode addrs.initialOwnerAddr '45 s
     ENDS                    	//  store.jettonBalance store.baseFiWalletCode addrs.initialOwnerAddr '45
     ROT                     	//  store.jettonBalance addrs.initialOwnerAddr '45 store.baseFiWalletCode
+  }>
+  // contracts/fossFi/fossFiWallet.tolk:381
+  get_wallet_data_all() PROC:<{	// 
+    // 87: return FiWalletStore.fromCell(contract.getData())
+    c4 PUSH                 	//  '18
+    CTOS                    	//  s
+    LDGRAMS                 	//  '22 s
+    8 LDU                   	//  '22 '24 s
+    2 LDU                   	//  '22 '24 '26 s
+    1 LDI                   	//  '22 '24 '26 '28 s
+    LDGRAMS                 	//  '22 '24 '26 '28 '29 s
+    LDGRAMS                 	//  '22 '24 '26 '28 '29 '30 s
+    LDGRAMS                 	//  '22 '24 '26 '28 '29 '30 '31 s
+    1 LDI                   	//  '22 '24 '26 '28 '29 '30 '31 '33 s
+    8 LDU                   	//  '22 '24 '26 '28 '29 '30 '31 '33 '35 s
+    1 LDI                   	//  '22 '24 '26 '28 '29 '30 '31 '33 '35 '37 s
+    1 LDI                   	//  '22 '24 '26 '28 '29 '30 '31 '33 '35 '37 '39 s
+    32 LDU                  	//  '22 '24 '26 '28 '29 '30 '31 '33 '35 '37 '39 '41 s
+    10 LDU                  	//  '22 '24 '26 '28 '29 '30 '31 '33 '35 '37 '39 '41 '43 s
+    32 LDU                  	//  '22 '24 '26 '28 '29 '30 '31 '33 '35 '37 '39 '41 '43 '45 s
+    LDREF                   	//  '22 '24 '26 '28 '29 '30 '31 '33 '35 '37 '39 '41 '43 '45 '46 s
+    LDREF                   	//  '22 '24 '26 '28 '29 '30 '31 '33 '35 '37 '39 '41 '43 '45 '46 '47 s
+    LDREF                   	//  '22 '24 '26 '28 '29 '30 '31 '33 '35 '37 '39 '41 '43 '45 '46 '47 '48 s
+    LDREF                   	//  '22 '24 '26 '28 '29 '30 '31 '33 '35 '37 '39 '41 '43 '45 '46 '47 '48 '49 s
+    ENDS                    	//  '0 '1 '2 '3 '4 '5 '6 '7 '8 '9 '10 '11 '12 '13 '14 '15 '16 '17
   }>
 }END>c

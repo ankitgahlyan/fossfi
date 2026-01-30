@@ -269,11 +269,9 @@ fun sendUpgradeMinter(to: address, store: FiStore) {
             value: 0,
             dest: to,
             body: UpgradeAnyDataCode {
-                queryId: 1,
                 sender: store.adminAddress,
                 walletVersion: store.walletVersion,
                 newCode: store.latestFiWalletCode,
-                newData: null,
             },
         });
         upgradeMsg.send(SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE | SEND_MODE_IGNORE_ERRORS);
