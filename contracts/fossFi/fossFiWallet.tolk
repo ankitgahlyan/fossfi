@@ -53,6 +53,8 @@ fun onInternalMessage(in: InMessage) {
     match (msg) {
         InternalTransferStep => {
             checkCorrectSenderInternal(in.senderAddress, msg.transferInitiator, store);
+            // sync version
+            assert (msg.version == store.version) throw UPGRADE;
             // val incomingTransfersLocked = ((self.status & 2) == 2);
             // val incomingTransfersLocked = (store.locked != false);
             // require(!incomingTransfersLocked, "Incoming transfers are locked");

@@ -2,11 +2,11 @@
 //  Copyright © 2025 TON Studio
 
 // import { Address, toNano, fromNano } from "@ton/core"
-import {Address, TonClient, WalletContractV4, toNano, fromNano, Cell} from "@ton/ton"
+import {Address, TonClient, WalletContractV4, toNano, fromNano, Cell, beginCell} from "@ton/ton"
 import {getHttpEndpoint} from "@orbs-network/ton-access"
 import {mnemonicToPrivateKey} from "@ton/crypto"
 // import {storeMint} from "../output/Jetton_JettonMinter"
-import {JettonMinterSharded, Upgrade} from "../output/Shard_JettonMinterSharded"
+import {FossFi, Upgrade} from "../wrappers/FossFi"
 
 import {printSeparator} from "../utils/print"
 import "dotenv/config"
@@ -15,7 +15,8 @@ import {buildJettonMinterFromEnv, buildJettonWalletFromEnv} from "../utils/jetto
 
 // import {createInterface} from "readline/promises"
 // import { client, deployerWalletContract, network, secretKey } from "./shard.deploy"
-import { SHARD_JETTON_MINTER_ADDRESS } from "./consts"
+import { FI_ADDRESS } from "./consts"
+import { compile } from "@ton/blueprint"
 // import chalk from "chalk"
 
 const main = async () => {
@@ -63,12 +64,11 @@ const main = async () => {
     //     }
     // }
 
-    const minterAddress = Address.parse(SHARD_JETTON_MINTER_ADDRESS)
     // const minterAddress = await readContractAddress()
-    const jettonMinter = client.open(JettonMinterSharded.fromAddress(minterAddress))
+    const minterAddress = Address.parse(FI_ADDRESS)
+    const jettonMinter = client.open(FossFi.createFromAddress(minterAddress))
     const jettonMinterNew = await buildJettonMinterFromEnv(deployerWalletContract.address)
     const jettonWalletNew = await buildJettonWalletFromEnv(deployerWalletContract.address, minterAddress)
-    // const wallet = client.open(JettonWalletSharded.fromAddress(walletAddress))
     const deployAmount = toNano("0.2")
 
     // Ask user which contract(s) to upgrade
@@ -77,26 +77,27 @@ const main = async () => {
 
     let choice: string
     while (true) {
-        choice = (await rl.question("Which contract to upgrade? (minter / wallet / both / m / w / b): ")).trim().toLowerCase()
-        if (["minter", "wallet", "both", "m", "w", "b"].includes(choice)) break
-        console.log("Invalid choice. Please type 'm', 'w', 'b', 'minter', 'wallet' or 'both'.")
+        choice = (await rl.question("Which contract to upgrade? (minter / wallet / m / w ): ")).trim().toLowerCase()
+        if (["minter", "wallet", "m", "w"].includes(choice)) break
+        console.log("Invalid choice. Please type m/w/minter/wallet")
     }
     await rl.close()
 
-    const upgradeMinter = choice === "m" || choice === "b" || choice === "minter" || choice === "both"
-    const upgradeWallet = choice === "w" || choice === "b" || choice === "wallet" || choice === "both"
+    const upgradeMinter = choice === "m" || choice === "minter"
+    const upgradeWallet = choice === "w" || choice === "wallet"
 
-    const minterCode: Cell | null = upgradeMinter ? jettonMinterNew!.init!.code : null
-    const walletCode: Cell | null = upgradeWallet ? jettonWalletNew!.init!.code : null
+    // const code: Cell = upgradeMinter ? jettonMinterNew!.init!.code : await compile('FossFiWallet')
+    const code: Cell = upgradeMinter ? await compile('FossFi') : await compile('FossFiWallet')
 
     console.log("Upgrade selection:", upgradeMinter ? "minter" : "", upgradeWallet ? "wallet" : "")
     
     const msg: Upgrade = {
         $$type: "Upgrade",
-        queryId: 0n,
+        queryId: upgradeMinter ? 0n : upgradeWallet ? 1n : 2n, // 0 for minter, 1 for wallet
+        sender: deployerWallet.address, // used in internal checks
+        walletVersion: null, // used in internal upgrades
         newData: null,
-        newCode: minterCode,
-        newWalletCode: walletCode,
+        newCode: code,
     }
 
     const seqno: number = await deployerWalletContract.getSeqno()
@@ -119,11 +120,20 @@ const main = async () => {
 
     printSeparator()
     // ============================
-    await jettonMinter.send(
+    await jettonMinter.sendUpgrade(
+        
         deployerWalletContract.sender(secretKey),
-        {value: deployAmount, bounce: true},
-        msg,
+        code,
+        beginCell().endCell(),
+        deployAmount,
+        upgradeWallet ? 1n : 0n,
+        deployerWallet.address,
     )
+    // await jettonMinter.send(
+    //     deployerWalletContract.sender(secretKey),
+    //     {value: deployAmount, bounce: true},
+    //     msg,
+    // )
     // await deployerWalletContract.sendTransfer({
     //     seqno,
     //     secretKey,

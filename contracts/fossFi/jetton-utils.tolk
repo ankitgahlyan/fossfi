@@ -109,6 +109,7 @@ fun checkCorrectSenderInternal(sender: address, senderInitOwner: address, store:
         assert (sender == addrs.trustedJettonAddrs.load().minterAddr) throw ERROR_NOT_VALID_WALLET;
         if (!store.active) {
             store.active = true;
+            store.accountInitTime = blockchain.now();
             invitors.invitor = contract.getAddress(); // todo fixme or adapt logic for null also used after accClosed
             invitors.invitor0 = contract.getAddress();
         }

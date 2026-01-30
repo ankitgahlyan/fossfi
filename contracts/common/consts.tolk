@@ -52,6 +52,7 @@ const ALREADY_INVITED: int = 723;
 const UNAUTHORIZED_BURN: int = 724;
 const MINT_CLOSED: int = 730;
 
+const UPGRADE: int = 733;
 const WRONG_WORKCHAIN: int = 734;
 const WAIT_MORE: int = 735;
 const NOT_CLOSE_FRIEND: int = 736;

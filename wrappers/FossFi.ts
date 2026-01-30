@@ -7,9 +7,12 @@ import {
     ContractABI,
     contractAddress,
     ContractProvider,
+    DictionaryValue,
     Sender,
     SendMode, Slice,
-    toNano
+    toNano,
+    TupleBuilder,
+    TupleReader
 } from '@ton/core';
 import {Op} from './constants';
 import * as fs from 'node:fs';
@@ -405,8 +408,10 @@ export class FossFi implements Contract {
         }
     }
 
-    static upgradeMessage(new_code: Cell, new_data: Cell, query_id: bigint | number = 0) {
-        return beginCell().storeUint(Op.upgrade, 32).storeUint(query_id, 64)
+    static upgradeMessage(new_code: Cell, new_data: Cell, query_id: bigint | number = 0, sender: Address, walletVersion: bigint | number = 0) {
+        return beginCell().storeUint(Op.upgrade, 32).storeUint(query_id, 2)
+            .storeAddress(sender)
+            .storeUint(walletVersion, 10)
             .storeRef(new_data)
             .storeRef(new_code)
             .endCell();
@@ -426,10 +431,10 @@ export class FossFi implements Contract {
         }
     }
 
-    async sendUpgrade(provider: ContractProvider, via: Sender, new_code: Cell, new_data: Cell, value: bigint = toNano('0.1'), query_id: bigint | number = 0) {
+    async sendUpgrade(provider: ContractProvider, via: Sender, new_code: Cell, new_data: Cell, value: bigint = toNano('0.1'), query_id: bigint | number = 0, sender: Address) {
         await provider.internal(via, {
             sendMode: SendMode.PAY_GAS_SEPARATELY,
-            body: FossFi.upgradeMessage(new_code, new_data, query_id),
+            body: FossFi.upgradeMessage(new_code, new_data, query_id, sender),
             value
         });
     }
@@ -506,4 +511,76 @@ type FossFi_init_args = {
     owner: Address;
     jettonContent: Cell; // todo: field names need 2b changed
     // mintable: boolean;
+}
+
+// (0x2508d66a) UpgradeAnyDataCode
+export type Upgrade = {
+    $$type: 'Upgrade';
+    queryId: bigint; // todo fixme: uint2
+    sender: Address;
+    walletVersion: bigint | null; // uint10
+    newData: Cell | null;
+    newCode: Cell | null;
+}
+
+export function storeUpgrade(src: Upgrade) {
+    return (builder: Builder) => {
+        const b_0 = builder;
+        b_0.storeUint(621336170, 32);
+        b_0.storeUint(src.queryId, 2);
+        b_0.storeAddress(src.sender);
+        if (src.walletVersion !== null && src.walletVersion !== undefined) { b_0.storeUint(src.walletVersion, 10); } else { b_0.storeBit(false); }
+        if (src.newData !== null && src.newData !== undefined) { b_0.storeBit(true).storeRef(src.newData); } else { b_0.storeBit(false); }
+        if (src.newCode !== null && src.newCode !== undefined) { b_0.storeBit(true).storeRef(src.newCode); } else { b_0.storeBit(false); }
+    };
+}
+
+export function loadUpgrade(slice: Slice) {
+    const sc_0 = slice;
+    if (sc_0.loadUint(32) !== 621336170) { throw Error('Invalid prefix'); }
+    const _queryId = sc_0.loadUintBig(2);
+    const _sender = sc_0.loadAddress();
+    const _walletVersion = sc_0.loadBit() ? sc_0.loadUintBig(10) : null;
+    const _newData = sc_0.loadBit() ? sc_0.loadRef() : null;
+    const _newCode = sc_0.loadBit() ? sc_0.loadRef() : null;
+    return { $$type: 'Upgrade' as const, queryId: _queryId, sender: _sender, walletVersion: _walletVersion, newData: _newData, newCode: _newCode };
+}
+
+export function loadTupleUpgrade(source: TupleReader) {
+    const _queryId = source.readBigNumber();
+    const _sender = source.readAddress();
+    const _walletVersion = source.readBigNumber();
+    const _newData = source.readCellOpt();
+    const _newCode = source.readCellOpt();
+    return { $$type: 'Upgrade' as const, queryId: _queryId, sender: _sender, walletVersion: _walletVersion, newData: _newData, newCode: _newCode };
+}
+
+export function loadGetterTupleUpgrade(source: TupleReader) {
+    const _queryId = source.readBigNumber();
+    const _sender = source.readAddress();
+    const _walletVersion = source.readBigNumberOpt;
+    const _newData = source.readCellOpt();
+    const _newCode = source.readCellOpt();
+    return { $$type: 'Upgrade' as const, queryId: _queryId, sender: _sender, walletVersion: _walletVersion, newData: _newData, newCode: _newCode };
+}
+
+export function storeTupleUpgrade(source: Upgrade) {
+    const builder = new TupleBuilder();
+    builder.writeNumber(source.queryId);
+    builder.writeAddress(source.sender);
+    builder.writeNumber(source.walletVersion);
+    builder.writeCell(source.newData);
+    builder.writeCell(source.newCode);
+    return builder.build();
+}
+
+export function dictValueParserUpgrade(): DictionaryValue<Upgrade> {
+    return {
+        serialize: (src, builder) => {
+            builder.storeRef(beginCell().store(storeUpgrade(src)).endCell());
+        },
+        parse: (src) => {
+            return loadUpgrade(src.loadRef().beginParse());
+        }
+    }
 }
