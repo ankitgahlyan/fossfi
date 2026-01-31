@@ -6,7 +6,7 @@ import {Address, TonClient, WalletContractV4, toNano, fromNano, Cell, beginCell}
 import {getHttpEndpoint} from "@orbs-network/ton-access"
 import {mnemonicToPrivateKey} from "@ton/crypto"
 // import {storeMint} from "../output/Jetton_JettonMinter"
-import {FossFi, Upgrade} from "../wrappers/FossFi"
+import {FossFi, Upgrade} from "../wrappers/fi/FossFi"
 
 import {printSeparator} from "../utils/print"
 import "dotenv/config"

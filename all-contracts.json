@@ -1,43 +1,12 @@
 [
   {
-    "numericFolder": "01_jetton",
-    "shortTitle": "basic jetton",
-    "description": "jetton v1.07, the same as Tact uses for benchmarks",
-    "originalUrl": "https://github.com/ton-blockchain/token-contract"
-  },
-  {
-    "numericFolder": "02_nft",
-    "shortTitle": "basic nft",
-    "description": "nft v1.03, the same as Tact uses for benchmarks",
-    "originalUrl": "https://github.com/ton-blockchain/token-contract"
-  },
-  {
-    "numericFolder": "03_notcoin",
-    "shortTitle": "notcoin",
-    "$comment": "'notcoin' and 'basecoin' are almost identical",
-    "description": "jetton v1.2, admin actions and precompiled, Tact also uses it for benchmarks",
-    "originalUrl": "https://github.com/OpenBuilders/notcoin-contract"
-  },
-  {
-    "numericFolder": "04_sharded_tgbtc",
+    "numericFolder": "fossFi",
     "shortTitle": "sharded jetton (tgBTC)",
     "description": "jetton v2.0, with shard optimization, tgBTC is using a FunC version",
     "originalUrl": "https://github.com/ton-blockchain/jetton-contract/tree/jetton-2.0"
   },
   {
-    "numericFolder": "05_wallet-v5",
-    "shortTitle": "wallet V5",
-    "description": "original wallet V5, highly optimized, but almost unreadable",
-    "originalUrl": "https://github.com/ton-blockchain/wallet-contract-v5"
-  },
-  {
-    "numericFolder": "06_vesting",
-    "shortTitle": "vesting wallet",
-    "description": "original vesting with lots of globals and unreadable code",
-    "originalUrl": "https://github.com/ton-blockchain/vesting-contract"
-  },
-  {
-    "numericFolder": "07_telemint",
+    "numericFolder": "privateMinter",
     "shortTitle": "telemint (telegram gifts)",
     "description": "a mixture of NFT and auction, quite a specific and hard contract",
     "originalUrl": "https://github.com/TelegramMessenger/telemint"

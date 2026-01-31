@@ -45,20 +45,21 @@ struct FiWalletStore { // todo: nft like store migration after activate/upgrade/
     jettonBalance: coins = ton("1") // needed for semantic txn sending from wallet apps, adjusted in transfer
     txnCount: uint8 = 0 // for fixed fees burns to counter minting
     status: uint2 = 0 // for granular control
-    isAuthorityAccount: bool = false // for elevated permissions
+    isAuthorityAccount: bool = false // for elevated permissions, 100,000 accounts needed to vote
     creditNeed: coins = 0;
-    accumulatedFees: coins = 0; // todo: use fixed no of txn
-    debt: coins = 0
+    accumulatedFees: coins = 0; // todo: use fixed no of txnCount instead
+    debt: coins = 0 // or directly set balance -ve (ton supports this?)
     debts: bool = false // todo use this pattern of external informer about state before expensive loading cells
+    votes: uint4 = 10 // granular voting power
+    receivedVotes: uint20 = 0 // 1,048,576 for upgrading account to authority after threshold(1 million) is passed
     connections: uint8 = 0 // 250 max msgSending constraints
     active: bool = false
-    mintable: bool = true // todo: need? use active instead
-    accountInitTime: uint32 = 0 // 
+    mintable: bool = true
+    accountInitTime: uint32 = 0
     version: uint10 = 0
-    // lastRewardClaimTime: uint32 = 0
     lastWeeklyAllowanceClaimTime: uint32 = 0
 
-    id: cell // todo: implement manual change
+    id: cell // todo: implement manual change; unique ID username@localLatitudeGroupName
     addresses: Cell<Addresses>
     maps: Cell<Maps>
 

@@ -1,5 +1,5 @@
 import { toNano } from '@ton/core';
-import { FossFiWallet } from '../wrappers/FossFiWallet';
+import { FossFiWallet } from '../wrappers/fi/FossFiWallet';
 import { compile, NetworkProvider } from '@ton/blueprint';
 
 export async function run(provider: NetworkProvider) {

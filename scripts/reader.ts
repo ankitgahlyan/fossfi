@@ -1,6 +1,6 @@
 import { Address, beginCell, SendMode, toNano } from '@ton/core';
-import { FossFi } from "../wrappers/FossFi";
-import { FossFiWallet } from '../wrappers/FossFiWallet';
+import { FossFi } from "../wrappers/fi/FossFi";
+import { FossFiWallet } from '../wrappers/fi/FossFiWallet';
 import { compile, NetworkProvider } from '@ton/blueprint';
 import { FI_ADDRESS } from './consts';
 import { content } from '../utils/jetton-helpers';

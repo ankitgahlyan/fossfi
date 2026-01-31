@@ -1,11 +1,11 @@
 import { toNano, beginCell, Address, SendMode, fromNano } from '@ton/core';
 import { buildJettonMinterFromEnv, content, envContent } from '../utils/jetton-helpers';
-import { FossFiConfig, MintNewJettons, storeMint } from '../wrappers/FossFi';
+import { FossFiConfig, MintNewJettons, storeMint } from '../wrappers/fi/FossFi';
 import { getJettonHttpLink, getNetworkFromEnv } from '../utils/utils';
 import { printSeparator } from '../utils/print';
 import "dotenv/config";
 
-import { FossFi } from '../wrappers/FossFi';
+import { FossFi } from '../wrappers/fi/FossFi';
 import { compile, NetworkProvider } from '@ton/blueprint';
 
 export async function run(provider: NetworkProvider) {

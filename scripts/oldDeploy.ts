@@ -2,7 +2,7 @@ import { beginCell, toNano, TonClient, WalletContractV4, SendMode, internal, fro
 import {getHttpEndpoint} from "@orbs-network/ton-access"
 import {mnemonicToPrivateKey} from "@ton/crypto"
 import {buildJettonMinterFromEnv} from "../utils/jetton-helpers"
-import {storeMint} from "../wrappers/Shard_JettonMinterSharded"
+import {storeMint} from "../wrappers/Tact_JettonMinterSharded"
 
 import {printSeparator} from "../utils/print"
 import "dotenv/config"

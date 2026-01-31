@@ -1,6 +1,6 @@
 import { Blockchain, SandboxContract, TreasuryContract } from '@ton/sandbox';
 import { Cell, toNano } from '@ton/core';
-import { FossFiWallet } from '../wrappers/FossFiWallet';
+import { FossFiWallet } from '../../wrappers/fi/FossFiWallet';
 import '@ton/test-utils';
 import { compile } from '@ton/blueprint';
 

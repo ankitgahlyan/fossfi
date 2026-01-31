@@ -1,39 +1,31 @@
 import {
     Address,
     beginCell,
-    Builder,
     Cell,
     Contract,
-    ContractABI,
     contractAddress,
     ContractProvider,
-    DictionaryValue,
     Sender,
     SendMode, Slice,
-    toNano,
-    TupleBuilder,
-    TupleReader
+    toNano
 } from '@ton/core';
-import {Op} from './constants';
-import * as fs from 'node:fs';
-import * as path from 'path';
+import {Op} from '../constants';
 
-export type FossFiContent = {
+export type JettonMinterContent = {
     uri: string
 };
-
-export type FossFiConfig = {
-    admin_address: Address | null,
-    base_fi_wallet_code: Cell,
-    metadata_uri: Cell | FossFiContent
+export type JettonMinterConfig = {
+    admin: Address | null,
+    wallet_code: Cell,
+    jetton_content: Cell | JettonMinterContent
 };
-export type FossFiConfigFull = {
+export type JettonMinterConfigFull = {
     supply: bigint,
     admin: Address | null,
     //Makes no sense to update transfer admin. ...Or is it?
     transfer_admin: Address | null,
     wallet_code: Cell,
-    metadata_uri: Cell | FossFiContent
+    jetton_content: Cell | JettonMinterContent
 }
 
 export function endParse(slice: Slice) {
@@ -42,25 +34,25 @@ export function endParse(slice: Slice) {
     }
 }
 
-export function fossFiConfigCellToConfig(config: Cell): FossFiConfigFull {
+export function jettonMinterConfigCellToConfig(config: Cell): JettonMinterConfigFull {
     const sc = config.beginParse()
-    const parsed: FossFiConfigFull = {
+    const parsed: JettonMinterConfigFull = {
         supply: sc.loadCoins(),
         admin: sc.loadMaybeAddress(),
         transfer_admin: sc.loadMaybeAddress(),
         wallet_code: sc.loadRef(),
-        metadata_uri: sc.loadRef()
+        jetton_content: sc.loadRef()
     };
     endParse(sc);
     return parsed;
 }
 
-export function parseFossFiData(data: Cell): FossFiConfigFull {
-    return fossFiConfigCellToConfig(data);
+export function parseJettonMinterData(data: Cell): JettonMinterConfigFull {
+    return jettonMinterConfigCellToConfig(data);
 }
 
-export function fossFiConfigFullToCell(config: FossFiConfigFull): Cell {
-    const content = config.metadata_uri instanceof Cell ? config.metadata_uri : jettonContentToCell(config.metadata_uri);
+export function jettonMinterConfigFullToCell(config: JettonMinterConfigFull): Cell {
+    const content = config.jetton_content instanceof Cell ? config.jetton_content : jettonContentToCell(config.jetton_content);
     return beginCell()
         .storeCoins(config.supply)
         .storeAddress(config.admin)
@@ -70,92 +62,35 @@ export function fossFiConfigFullToCell(config: FossFiConfigFull): Cell {
         .endCell()
 }
 
-export function fossFiConfigToCell(config: FossFiConfig): Cell {
-    const content = config.metadata_uri instanceof Cell ? config.metadata_uri : jettonContentToCell(config.metadata_uri);
+export function jettonMinterConfigToCell(config: JettonMinterConfig): Cell {
+    const content = config.jetton_content instanceof Cell ? config.jetton_content : jettonContentToCell(config.jetton_content);
     return beginCell()
         .storeCoins(0)
-        .storeUint(0, 10)
-        .storeAddress(config.admin_address)
-        .storeAddress(config.admin_address)
-        .storeRef(config.base_fi_wallet_code)
-        .storeRef(config.base_fi_wallet_code)
+        .storeAddress(config.admin)
+        .storeAddress(null) // Transfer admin address
+        .storeRef(config.wallet_code)
         .storeRef(content)
         .endCell();
 }
 
-export function jettonContentToCell(content: FossFiContent) {
+export function jettonContentToCell(content: JettonMinterContent) {
     return beginCell()
         .storeStringRefTail(content.uri) //Snake logic under the hood
         .endCell();
 }
 
-export type MintNewJettons = {
-    $$type: 'MintNewJettons';
-    queryId: bigint;
-    mintRecipient: Address;
-    tonAmount: bigint;
-    internalTransferMsg: InternalTransferStep;
-}
-
-export function storeMint(src: MintNewJettons) {
-    return (builder: Builder) => {
-        const b_0 = builder;
-        b_0.storeUint(1680571655, 32);
-        b_0.storeUint(src.queryId, 64);
-        b_0.storeAddress(src.mintRecipient);
-        b_0.storeCoins(src.tonAmount);
-
-        const b_1 = new Builder();
-        b_1.store(storeInternalTransferStep(src.internalTransferMsg));
-        b_0.storeRef(b_1.endCell());
-    };
-}
-
-export type InternalTransferStep = {
-    $$type: 'InternalTransferStep';
-    queryId: bigint;
-    jettonAmount: bigint;
-    version: bigint;
-    transferInitiator: Address;
-    sendExcessesTo: Address | null;
-    forwardTonAmount: bigint;
-    forwardPayload: Slice;
-}
-
-export function storeInternalTransferStep(src: InternalTransferStep) {
-    return (builder: Builder) => {
-        const b_0 = builder;
-        b_0.storeUint(395134233, 32);
-        b_0.storeUint(src.queryId, 64);
-        b_0.storeCoins(src.jettonAmount);
-        b_0.storeUint(src.version, 10);
-        b_0.storeAddress(src.transferInitiator);
-        b_0.storeAddress(src.sendExcessesTo);
-        b_0.storeCoins(src.forwardTonAmount);
-        b_0.storeBuilder(src.forwardPayload.asBuilder());
-    };
-}
-
-export class FossFi implements Contract {
-    readonly abi: ContractABI = { name: 'FossFi' } // todo: implement from shard wrapper
-
+export class JettonMinter implements Contract {
     constructor(readonly address: Address, readonly init?: { code: Cell; data: Cell }) {
     }
 
     static createFromAddress(address: Address) {
-        return new FossFi(address);
+        return new JettonMinter(address);
     }
 
-    static async fromInit(owner: Address, jettonContent: Cell) {
-            const __gen_init = await FossFi_init(owner, jettonContent);
-            const address = contractAddress(0, __gen_init);
-            return new FossFi(address, __gen_init);
-        }
-
-    static createFromConfig(config: FossFiConfig, code: Cell, workchain = 0) {
-        const data = fossFiConfigToCell(config);
+    static createFromConfig(config: JettonMinterConfig, code: Cell, workchain = 0) {
+        const data = jettonMinterConfigToCell(config);
         const init = {code, data};
-        return new FossFi(contractAddress(workchain, init), init);
+        return new JettonMinter(contractAddress(workchain, init), init);
     }
 
     async sendDeploy(provider: ContractProvider, via: Sender, value: bigint) {
@@ -228,7 +163,7 @@ export class FossFi implements Contract {
                    forward_ton_amount: bigint = toNano('0.05'), total_ton_amount: bigint = toNano('0.1')) {
         await provider.internal(via, {
             sendMode: SendMode.PAY_GAS_SEPARATELY,
-            body: FossFi.mintMessage(to, jetton_amount, from, response_addr, customPayload, forward_ton_amount, total_ton_amount),
+            body: JettonMinter.mintMessage(to, jetton_amount, from, response_addr, customPayload, forward_ton_amount, total_ton_amount),
             value: total_ton_amount + toNano('0.05'),
         });
     }
@@ -244,7 +179,7 @@ export class FossFi implements Contract {
     async sendDiscovery(provider: ContractProvider, via: Sender, owner: Address, include_address: boolean, value: bigint = toNano('0.1')) {
         await provider.internal(via, {
             sendMode: SendMode.PAY_GAS_SEPARATELY,
-            body: FossFi.discoveryMessage(owner, include_address),
+            body: JettonMinter.discoveryMessage(owner, include_address),
             value: value,
         });
     }
@@ -267,7 +202,7 @@ export class FossFi implements Contract {
     async sendTopUp(provider: ContractProvider, via: Sender, value: bigint = toNano('0.1')) {
         await provider.internal(via, {
             sendMode: SendMode.PAY_GAS_SEPARATELY,
-            body: FossFi.topUpMessage(),
+            body: JettonMinter.topUpMessage(),
             value: value,
         });
     }
@@ -293,7 +228,7 @@ export class FossFi implements Contract {
     async sendChangeAdmin(provider: ContractProvider, via: Sender, newOwner: Address) {
         await provider.internal(via, {
             sendMode: SendMode.PAY_GAS_SEPARATELY,
-            body: FossFi.changeAdminMessage(newOwner),
+            body: JettonMinter.changeAdminMessage(newOwner),
             value: toNano("0.1"),
         });
     }
@@ -315,7 +250,7 @@ export class FossFi implements Contract {
     async sendClaimAdmin(provider: ContractProvider, via: Sender, query_id: bigint = 0n) {
         await provider.internal(via, {
             sendMode: SendMode.PAY_GAS_SEPARATELY,
-            body: FossFi.claimAdminMessage(query_id),
+            body: JettonMinter.claimAdminMessage(query_id),
             value: toNano('0.1')
         })
     }
@@ -337,13 +272,13 @@ export class FossFi implements Contract {
     async sendDropAdmin(provider: ContractProvider, via: Sender, value: bigint = toNano('0.05'), query_id: number | bigint = 0) {
         await provider.internal(via, {
             sendMode: SendMode.PAY_GAS_SEPARATELY,
-            body: FossFi.dropAdminMessage(query_id),
+            body: JettonMinter.dropAdminMessage(query_id),
             value
         });
     }
 
 
-    static changeContentMessage(content: Cell | FossFiContent) {
+    static changeContentMessage(content: Cell | JettonMinterContent) {
         const contentString = content instanceof Cell ? content.beginParse().loadStringTail() : content.uri;
         return beginCell().storeUint(Op.change_metadata_url, 32).storeUint(0, 64) // op, queryId
             .storeStringTail(contentString)
@@ -362,10 +297,10 @@ export class FossFi implements Contract {
         }
     }
 
-    async sendChangeContent(provider: ContractProvider, via: Sender, content: Cell | FossFiContent) {
+    async sendChangeContent(provider: ContractProvider, via: Sender, content: Cell | JettonMinterContent) {
         await provider.internal(via, {
             sendMode: SendMode.PAY_GAS_SEPARATELY,
-            body: FossFi.changeContentMessage(content),
+            body: JettonMinter.changeContentMessage(content),
             value: toNano("0.1"),
         });
     }
@@ -408,10 +343,8 @@ export class FossFi implements Contract {
         }
     }
 
-    static upgradeMessage(new_code: Cell, new_data: Cell, query_id: bigint | number = 0, sender: Address, walletVersion: bigint | number = 0) {
-        return beginCell().storeUint(Op.upgrade, 32).storeUint(query_id, 2)
-            .storeAddress(sender)
-            .storeUint(walletVersion, 10)
+    static upgradeMessage(new_code: Cell, new_data: Cell, query_id: bigint | number = 0) {
+        return beginCell().storeUint(Op.upgrade, 32).storeUint(query_id, 64)
             .storeRef(new_data)
             .storeRef(new_code)
             .endCell();
@@ -431,10 +364,10 @@ export class FossFi implements Contract {
         }
     }
 
-    async sendUpgrade(provider: ContractProvider, via: Sender, new_code: Cell, new_data: Cell, value: bigint = toNano('0.1'), query_id: bigint | number = 0, sender: Address) {
+    async sendUpgrade(provider: ContractProvider, via: Sender, new_code: Cell, new_data: Cell, value: bigint = toNano('0.1'), query_id: bigint | number = 0) {
         await provider.internal(via, {
             sendMode: SendMode.PAY_GAS_SEPARATELY,
-            body: FossFi.upgradeMessage(new_code, new_data, query_id, sender),
+            body: JettonMinter.upgradeMessage(new_code, new_data, query_id),
             value
         });
     }
@@ -481,106 +414,5 @@ export class FossFi implements Contract {
     async getNextAdminAddress(provider: ContractProvider) {
         const res = await provider.get('get_next_admin_address', []);
         return res.stack.readAddressOpt();
-    }
-}
-
-async function FossFi_init(owner: Address, jettonContent: Cell) {
-    const codefile = fs.readFileSync(path.resolve(__dirname, '../build/', 'FossFi.compiled.json'));
-    const codeHex: string = ""; // todo fixme add code
-    const __code = Cell.fromHex(codeHex);
-    const builder = beginCell();
-    builder.storeUint(0, 1);
-    initFossFi_init_args({ $$type: 'FossFi_init_args', owner, jettonContent })(builder);
-    const __data = builder.endCell();
-    return { code: __code, data: __data };
-}
-
-function initFossFi_init_args(src: FossFi_init_args) {
-    return (builder: Builder) => {
-        const b_0 = builder;
-        // b_0.storeCoins(src.totalSupply);
-        b_0.storeAddress(src.owner);
-        b_0.storeRef(src.jettonContent);
-        // b_0.storeBit(src.mintable);
-    };
-}
-
-type FossFi_init_args = {
-    $$type: 'FossFi_init_args';
-    // totalSupply: bigint;
-    owner: Address;
-    jettonContent: Cell; // todo: field names need 2b changed
-    // mintable: boolean;
-}
-
-// (0x2508d66a) UpgradeAnyDataCode
-export type Upgrade = {
-    $$type: 'Upgrade';
-    queryId: bigint; // todo fixme: uint2
-    sender: Address;
-    walletVersion: bigint | null; // uint10
-    newData: Cell | null;
-    newCode: Cell | null;
-}
-
-export function storeUpgrade(src: Upgrade) {
-    return (builder: Builder) => {
-        const b_0 = builder;
-        b_0.storeUint(621336170, 32);
-        b_0.storeUint(src.queryId, 2);
-        b_0.storeAddress(src.sender);
-        if (src.walletVersion !== null && src.walletVersion !== undefined) { b_0.storeUint(src.walletVersion, 10); } else { b_0.storeBit(false); }
-        if (src.newData !== null && src.newData !== undefined) { b_0.storeBit(true).storeRef(src.newData); } else { b_0.storeBit(false); }
-        if (src.newCode !== null && src.newCode !== undefined) { b_0.storeBit(true).storeRef(src.newCode); } else { b_0.storeBit(false); }
-    };
-}
-
-export function loadUpgrade(slice: Slice) {
-    const sc_0 = slice;
-    if (sc_0.loadUint(32) !== 621336170) { throw Error('Invalid prefix'); }
-    const _queryId = sc_0.loadUintBig(2);
-    const _sender = sc_0.loadAddress();
-    const _walletVersion = sc_0.loadBit() ? sc_0.loadUintBig(10) : null;
-    const _newData = sc_0.loadBit() ? sc_0.loadRef() : null;
-    const _newCode = sc_0.loadBit() ? sc_0.loadRef() : null;
-    return { $$type: 'Upgrade' as const, queryId: _queryId, sender: _sender, walletVersion: _walletVersion, newData: _newData, newCode: _newCode };
-}
-
-export function loadTupleUpgrade(source: TupleReader) {
-    const _queryId = source.readBigNumber();
-    const _sender = source.readAddress();
-    const _walletVersion = source.readBigNumber();
-    const _newData = source.readCellOpt();
-    const _newCode = source.readCellOpt();
-    return { $$type: 'Upgrade' as const, queryId: _queryId, sender: _sender, walletVersion: _walletVersion, newData: _newData, newCode: _newCode };
-}
-
-export function loadGetterTupleUpgrade(source: TupleReader) {
-    const _queryId = source.readBigNumber();
-    const _sender = source.readAddress();
-    const _walletVersion = source.readBigNumberOpt;
-    const _newData = source.readCellOpt();
-    const _newCode = source.readCellOpt();
-    return { $$type: 'Upgrade' as const, queryId: _queryId, sender: _sender, walletVersion: _walletVersion, newData: _newData, newCode: _newCode };
-}
-
-export function storeTupleUpgrade(source: Upgrade) {
-    const builder = new TupleBuilder();
-    builder.writeNumber(source.queryId);
-    builder.writeAddress(source.sender);
-    builder.writeNumber(source.walletVersion);
-    builder.writeCell(source.newData);
-    builder.writeCell(source.newCode);
-    return builder.build();
-}
-
-export function dictValueParserUpgrade(): DictionaryValue<Upgrade> {
-    return {
-        serialize: (src, builder) => {
-            builder.storeRef(beginCell().store(storeUpgrade(src)).endCell());
-        },
-        parse: (src) => {
-            return loadUpgrade(src.loadRef().beginParse());
-        }
     }
 }

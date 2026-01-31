@@ -1,14 +1,17 @@
 import { Blockchain, SandboxContract, TreasuryContract } from '@ton/sandbox';
 import { Cell, toNano } from '@ton/core';
-import { FossFi } from '../wrappers/FossFi';
+import { FossFi, FossFiConfig } from '../../wrappers/fi/FossFi';
 import '@ton/test-utils';
 import { compile } from '@ton/blueprint';
+import { envContent } from '../../utils/jetton-helpers';
 
 describe('FossFi', () => {
-    let code: Cell;
+    let fiCode: Cell;
+    let fiWalletCode: Cell;
 
     beforeAll(async () => {
-        code = await compile('FossFi');
+        fiCode = await compile('FossFi');
+        fiWalletCode = await compile('FossFiWallet');
     });
 
     let blockchain: Blockchain;
@@ -17,10 +20,14 @@ describe('FossFi', () => {
 
     beforeEach(async () => {
         blockchain = await Blockchain.create();
-
-        fossFi = blockchain.openContract(FossFi.createFromConfig({}, code));
-
         deployer = await blockchain.treasury('deployer');
+
+        let fossFiConfig: FossFiConfig = {
+            admin_address: deployer.address,
+            base_fi_wallet_code: fiWalletCode,
+            metadata_uri: envContent
+        }
+        fossFi = blockchain.openContract(FossFi.createFromConfig(fossFiConfig, fiCode));
 
         const deployResult = await fossFi.sendDeploy(deployer.getSender(), toNano('0.05'));
 

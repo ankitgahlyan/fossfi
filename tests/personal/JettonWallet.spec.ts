@@ -1,11 +1,11 @@
 import { Blockchain, SandboxContract, TreasuryContract, internal, BlockchainSnapshot, SendMessageResult, BlockchainTransaction } from '@ton/sandbox';
 import { Cell, toNano, beginCell, Address, Transaction, storeAccountStorage, Dictionary, storeMessage, fromNano, DictionaryValue, storeStateInit } from '@ton/core';
-import { JettonWallet } from '../../wrappers/04_sharded_tgbtc/JettonWallet';
-import { jettonContentToCell, JettonMinter, JettonMinterContent } from '../../wrappers/04_sharded_tgbtc/JettonMinter';
+import { JettonWallet } from '../../wrappers/personal/privateWallet';
+import { jettonContentToCell, JettonMinter, JettonMinterContent } from '../../wrappers/personal/privateMinter';
 import '@ton/test-utils';
 import {findTransactionRequired} from '@ton/test-utils';
 import { randomAddress, getRandomTon, differentAddress, getRandomInt, testJettonInternalTransfer } from './utils';
-import { Op, Errors } from '../../wrappers/04_sharded_tgbtc/JettonConstants';
+import { Op, Errors } from '../../wrappers/constants';
 import { calcStorageFee, collectCellStats, computeFwdFees, computeFwdFeesVerbose, FullFees, GasPrices, getGasPrices, getMsgPrices, getStoragePrices, computedGeneric, storageGeneric, MsgPrices, setGasPrice, setMsgPrices, setStoragePrices, StorageStats, StorageValue } from './gasUtils';
 import { getSecureRandomBytes, sha256 } from '@ton/crypto';
 import { activateTVM12, myCompile } from "../my-compile";

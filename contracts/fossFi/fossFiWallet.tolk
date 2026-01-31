@@ -55,6 +55,15 @@ fun onInternalMessage(in: InMessage) {
             checkCorrectSenderInternal(in.senderAddress, msg.transferInitiator, store);
             // sync version
             assert (msg.version == store.version) throw UPGRADE;
+
+            // todo: unFrequent/onceOnly op: shift to emptyReceiverFromMinter ping
+            if (!store.active && (in.senderAddress == addrs.trustedJettonAddrs.load().minterAddr)) {
+                var invitors = lazy addrs.nomInAddrs.load();
+                store.active = true;
+                store.accountInitTime = blockchain.now();
+                invitors.invitor = contract.getAddress();
+                invitors.invitor0 = contract.getAddress();
+            }
             // val incomingTransfersLocked = ((self.status & 2) == 2);
             // val incomingTransfersLocked = (store.locked != false);
             // require(!incomingTransfersLocked, "Incoming transfers are locked");
@@ -96,8 +105,7 @@ fun onInternalMessage(in: InMessage) {
                     body: ReturnExcessesBack { queryId: msg.queryId },
                 });
                 excessesMsg.send(SEND_MODE_CARRY_ALL_BALANCE | SEND_MODE_IGNORE_ERRORS);
-            }//             forwardPayload: msg.forwardPayload
-            //         }
+            }//         }
             //     });
             //     notifyOwnerMsg.send(SEND_MODE_PAY_FEES_SEPARATELY);
             // }
@@ -113,6 +121,7 @@ fun onInternalMessage(in: InMessage) {
             //     excessesMsg.send(SEND_MODE_IGNORE_ERRORS);
             // }
         }
+        //             forwardPayload: msg.forwardPayload
         //             transferInitiator: msg.transferInitiator,
         //             jettonAmount: msg.jettonAmount,
         //             queryId: msg.queryId,
@@ -132,7 +141,6 @@ fun onInternalMessage(in: InMessage) {
             // val isFromMaster = in.senderAddress == addrs.trustedJettonAddrs.load().minterAddr;
             // val outgoingTransfersAllowed = ((store.status & 1) == 0);
             // val outgoingTransfersAllowed = (store.locked != true);
-
             // require(outgoingTransfersAllowed || isFromMaster, "Contract is locked");
             // require(sender() == self.owner || isFromMaster, "Incorrect sender");
             assert (in.senderAddress == addrs.ownerAddress) throw ERROR_NOT_OWNER;

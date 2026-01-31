@@ -7,8 +7,8 @@ import { Sha256 } from "@aws-crypto/sha256-js"
 import { Dictionary, DictionaryValue, beginCell, Cell, Address, contractAddress } from "@ton/core"
 import { TonClient } from "@ton/ton"
 import chalk from "chalk"
-import { FossFi } from "../wrappers/FossFi";
-import { FossFiWallet } from "../wrappers/FossFiWallet";
+import { FossFi } from "../wrappers/fi/FossFi";
+import { FossFiWallet } from "../wrappers/fi/FossFiWallet";
 import { sha256_sync } from "@ton/crypto";
 
 const ONCHAIN_CONTENT_PREFIX = 0x00

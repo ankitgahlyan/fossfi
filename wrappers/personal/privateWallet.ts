@@ -1,5 +1,5 @@
 import { Address, beginCell, Cell, Contract, contractAddress, ContractProvider, Sender, SendMode, Slice, toNano } from '@ton/core';
-import { Op } from './constants';
+import { Op } from '../constants';
 import {endParse} from "./privateMinter";
 
 export type JettonWalletConfig = {

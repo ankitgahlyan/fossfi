@@ -3,6 +3,7 @@
 PROGRAM{
   0 DECLMETHOD onInternalMessage()
   106029 DECLMETHOD get_jetton_data()
+  85681 DECLMETHOD get_jetton_data_all()
   103289 DECLMETHOD get_wallet_address()
   78683 DECLMETHOD get_next_admin_address()
   // 20 functions inlined in-place:
@@ -11,7 +12,7 @@ PROGRAM{
   // - checkAmountIsEnoughToTransfer (1 call)
   // - SnakeString.unpackFromSlice (0 calls)
   // - SnakeString.packToBuilder (0 calls)
-  // - FiStore.load (7 calls)
+  // - FiStore.load (8 calls)
   // - FiStore.save (2 calls)
   // - ForwardPayloadRemainder.checkIsCorrectTLBEither (1 call)
   // - PriWalletStore.load (1 call)
@@ -83,7 +84,7 @@ PROGRAM{
       LDSTDADDR             	//  store.latestFiWalletCode store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode '71 lazyS
       DROP                  	//  store.latestFiWalletCode store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode msg.USlot3
       INMSG_SRC             	//  store.latestFiWalletCode store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode msg.USlot3 '72
-      // 258: contract.getAddress()
+      // 263: contract.getAddress()
       MYADDR                	//  store.latestFiWalletCode store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode msg.USlot3 '72 '75
       // 45: jettonBalance: coins = ton("1") // needed for semantic txn sending from wallet apps, adjusted in transfer
       1000000000 PUSHINT    	//  store.latestFiWalletCode store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode msg.USlot3 '72 '75 '101=1000000000
@@ -183,8 +184,8 @@ PROGRAM{
       // 42: toShard: { fixedPrefixLength: SHARD_DEPTH, closeTo: ownerAddress }, // todo: initialOwnerAddr?
       8 PUSHINT             	//  store.latestFiWalletCode store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode msg.USlot3 '72 '160 '162=8
       s1 s4 s1 XCPU2        	//  store.latestFiWalletCode store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode '81 '72 '80=8 'USlot2 'USlot1 '80=8
-      // 255: calcDeployFiWallet(
-      // ...261: .calculateAddress()
+      // 260: calcDeployFiWallet(
+      // ...266: .calculateAddress()
       NEWC
       b{1} STSLICECONST
       5 STU
@@ -204,11 +205,11 @@ PROGRAM{
       s1 s2 XCHG            	//  store.latestFiWalletCode store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode '72 '165 '164
       248 STU               	//  store.latestFiWalletCode store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode '72 '164
       BTOS                  	//  store.latestFiWalletCode store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode '72 '164
-      // 254: sender ==
-      // ...261: .calculateAddress()
+      // 259: sender ==
+      // ...266: .calculateAddress()
       SDEQ                  	//  store.latestFiWalletCode store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode '190
-      // 253: assert (
-      // ...262: ) throw ERROR_NOT_VALID_WALLET
+      // 258: assert (
+      // ...267: ) throw ERROR_NOT_VALID_WALLET
       74 THROWIFNOT         	//  store.latestFiWalletCode store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode
     }>ELSE<{                	//  in.body store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode store.latestFiWalletCode lazyS
       // 46: match (msg)
@@ -223,7 +224,7 @@ PROGRAM{
         LDOPTSTDADDR        	//  store.latestFiWalletCode store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode msg.USlot2 msg.USlot3 msg.USlot4 '214 lazyS
         DROP                	//  store.latestFiWalletCode store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5
         INMSG_SRC           	//  store.latestFiWalletCode store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 '215
-        // 258: contract.getAddress()
+        // 263: contract.getAddress()
         MYADDR              	//  store.latestFiWalletCode store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 '215 '218
         // 45: jettonBalance: coins = ton("1") // needed for semantic txn sending from wallet apps, adjusted in transfer
         1000000000 PUSHINT  	//  store.latestFiWalletCode store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 '215 '218 '244=1000000000
@@ -323,8 +324,8 @@ PROGRAM{
         // 42: toShard: { fixedPrefixLength: SHARD_DEPTH, closeTo: ownerAddress }, // todo: initialOwnerAddr?
         8 PUSHINT           	//  store.latestFiWalletCode store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot5 '215 '303 '305=8
         s1 s7 s1 XCPU2      	//  store.latestFiWalletCode store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode msg.USlot2 msg.USlot3 '224 msg.USlot5 '215 '223=8 'USlot2 'USlot1 '223=8
-        // 255: calcDeployFiWallet(
-        // ...261: .calculateAddress()
+        // 260: calcDeployFiWallet(
+        // ...266: .calculateAddress()
         NEWC
         b{1} STSLICECONST
         5 STU
@@ -344,12 +345,12 @@ PROGRAM{
         s1 s3 XCHG          	//  store.latestFiWalletCode store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode msg.USlot2 msg.USlot3 '215 msg.USlot5 '308 '307
         248 STU             	//  store.latestFiWalletCode store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode msg.USlot2 msg.USlot3 '215 msg.USlot5 '307
         BTOS                	//  store.latestFiWalletCode store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode msg.USlot2 msg.USlot3 '215 msg.USlot5 '307
-        // 254: sender ==
-        // ...261: .calculateAddress()
+        // 259: sender ==
+        // ...266: .calculateAddress()
         s1 s2 XCHG          	//  store.latestFiWalletCode store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode msg.USlot2 msg.USlot3 msg.USlot5 '215 '307
         SDEQ                	//  store.latestFiWalletCode store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode msg.USlot2 msg.USlot3 msg.USlot5 '333
-        // 253: assert (
-        // ...262: ) throw ERROR_NOT_VALID_WALLET
+        // 258: assert (
+        // ...267: ) throw ERROR_NOT_VALID_WALLET
         74 THROWIFNOT       	//  store.latestFiWalletCode store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode msg.USlot2 msg.USlot3 msg.USlot5
         s0 s7 XCHG
         SUBR                	//  store.latestFiWalletCode store.metadataUri msg.USlot5 store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode msg.USlot2 store.totalSupply
@@ -924,7 +925,7 @@ PROGRAM{
                       s8 POP	//  msg.USlot5 store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode msg.USlot1
                       1 EQINT	//  msg.USlot5 store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode '965
                       IFNOTJMP:<{	//  msg.USlot5 store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode
-                        // 172: else => {throw INVALID_FWD_PAYLOAD;}
+                        // 173: throw INVALID_FWD_PAYLOAD
                         739 THROW
                       }>    	//  msg.USlot5 store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode
                       // 168: store.walletVersion += 1
@@ -937,13 +938,13 @@ PROGRAM{
                     // 46: match (msg)
                     x{38} SDBEGINSQ	//  in.body store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode store.latestFiWalletCode lazyS '68
                     IF:<{   	//  in.body store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode store.latestFiWalletCode lazyS
-                      // 180: checkCorrectSender(in.senderAddress, msg.sender, store)
+                      // 182: checkCorrectSender(in.senderAddress, msg.sender, store)
                       s8 POP	//  lazyS store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode store.latestFiWalletCode
                       s0 s7 XCHG	//  store.latestFiWalletCode store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode lazyS
                       LDSTDADDR	//  store.latestFiWalletCode store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode msg.USlot4 lazyS
                       10 PLDU	//  store.latestFiWalletCode store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode msg.USlot4 msg.USlot5
                       INMSG_SRC	//  store.latestFiWalletCode store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode msg.USlot4 msg.USlot5 '974
-                      // 258: contract.getAddress()
+                      // 263: contract.getAddress()
                       MYADDR	//  store.latestFiWalletCode store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode msg.USlot4 msg.USlot5 '974 '977
                       // 45: jettonBalance: coins = ton("1") // needed for semantic txn sending from wallet apps, adjusted in transfer
                       1000000000 PUSHINT	//  store.latestFiWalletCode store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode msg.USlot4 msg.USlot5 '974 '977 '1003=1000000000
@@ -1043,8 +1044,8 @@ PROGRAM{
                       // 42: toShard: { fixedPrefixLength: SHARD_DEPTH, closeTo: ownerAddress }, // todo: initialOwnerAddr?
                       8 PUSHINT	//  store.latestFiWalletCode store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode msg.USlot4 msg.USlot5 '974 '1062 '1064=8
                       s1 s5 s1 XCPU2	//  store.latestFiWalletCode store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode '983 msg.USlot5 '974 '982=8 'USlot2 'USlot1 '982=8
-                      // 255: calcDeployFiWallet(
-                      // ...261: .calculateAddress()
+                      // 260: calcDeployFiWallet(
+                      // ...266: .calculateAddress()
                       NEWC
                       b{1} STSLICECONST
                       5 STU
@@ -1064,22 +1065,22 @@ PROGRAM{
                       s1 s3 XCHG	//  store.latestFiWalletCode store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode '974 msg.USlot5 '1067 '1066
                       248 STU	//  store.latestFiWalletCode store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode '974 msg.USlot5 '1066
                       BTOS  	//  store.latestFiWalletCode store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode '974 msg.USlot5 '1066
-                      // 254: sender ==
-                      // ...261: .calculateAddress()
+                      // 259: sender ==
+                      // ...266: .calculateAddress()
                       s1 s2 XCHG	//  store.latestFiWalletCode store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode msg.USlot5 '974 '1066
                       SDEQ  	//  store.latestFiWalletCode store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode msg.USlot5 '1092
-                      // 253: assert (
-                      // ...262: ) throw ERROR_NOT_VALID_WALLET
+                      // 258: assert (
+                      // ...267: ) throw ERROR_NOT_VALID_WALLET
                       74 THROWIFNOT	//  store.latestFiWalletCode store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode msg.USlot5
-                      // 181: if (msg.version < store.walletVersion)
+                      // 183: if (msg.version < store.walletVersion)
                       s4 PUSH	//  store.latestFiWalletCode store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode msg.USlot5 store.walletVersion
                       LESS  	//  store.latestFiWalletCode store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode '1093
                       IF:<{ 	//  store.latestFiWalletCode store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode
-                        // 182: sendUpgradeMinter(in.senderAddress, store)
+                        // 184: sendUpgradeMinter(in.senderAddress, store)
                         INMSG_SRC	//  store.latestFiWalletCode store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode '1094
                         // 87: newData: cell? = null
                         PUSHNULL	//  store.latestFiWalletCode store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode '1094 '1110
-                        // 267: val upgradeMsg = createMessage( { // bounce for collecting fees back
+                        // 272: val upgradeMsg = createMessage(
                         NEWC	//  store.latestFiWalletCode store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode '1094 '1110 refb
                         b{0010010100001000110101100110101001} STSLICECONST	//  store.latestFiWalletCode store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode '1094 '1110 refb
                         s5 s(-1) PUXC	//  store.latestFiWalletCode store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode '1094 '1110 store.adminAddress refb
@@ -1105,7 +1106,7 @@ PROGRAM{
                         111 STUR	//  store.latestFiWalletCode store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode '1131 b
                         STREF	//  store.latestFiWalletCode store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode b
                         ENDC	//  store.latestFiWalletCode store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode upgradeMsg
-                        // 277: upgradeMsg.send(SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE | SEND_MODE_IGNORE_ERRORS)
+                        // 283: upgradeMsg.send(SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE | SEND_MODE_IGNORE_ERRORS)
                         66 PUSHINT	//  store.latestFiWalletCode store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode upgradeMsg '1190
                         SENDRAWMSG	//  store.latestFiWalletCode store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode
                       }>    	//  store.latestFiWalletCode store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode
@@ -1114,7 +1115,7 @@ PROGRAM{
                       x{d372158c} SDBEGINSQ	//  in.body store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode store.latestFiWalletCode lazyS '68
                       NIP   	//  in.body store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode store.latestFiWalletCode '68
                       IFNOT:<{	//  in.body store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode store.latestFiWalletCode
-                        // 193: assert (in.body.isEmpty()) throw 0xFFFF
+                        // 195: assert (in.body.isEmpty()) throw 0xFFFF
                         16 PUSHPOW2DEC	//  in.body store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode store.latestFiWalletCode '1193=65535
                         s0 s8 XCHG	//  '1193=65535 store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode store.latestFiWalletCode in.body
                         SEMPTY	//  '1193=65535 store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.nextAdminAddress store.baseFiWalletCode store.latestFiWalletCode '1194
@@ -1152,13 +1153,13 @@ PROGRAM{
     ENDC                    	//  '1198
     c4 POP                  	// 
   }>
-  // contracts/fossFi/fossFi.tolk:215
+  // contracts/fossFi/fossFi.tolk:217
   get_jetton_data() PROC:<{   	// 
     // 79: return FiStore.fromCell(contract.getData())
     c4 PUSH                 	//  '8
-    // 216: val store = lazy FiStore.load()
+    // 218: val store = lazy FiStore.load()
     CTOS                    	//  lazyS
-    // 226: return
+    // 228: return
     LDGRAMS                 	//  store.totalSupply lazyS
     10 LDU
     NIP                     	//  store.totalSupply lazyS
@@ -1167,25 +1168,38 @@ PROGRAM{
     NIP                     	//  store.totalSupply store.adminAddress lazyS
     LDREF                   	//  store.totalSupply store.adminAddress store.latestFiWalletCode lazyS
     PLDREF                  	//  store.totalSupply store.adminAddress store.latestFiWalletCode store.metadataUri
-    // 228: mintable: true, // but by peers only & not owner
+    // 230: mintable: true, // but by peers only & not owner
     TRUE                    	//  store.totalSupply store.adminAddress store.latestFiWalletCode store.metadataUri '18
     s3 s1 s3 XCHG3          	//  store.totalSupply '18 store.adminAddress store.metadataUri store.latestFiWalletCode
   }>
-  // contracts/fossFi/fossFi.tolk:235
-  get_wallet_address() PROC:<{	//  ownerAddress
+  // contracts/fossFi/fossFi.tolk:237
+  get_jetton_data_all() PROC:<{	// 
     // 79: return FiStore.fromCell(contract.getData())
+    c4 PUSH                 	//  '7
+    CTOS                    	//  s
+    LDGRAMS                 	//  '11 s
+    10 LDU                  	//  '11 '13 s
+    LDSTDADDR               	//  '11 '13 '14 s
+    LDOPTSTDADDR            	//  '11 '13 '14 '15 s
+    LDREF                   	//  '11 '13 '14 '15 '16 s
+    LDREF                   	//  '11 '13 '14 '15 '16 '17 s
+    LDREF                   	//  '11 '13 '14 '15 '16 '17 '18 s
+    ENDS                    	//  '0 '1 '2 '3 '4 '5 '6
+  }>
+  // contracts/fossFi/fossFi.tolk:241
+  get_wallet_address() PROC:<{	//  ownerAddress
     c4 PUSH                 	//  ownerAddress '9
-    // 236: val store = lazy FiStore.load()
+    // 242: val store = lazy FiStore.load()
     CTOS                    	//  ownerAddress lazyS
-    // 237: return calcDeployFiWallet(
-    // ...244: .calculateAddress()
+    // 243: return calcDeployFiWallet(
+    // ...249: ).calculateAddress()
     LDGRAMS                 	//  ownerAddress '13 lazyS
     NIP                     	//  ownerAddress lazyS
     10 LDU
     NIP                     	//  ownerAddress lazyS
     LDSTDADDR               	//  ownerAddress store.adminAddress lazyS
     PLDREF                  	//  ownerAddress store.adminAddress store.baseFiWalletCode
-    // 241: contract.getAddress()
+    // 247: contract.getAddress()
     MYADDR                  	//  ownerAddress store.adminAddress store.baseFiWalletCode '17
     // 45: jettonBalance: coins = ton("1") // needed for semantic txn sending from wallet apps, adjusted in transfer
     1000000000 PUSHINT      	//  ownerAddress store.adminAddress store.baseFiWalletCode '17 '43=1000000000
@@ -1285,8 +1299,8 @@ PROGRAM{
     // 42: toShard: { fixedPrefixLength: SHARD_DEPTH, closeTo: ownerAddress }, // todo: initialOwnerAddr?
     8 PUSHINT               	//  '23 'USlot1 'USlot2 '22=8
     s2 s2 XCPU              	//  '23 '22=8 'USlot2 'USlot1 '22=8
-    // 237: return calcDeployFiWallet(
-    // ...244: .calculateAddress()
+    // 243: return calcDeployFiWallet(
+    // ...249: ).calculateAddress()
     NEWC
     b{1} STSLICECONST
     5 STU
@@ -1306,13 +1320,13 @@ PROGRAM{
     248 STU                 	//  '106
     BTOS                    	//  '106
   }>
-  // contracts/fossFi/fossFi.tolk:247
+  // contracts/fossFi/fossFi.tolk:252
   get_next_admin_address() PROC:<{	// 
     // 79: return FiStore.fromCell(contract.getData())
     c4 PUSH                 	//  '8
-    // 248: val store = lazy FiStore.load()
+    // 253: val store = lazy FiStore.load()
     CTOS                    	//  lazyS
-    // 249: return store.nextAdminAddress
+    // 254: return store.nextAdminAddress
     LDGRAMS                 	//  '12 lazyS
     NIP                     	//  lazyS
     10 LDU

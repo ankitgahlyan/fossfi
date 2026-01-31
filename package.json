@@ -7,13 +7,13 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ankitgahlyan/phosphate.git"
+    "url": "git+https://github.com/ankitgahlyan/fossfi.git"
   },
   "scripts": {
     "bp": "blueprint",
-    "start": "blueprint run",
-    "build": "blueprint build",
-    "test": "jest --verbose",
+    "b": "blueprint build",
+    "rn": "blueprint run",
+    "t": "jest --verbose",
     "release": "blueprint pack && npm publish --access public",
     "clear": "rm -f bench-snapshots/*.last.json",
     "test:all": "npm run clear && jest",

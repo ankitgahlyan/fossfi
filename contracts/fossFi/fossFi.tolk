@@ -79,7 +79,7 @@ fun onInternalMessage(in: InMessage) {
                     msg.ownerAddress,
                     store.adminAddress,
                     contract.getAddress(),
-                    store.baseFiWalletCode,
+                    store.baseFiWalletCode
                 )
                     .calculateAddress();
             }
@@ -121,7 +121,7 @@ fun onInternalMessage(in: InMessage) {
                     msg.mintRecipient,
                     store.adminAddress,
                     contract.getAddress(),
-                    store.baseFiWalletCode,
+                    store.baseFiWalletCode
                 ),
                 value: msg.tonAmount,
                 body: msg.internalTransferMsg,
@@ -169,12 +169,14 @@ fun onInternalMessage(in: InMessage) {
                     store.latestFiWalletCode = msg.newCode!; // shouldn't be null for other than minterUpgrade
                 }
 
-                else => {throw INVALID_FWD_PAYLOAD;},
-                // 2 => {
-                //     store.jettonWalletCode = msg.newCode!;
-                // }
+                else => {
+                    throw INVALID_FWD_PAYLOAD;
+                }
             }
         }
+        // 2 => {
+        //     store.jettonWalletCode = msg.newCode!;
+        // }
         // todo: what about personalJettonMinter upgrades
         RequestUpgradeCode => {
             checkCorrectSender(in.senderAddress, msg.sender, store);
@@ -228,8 +230,12 @@ get fun get_jetton_data(): JettonDataReply {
         mintable: true, // but by peers only & not owner
         adminAddress: store.adminAddress,
         jettonContent: store.metadataUri, // metadata.toCell(),
-        jettonWalletCode: store.latestFiWalletCode, // todo: or return baseCode?
+        jettonWalletCode: store.latestFiWalletCode, // or return baseCode?
     };
+}
+
+get fun get_jetton_data_all() {
+    return FiStore.load();
 }
 
 get fun get_wallet_address(ownerAddress: address): address {
@@ -239,9 +245,8 @@ get fun get_wallet_address(ownerAddress: address): address {
         store.adminAddress,
         // owner/deployer/treasury
         contract.getAddress(),
-        store.baseFiWalletCode,
-    )
-        .calculateAddress();
+        store.baseFiWalletCode
+    ).calculateAddress();
 }
 
 get fun get_next_admin_address(): address? {
@@ -256,7 +261,7 @@ fun checkCorrectSender(sender: address, senderInitOwner: address, store: FiStore
             senderInitOwner,
             store.adminAddress,
             contract.getAddress(),
-            store.baseFiWalletCode,
+            store.baseFiWalletCode
         )
             .calculateAddress()
     ) throw ERROR_NOT_VALID_WALLET;
@@ -264,15 +269,16 @@ fun checkCorrectSender(sender: address, senderInitOwner: address, store: FiStore
 
 @inline
 fun sendUpgradeMinter(to: address, store: FiStore) {
-        val upgradeMsg = createMessage( { // bounce for collecting fees back
-            bounce: BounceMode.NoBounce,
-            value: 0,
-            dest: to,
-            body: UpgradeAnyDataCode {
-                sender: store.adminAddress,
-                walletVersion: store.walletVersion,
-                newCode: store.latestFiWalletCode,
-            },
-        });
-        upgradeMsg.send(SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE | SEND_MODE_IGNORE_ERRORS);
-    }
+    val upgradeMsg = createMessage({
+        // bounce for collecting fees back
+        bounce: BounceMode.NoBounce,
+        value: 0,
+        dest: to,
+        body: UpgradeAnyDataCode {
+            sender: store.adminAddress,
+            walletVersion: store.walletVersion,
+            newCode: store.latestFiWalletCode,
+        },
+    });
+    upgradeMsg.send(SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE | SEND_MODE_IGNORE_ERRORS);
+}

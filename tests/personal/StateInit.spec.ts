@@ -1,10 +1,10 @@
 import { Blockchain, SandboxContract, TreasuryContract } from '@ton/sandbox';
 import { Cell, toNano, beginCell, Address, Dictionary, storeStateInit } from '@ton/core';
-import { jettonContentToCell, JettonMinter } from '../../wrappers/04_sharded_tgbtc/JettonMinter';
-import { JettonWallet } from '../../wrappers/04_sharded_tgbtc/JettonWallet';
+import { jettonContentToCell, JettonMinter } from '../../wrappers/personal/privateMinter';
+import { JettonWallet } from '../../wrappers/personal/privateWallet';
 import '@ton/test-utils';
 import { collectCellStats } from './gasUtils';
-import { Op, Errors } from '../../wrappers/04_sharded_tgbtc/JettonConstants';
+import { Op, Errors } from '../../wrappers/constants';
 import { findTransactionRequired } from '@ton/test-utils';
 import { activateTVM12, myCompile } from "../my-compile";
 
