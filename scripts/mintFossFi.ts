@@ -1,5 +1,5 @@
 import { toNano, beginCell, Address, SendMode, fromNano } from '@ton/core';
-import { envContent } from '../utils/jetton-helpers';
+import { buildJettonMinterFromEnv, content, envContent } from '../utils/jetton-helpers';
 import { FossFiConfig, MintNewJettons, storeMint } from '../wrappers/fi/FossFi';
 import { getJettonHttpLink, getNetworkFromEnv } from '../utils/utils';
 import { printSeparator } from '../utils/print';
@@ -7,7 +7,6 @@ import "dotenv/config";
 
 import { FossFi } from '../wrappers/fi/FossFi';
 import { compile, NetworkProvider } from '@ton/blueprint';
-import { Op } from '../wrappers/constants';
 
 export async function run(provider: NetworkProvider) {
     const deployer = process.env.DEPLOYER;
@@ -17,6 +16,9 @@ export async function run(provider: NetworkProvider) {
     }
     const deployerAddress = Address.parse(deployer);
     const supply = toNano(process.env.JETTON_SUPPLY ?? 1000000000) // 1_000_000_000 jettons
+    const deployAmount = toNano("1");
+    // const fossFi = provider.open(await buildJettonMinterFromEnv(deployerAddress));
+
     // ====================================================================================
     const walletCode = await compile('FossFiWallet')
 
@@ -25,30 +27,63 @@ export async function run(provider: NetworkProvider) {
         base_fi_wallet_code: walletCode,
         metadata_uri: envContent // content
     };
-
+    
     const fossFi = provider.open(FossFi.createFromConfig(fossFiConfig, await compile('FossFi')));
 
-    await fossFi.sendDeploy(provider.sender(), toNano('0.5'));
+    // FIXME deploy first by sending init and value
+    const mint = {
+        $$type: "MintNewJettons",
+        queryId: 0n,
+        mintRecipient: deployerAddress,
+        tonAmount: toNano("0.5"),
+        internalTransferMsg: {
+            $$type: "InternalTransferStep",
+            queryId: 0n,
+            jettonAmount: supply,
+            version: 0n, // todo: update/sync in contracts
+            transferInitiator: deployerAddress,
+            sendExcessesTo: deployerAddress,
+            forwardTonAmount: 0n,
+            forwardPayload: beginCell().storeUint(0, 1).asSlice(),
+        },
+    } as MintNewJettons;
 
-    // await provider.sender().send(
-    //     {
-    //         value: toNano('0.5'),
-    //         to: fossFi.address,
-    //         sendMode: SendMode.PAY_GAS_SEPARATELY,
-    //         init: fossFi.init,
-    //         body: beginCell().storeUint(Op.top_up, 32).storeUint(0, 64).endCell(),
-    //     }
-    // )
+    // await fossFi.sendDeploy(provider.sender(), toNano('0.05'));
 
     // await provider.waitForDeploy(fossFi.address);
 
     // run methods on `fossFi`==============================================================
+    
+
+    await provider.sender().send(
+        {
+            value: deployAmount,
+            to: fossFi.address,
+            sendMode: SendMode.PAY_GAS_SEPARATELY, // + SendMode.IGNORE_ERRORS,
+            // bounce: true,
+            init: fossFi.init,
+            body: beginCell()
+                .store(
+                    storeMint(mint),
+                )
+                .endCell(),
+        }
+    )
+
+    // await fossFi.send(
+    //     provider.sender(),
+    //     {
+    //         value: deployAmount,
+    //         bounce: true,
+    //     },
+    //     mint,
+    // );
 
     const network = getNetworkFromEnv()
     console.log(`Running deploy script for ${network} network and for Shard Jetton Minter`)
     console.log(
         "Make sure to send txn from following wallet:. \n" +
-        deployerAddress.toString({ testOnly: true })
+        deployerAddress.toString({testOnly: true})
     )
     printSeparator()
     console.log("Minting:: ", fromNano(supply))

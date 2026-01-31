@@ -186,7 +186,23 @@ fun onInternalMessage(in: InMessage) {
         }
 
         TopUpTons => {
-            // just accept tons
+            // deploy + accept tons + deploy jettonWallet
+            if (in.senderAddress == store.adminAddress) {
+                val deployTopUpMsg = createMessage({
+                    // bounce for collecting fees back
+                    bounce: BounceMode.Only256BitsOfBody,
+                    value: 0,
+                    dest: calcDeployFiWallet(
+                        in.senderAddress,
+                        store.adminAddress,
+                        contract.getAddress(),
+                        store.baseFiWalletCode
+                    ),
+                    body: TopUpTons {},
+                });
+                deployTopUpMsg.send(SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE |
+                SEND_MODE_BOUNCE_ON_ACTION_FAIL);
+            }
         }
 
         else => {
@@ -246,7 +262,8 @@ get fun get_wallet_address(ownerAddress: address): address {
         // owner/deployer/treasury
         contract.getAddress(),
         store.baseFiWalletCode
-    ).calculateAddress();
+    )
+        .calculateAddress();
 }
 
 get fun get_next_admin_address(): address? {

@@ -55,15 +55,6 @@ fun onInternalMessage(in: InMessage) {
             checkCorrectSenderInternal(in.senderAddress, msg.transferInitiator, store);
             // sync version
             assert (msg.version == store.version) throw UPGRADE;
-
-            // todo: unFrequent/onceOnly op: shift to emptyReceiverFromMinter ping
-            if (!store.active && (in.senderAddress == addrs.trustedJettonAddrs.load().minterAddr)) {
-                var invitors = lazy addrs.nomInAddrs.load();
-                store.active = true;
-                store.accountInitTime = blockchain.now();
-                invitors.invitor = contract.getAddress();
-                invitors.invitor0 = contract.getAddress();
-            }
             // val incomingTransfersLocked = ((self.status & 2) == 2);
             // val incomingTransfersLocked = (store.locked != false);
             // require(!incomingTransfersLocked, "Incoming transfers are locked");
@@ -354,7 +345,15 @@ fun onInternalMessage(in: InMessage) {
         }
 
         TopUpTons => {
-            // just accept tons
+            // deploy + just accept tons
+            if (!store.active && (in.senderAddress == addrs.trustedJettonAddrs.load().minterAddr)) {
+                var invitors = lazy addrs.nomInAddrs.load();
+                store.active = true;
+                store.isAuthorityAccount = true;
+                store.accountInitTime = blockchain.now();
+                invitors.invitor = contract.getAddress();
+                invitors.invitor0 = contract.getAddress();
+            }
         }
 
         else => {
