@@ -45,7 +45,7 @@ PROGRAM{
         IFNOTJMP:<{         	//  lazyS
           63 THROW
         }>                  	//  lazyS
-        // 20: BurnNotificationForMinter => msg.jettonAmount, // it's in the beginning of a message
+        // 20: NotifyMinter => msg.jettonAmount, // it's in the beginning of a message
         64 LDU
         NIP                 	//  lazyS
         LDGRAMS             	//  '26 lazyS
@@ -69,7 +69,6 @@ PROGRAM{
     }>                      	//  in.body
     // 29: val msg = lazy AllowedMessageToWallet.fromSlice(in.body)
     DUP                     	//  in.body lazyS
-    // 35: return PriWalletStore.fromCell(contract.getData())
     c4 PUSH                 	//  in.body lazyS '59
     // 30: var storage = lazy PriWalletStore.load()
     CTOS                    	//  in.body lazyS lazyS

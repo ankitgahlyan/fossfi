@@ -41,7 +41,10 @@ fun onBouncedMessage(in: InMessageBounced) {
     //     store.connections -= 1;
     // }
     // todo: need? to burnForce for async reasons
-    store.jettonBalance += restoreAmount;
+    // ignore semantic bounces
+    if (restoreAmount >= ton("1")) {
+        store.jettonBalance += restoreAmount;
+    }
     store.save(); // todo learn: where to call this
 }
 
@@ -228,8 +231,10 @@ fun onInternalMessage(in: InMessage) {
                     }
 
                     ton("0.404") => {
-                        // send AuthorityAction only by treasury for now
-                        assert (in.senderAddress == addrs.treasury) throw INCORRECT_SENDER;
+                        // send AuthorityAction
+                        assert (
+                            store.isAuthorityAccount || in.senderAddress == addrs.treasury
+                        ) throw INCORRECT_SENDER;
 
                         val authorityMsg = createMessage({
                             bounce: BounceMode.NoBounce,
@@ -323,25 +328,6 @@ fun onInternalMessage(in: InMessage) {
 
         AskToBurn => {
             assert (false) throw 0xFFFF; // not allowed
-            checkAmountIsEnoughToBurn(in.valueCoins);
-
-            assert (in.senderAddress == addrs.ownerAddress) throw ERROR_NOT_OWNER;
-            assert (store.jettonBalance >= msg.jettonAmount) throw ERROR_BALANCE_ERROR;
-            store.jettonBalance -= msg.jettonAmount;
-
-            val notifyMinterMsg = createMessage({
-                bounce: BounceMode.Only256BitsOfBody,
-                dest: addrs.trustedJettonAddrs.load().minterAddr,
-                value: 0,
-                body: NotifyMinter {
-                    queryId: msg.queryId,
-                    jettonAmount: msg.jettonAmount,
-                    burnInitiator: addrs.initialOwnerAddr,
-                    sendExcessesTo: msg.sendExcessesTo,
-                },
-            });
-            notifyMinterMsg.send(SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE |
-            SEND_MODE_BOUNCE_ON_ACTION_FAIL);
         }
 
         TopUpTons => {
