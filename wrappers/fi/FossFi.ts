@@ -170,6 +170,7 @@ export class FossFi implements Contract {
         const mintMsg = beginCell().storeUint(Op.internal_transfer, 32)
             .storeUint(0, 64)
             .storeCoins(jetton_amount)
+            .storeUint(0, 10) // version
             .storeAddress(from)
             .storeAddress(response)
             .storeCoins(forward_ton_amount)

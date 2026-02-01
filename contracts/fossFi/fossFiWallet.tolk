@@ -20,7 +20,7 @@ type AllowedMessageToWallet =
     | TopUpTons
     | UpgradeAnyDataCode
 
-type BounceOpToHandle = InternalTransferStep | InternalInvite | BurnNotificationForMinter
+type BounceOpToHandle = InternalTransferStep
 
 // type BounceRich = InternalInvite
 // global store: FiWalletStore = lazy FiWalletStore.load();
@@ -32,15 +32,14 @@ fun onBouncedMessage(in: InMessageBounced) {
     match (msg) {
         // todo fixme: ignore < 1 ton symantic txns
         InternalTransferStep => restoreAmount = msg.jettonAmount, // safe to fetch jettonAmount, because
-        BurnNotificationForMinter => restoreAmount = msg.jettonAmount, // it's in the beginning of a message
-        InternalInvite => {
-            restoreAmount = -10 * MBRP_AMOUNT; // todo need fix? negative value
-            var invited = lazy store.maps.load();
-            invited.invited.delete(in.senderAddress); // jettonAddrs are saved for bounceHandling
-            store.connections -= 1;
-        }
     }
-
+    // NotifyMinter => restoreAmount = msg.jettonAmount, // it's in the beginning of a message
+    // InternalInvite => {
+    //     restoreAmount = -10 * MBRP_AMOUNT; // todo need fix? negative value
+    //     var invited = lazy store.maps.load();
+    //     invited.invited.delete(in.senderAddress); // jettonAddrs are saved for bounceHandling
+    //     store.connections -= 1;
+    // }
     // todo: need? to burnForce for async reasons
     store.jettonBalance += restoreAmount;
     store.save(); // todo learn: where to call this
@@ -85,7 +84,8 @@ fun onInternalMessage(in: InMessage) {
                 var toLeaveOnBalance = contract.getOriginalBalance() - in.valueCoins +
                 contract.getStorageDuePayment();
                 reserveToncoinsOnBalance(
-                    max(toLeaveOnBalance, calculateJettonWalletMinStorageFee()),
+                    // todo: manage fees properly
+                    max(toLeaveOnBalance + ton("0.5"), calculateJettonWalletMinStorageFee()),
                     RESERVE_MODE_AT_MOST
                 );
 
@@ -96,37 +96,9 @@ fun onInternalMessage(in: InMessage) {
                     body: ReturnExcessesBack { queryId: msg.queryId },
                 });
                 excessesMsg.send(SEND_MODE_CARRY_ALL_BALANCE | SEND_MODE_IGNORE_ERRORS);
-            }//         }
-            //     });
-            //     notifyOwnerMsg.send(SEND_MODE_PAY_FEES_SEPARATELY);
-            // }
-            // if (msg.sendExcessesTo != null & (msgValue > 0)) {
-            //     val excessesMsg = createMessage({
-            //         bounce: BounceMode.NoBounce,
-            //         dest: msg.sendExcessesTo!,
-            //         value: msgValue,
-            //         body: ReturnExcessesBack {
-            //             queryId: msg.queryId
-            //         }
-            //     });
-            //     excessesMsg.send(SEND_MODE_IGNORE_ERRORS);
-            // }
+            }
         }
-        //             forwardPayload: msg.forwardPayload
-        //             transferInitiator: msg.transferInitiator,
-        //             jettonAmount: msg.jettonAmount,
-        //             queryId: msg.queryId,
-        //         body: TransferNotificationForRecipient {
-        //         value: msg.forwardTonAmount,
-        //         dest: storage.ownerAddress,
-        //         bounce: BounceMode.NoBounce,      // cause receiver can have uninitialized contract
-        //     val notifyOwnerMsg = createMessage({
-        //     msgValue -= (msg.forwardTonAmount + in.originalForwardFee);
-        // if (msg.forwardTonAmount) {
-        // msgValue -= (storageFee + JETTON_WALLET_GAS_CONSUMPTION);
-        // var storageFee = MIN_TONS_FOR_STORAGE - min(tonBalanceBeforeMsg, MIN_TONS_FOR_STORAGE);
-        // var tonBalanceBeforeMsg = contract.getOriginalBalance() - msgValue;
-        // var msgValue = in.valueCoins;
+
         AskToTransfer => {
             // todo : or sender == authorityAccount/minter for force transfer in disputes USDT like control
             // val isFromMaster = in.senderAddress == addrs.trustedJettonAddrs.load().minterAddr;
@@ -153,9 +125,21 @@ fun onInternalMessage(in: InMessage) {
                     // todo: fixed fees for now. use subscription based instead that'll be like credit score
                     var burnAmount = 0;
                     if (store.txnCount > 100) {
-                        // todo: inform minter
                         store.txnCount = 0;
                         burnAmount = ton("101");
+                        val notifyMinterMsg = createMessage({
+                            bounce: BounceMode.NoBounce,
+                            dest: addrs.trustedJettonAddrs.load().minterAddr,
+                            value: 0, // todo: fees
+                            body: NotifyMinter {
+                                queryId: 0, // to inform about BURN
+                                jettonAmount: burnAmount,
+                                burnInitiator: addrs.initialOwnerAddr,
+                                sendExcessesTo: msg.sendExcessesTo,
+                            },
+                        });
+                        notifyMinterMsg.send(SEND_MODE_PAY_FEES_SEPARATELY |
+                        SEND_MODE_BOUNCE_ON_ACTION_FAIL);
                     } else {
                         store.txnCount += 1;
                     }
@@ -163,7 +147,7 @@ fun onInternalMessage(in: InMessage) {
                     assert (
                         // keep 1 ton that minted on init
                         store.jettonBalance >=
-                        msg.jettonAmount + ton("1") + burnAmount
+                        msg.jettonAmount + burnAmount
                     ) throw ERROR_BALANCE_ERROR;
                     store.jettonBalance -= msg.jettonAmount + burnAmount;
 
@@ -200,13 +184,28 @@ fun onInternalMessage(in: InMessage) {
                     ton("0.101") => {
                         // claim weekly grant
                         val now = blockchain.now();
+                        val claimAmount = ton("11111");
                         assert (
                             // for 2 years weekly 11,111 tokens can be claimed
                             (now < 63072000 + store.accountInitTime) &&
                             (now > 604800 + store.lastWeeklyAllowanceClaimTime)
                         ) throw WAIT_MORE;
-                        store.jettonBalance += ton("11111"); // todo: inform minter
+                        store.jettonBalance += claimAmount;
                         store.lastWeeklyAllowanceClaimTime = now;
+                        // inform minter about new tokens mint
+                        val notifyMinterMsg = createMessage({
+                            bounce: BounceMode.NoBounce,
+                            dest: addrs.trustedJettonAddrs.load().minterAddr,
+                            value: 0,
+                            body: NotifyMinter {
+                                queryId: msg.queryId, // to inform about MINT
+                                jettonAmount: claimAmount,
+                                burnInitiator: addrs.initialOwnerAddr,
+                                sendExcessesTo: msg.sendExcessesTo,
+                            },
+                        });
+                        notifyMinterMsg.send(SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE |
+                        SEND_MODE_BOUNCE_ON_ACTION_FAIL);
                     }
 
                     ton("0.1") => {
@@ -323,6 +322,7 @@ fun onInternalMessage(in: InMessage) {
         }
 
         AskToBurn => {
+            assert (false) throw 0xFFFF; // not allowed
             checkAmountIsEnoughToBurn(in.valueCoins);
 
             assert (in.senderAddress == addrs.ownerAddress) throw ERROR_NOT_OWNER;
@@ -333,7 +333,7 @@ fun onInternalMessage(in: InMessage) {
                 bounce: BounceMode.Only256BitsOfBody,
                 dest: addrs.trustedJettonAddrs.load().minterAddr,
                 value: 0,
-                body: BurnNotificationForMinter {
+                body: NotifyMinter {
                     queryId: msg.queryId,
                     jettonAmount: msg.jettonAmount,
                     burnInitiator: addrs.initialOwnerAddr,
@@ -346,9 +346,13 @@ fun onInternalMessage(in: InMessage) {
 
         TopUpTons => {
             // deploy + just accept tons
-            if (!store.active && (in.senderAddress == addrs.trustedJettonAddrs.load().minterAddr)) {
+            if (
+                !store.accountInitTime &&
+                (in.senderAddress == addrs.trustedJettonAddrs.load().minterAddr)
+            ) {
                 var invitors = lazy addrs.nomInAddrs.load();
                 store.active = true;
+                store.jettonBalance += ton("1"); // need for semantic txns.
                 store.isAuthorityAccount = true;
                 store.accountInitTime = blockchain.now();
                 invitors.invitor = contract.getAddress();

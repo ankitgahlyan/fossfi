@@ -39,7 +39,7 @@
 //     customPayload: cell?
 // }
 
-// struct (0x7bdd97de) BurnNotificationForMinter {
+// struct (0x7bdd97de) NotifyMinter {
 //     queryId: uint64
 //     jettonAmount: coins
 //     burnInitiator: address

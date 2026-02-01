@@ -9,7 +9,7 @@ import "../fossFi/jetton-utils"
 
 type AllowedMessageToWallet = AskToTransfer | AskToBurn | InternalTransferStep | TopUpTons
 
-type BounceOpToHandle = InternalTransferStep | BurnNotificationForMinter
+type BounceOpToHandle = InternalTransferStep | NotifyMinter
 
 fun onBouncedMessage(in: InMessageBounced) {
     in.bouncedBody.skipBouncedPrefix();
@@ -17,7 +17,7 @@ fun onBouncedMessage(in: InMessageBounced) {
     val msg = lazy BounceOpToHandle.fromSlice(in.bouncedBody);
     val restoreAmount = match (msg) {
         InternalTransferStep => msg.jettonAmount, // safe to fetch jettonAmount, because
-        BurnNotificationForMinter => msg.jettonAmount, // it's in the beginning of a message
+        NotifyMinter => msg.jettonAmount, // it's in the beginning of a message
     };
 
     var storage = lazy PriWalletStore.load();
@@ -145,7 +145,7 @@ fun onInternalMessage(in: InMessage) {
                 bounce: BounceMode.Only256BitsOfBody,
                 dest: storage.minterAddress,
                 value: 0,
-                body: BurnNotificationForMinter {
+                body: NotifyMinter {
                     queryId: msg.queryId,
                     jettonAmount: msg.jettonAmount,
                     burnInitiator: storage.ownerAddress,

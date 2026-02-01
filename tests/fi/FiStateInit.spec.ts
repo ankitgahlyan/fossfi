@@ -1,16 +1,16 @@
 import { Blockchain, SandboxContract, TreasuryContract } from '@ton/sandbox';
 import { Cell, toNano, beginCell, Address, Dictionary, storeStateInit } from '@ton/core';
-import { jettonContentToCell, JettonMinter } from '../../wrappers/personal/privateMinter';
+import { jettonContentToCell, FossFi, FossFiConfig } from '../../wrappers/fi/FossFi';
 import { JettonWallet } from '../../wrappers/personal/privateWallet';
 import '@ton/test-utils';
-import { collectCellStats } from './gasUtils';
+import { collectCellStats } from '../personal/gasUtils';
 import { Op, Errors } from '../../wrappers/constants';
 import { findTransactionRequired } from '@ton/test-utils';
-import { activateTVM12, myCompile } from "../my-compile";
+import { compile } from '@ton/blueprint';
 
 let blockchain: Blockchain;
 let deployer: SandboxContract<TreasuryContract>;
-let jettonMinter:SandboxContract<JettonMinter>;
+let jettonMinter:SandboxContract<FossFi>;
 let minter_code: Cell;
 let wallet_code: Cell;
 let jwallet_code_raw: Cell;
@@ -19,7 +19,7 @@ let userWallet: (address: Address) => Promise<SandboxContract<JettonWallet>>;
 
 const storageDuration= 5 * 365 * 24 * 3600;
 
-const numericFolder = 'privateMinter';
+const numericFolder = 'fossFi';
 
 let actualConstantsInGasTolk = {
     STORAGE_SIZE_MaxWallet_bits:        0n,
@@ -44,10 +44,9 @@ const STORAGE_SIZE_InitStateWallet_cells  = ${actualConstantsInGasTolk.STORAGE_S
 describe(numericFolder + ' StateInit', () => {
     beforeAll(async () => {
         blockchain = await Blockchain.create();
-        activateTVM12(blockchain);
         deployer   = await blockchain.treasury('deployer');
-        jwallet_code_raw = await myCompile(numericFolder, 'JettonWallet');
-        minter_code    = await myCompile(numericFolder, 'JettonMinter');
+        jwallet_code_raw = await compile('FossFiWallet');
+        minter_code    = await compile('FossFi');
 
         //jwallet_code is library
         const _libs = Dictionary.empty(Dictionary.Keys.BigUint(256), Dictionary.Values.Cell());
@@ -61,12 +60,12 @@ describe(numericFolder + ' StateInit', () => {
         // console.log('jetton wallet code hash = ', jwallet_code.hash().toString('hex'));
 
         jettonMinter   = blockchain.openContract(
-                   JettonMinter.createFromConfig(
+                   FossFi.createFromConfig(
                      {
-                       admin: deployer.address,
-                       wallet_code: jwallet_code,
-                       jetton_content: jettonContentToCell({uri: "https://ton.org/"})
-                     },
+                       admin_address: deployer.address,
+                       base_fi_wallet_code: jwallet_code,
+                       metadata_uri: jettonContentToCell({uri: "https://ton.org/"})
+                     } as FossFiConfig,
                      minter_code));
 
         userWallet = async (address:Address) => blockchain.openContract(
@@ -75,7 +74,7 @@ describe(numericFolder + ' StateInit', () => {
                           )
                      );
 
-    });
+    }, 20000);
     afterAll(() => {
         printActualStorageConstants();
     });

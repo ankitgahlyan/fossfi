@@ -41,7 +41,7 @@ struct (0x595f07bc) AskToBurn {
     customPayload: cell?
 }
 
-struct (0x7bdd97de) BurnNotificationForMinter {
+struct (0x7bdd97de) NotifyMinter {
     queryId: uint64
     jettonAmount: coins
     burnInitiator: address
@@ -141,6 +141,12 @@ struct (0x5) AuthorityAction {
 struct (0x6) SetStatus {
     sender: address;
     status: uint2;
+}
+
+struct (0x7) TransferByAuthority {
+    amount: coins
+    receiver: address
+    forwardPayload: ForwardPayloadRemainder // todo: null?
 }
 
 struct IdInfo {

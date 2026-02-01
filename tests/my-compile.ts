@@ -1,13 +1,13 @@
 import { beginCell, Cell, Dictionary } from "@ton/core";
-import {extractCompilableConfig} from "@ton/blueprint/dist/compile/compile";
-import {doCompileFunc} from "@ton/blueprint/dist/compile/func/compile.func";
+import { extractCompilableConfig } from "@ton/blueprint/dist/compile/compile";
+import { doCompileFunc } from "@ton/blueprint/dist/compile/func/compile.func";
 import fs from "fs";
-import {doCompileTolk} from "@ton/blueprint/dist/compile/tolk/compile.tolk";
+import { doCompileTolk } from "@ton/blueprint/dist/compile/tolk/compile.tolk";
 import { Blockchain } from '@ton/sandbox'
 
 const PROJECT_ROOT = __dirname + '/../';
-const CONTRACTS_FUNC_ROOT = `${PROJECT_ROOT}/contracts_FunC/`;
-const CONTRACTS_TOLK_ROOT = `${PROJECT_ROOT}/contracts_Tolk/`;
+// const CONTRACTS_FUNC_ROOT = `${PROJECT_ROOT}/contracts_FunC/`;
+const CONTRACTS_TOLK_ROOT = `${PROJECT_ROOT}/contracts/`;
 const WRAPPERS_ROOT = `${PROJECT_ROOT}/wrappers/`;
 const FIFT_OUTPUT_ROOT = `${PROJECT_ROOT}/fift-output/`;
 
@@ -88,15 +88,7 @@ export async function myCompile(numericFolder: string, contractName: string): Pr
     try {
         let codeCell: Cell;
         let fiftOutput: string;
-        if (config.lang === 'func') {
-            let funcResult = await doCompileFunc({
-                targets: config.targets!,
-                sources: path => fs.readFileSync(CONTRACTS_FUNC_ROOT + numericFolder + '/' + path, 'utf-8'),
-                optLevel: 2,
-            });
-            codeCell = funcResult.code;
-            fiftOutput = funcResult.fiftCode;
-        } else if (config.lang === 'tolk') {
+        if (config.lang === 'tolk') {
             let tolkResult = await doCompileTolk({
                 entrypointFileName: config.entrypoint,
                 optimizationLevel: config.optimizationLevel,

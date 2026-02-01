@@ -29,6 +29,8 @@ struct Maps {
     
     allowances: map<address, map<address, coins>> // todo need in personal tokens too?
     debts: map<address, coins>
+    closeFriends: map<address, bool> // for social recovery of account
+    votedFor: map<address, uint4> // todo: what struct to use
     
     reportInfo: Cell<ReportInfo> 
 }
@@ -42,10 +44,10 @@ struct ReportInfo {
 }
 
 struct FiWalletStore { // todo: nft like store migration after activate/upgrade/ID acc also code upgrade & reverese/killSwitch for normal jettons coz of  
-    jettonBalance: coins = ton("1") // needed for semantic txn sending from wallet apps, adjusted in transfer
+    jettonBalance: coins = 0
     txnCount: uint8 = 0 // for fixed fees burns to counter minting
     status: uint2 = 0 // for granular control
-    isAuthorityAccount: bool = false // for elevated permissions, 100,000 accounts needed to vote
+    isAuthorityAccount: bool = false // todo: (learn: use this(sent through ownJetton) pattern for signaturePayloadBypass) for elevated permissions, 100,000 accounts needed to vote
     creditNeed: coins = 0;
     accumulatedFees: coins = 0; // todo: use fixed no of txnCount instead
     debt: coins = 0 // or directly set balance -ve (ton supports this?)

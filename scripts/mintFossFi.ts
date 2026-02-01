@@ -16,7 +16,7 @@ export async function run(provider: NetworkProvider) {
     }
     const deployerAddress = Address.parse(deployer);
     const supply = toNano(process.env.JETTON_SUPPLY ?? 1000000000) // 1_000_000_000 jettons
-    const deployAmount = toNano("1");
+    const deployAmount = toNano("0.5");
     // const fossFi = provider.open(await buildJettonMinterFromEnv(deployerAddress));
 
     // ====================================================================================
@@ -35,12 +35,12 @@ export async function run(provider: NetworkProvider) {
         $$type: "MintNewJettons",
         queryId: 0n,
         mintRecipient: deployerAddress,
-        tonAmount: toNano("0.5"),
+        tonAmount: toNano("0.2"),
         internalTransferMsg: {
             $$type: "InternalTransferStep",
             queryId: 0n,
             jettonAmount: supply,
-            version: 0n, // todo: update/sync in contracts
+            version: 0n, // todo: txn mightFailOnFurtherMints coz jettonWallet's different
             transferInitiator: deployerAddress,
             sendExcessesTo: deployerAddress,
             forwardTonAmount: 0n,

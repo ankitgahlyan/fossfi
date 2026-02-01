@@ -30,6 +30,8 @@ fun calcDeployFiWallet(
             invited: createEmptyMap(),
             allowances: createEmptyMap(),
             debts: createEmptyMap(),
+            closeFriends: createEmptyMap(),
+            votedFor: createEmptyMap(),
             reportInfo: ReportInfo { reports: createEmptyMap() }.toCell(),
         }.toCell(), // todo: learn how to set it default
         id: createEmptyCell(),
@@ -37,9 +39,8 @@ fun calcDeployFiWallet(
     };
 
     return {
-        workchain: MY_WORKCHAIN,
         stateInit: { code: baseFiWalletCode, data: emptyFiWalletStore.toCell() },
-        toShard: { fixedPrefixLength: SHARD_DEPTH, closeTo: ownerAddress }, // todo: initialOwnerAddr?
+        toShard: { fixedPrefixLength: SHARD_DEPTH, closeTo: ownerAddress },
     };
 }
 
@@ -57,9 +58,7 @@ fun address.getAddrFiWallet(self, store: FiWalletStore) {
 
 fun AutoDeployAddress.invite(self, forwardPayload: slice, store: FiWalletStore) {
     val addrs = lazy store.addresses.load();
-
-    val jettonAddr = self.calculateAddress();
-
+    // val jettonAddr = self.calculateAddress();
     idActionChecks(store); // active, !reported
 
     val inviteInternal = createMessage({
@@ -97,9 +96,7 @@ fun address.connected(self, store: FiWalletStore) {
 fun checkCorrectSenderInternal(sender: address, senderInitOwner: address, store: FiWalletStore) {
     // todo: sync version
     if (sender == senderInitOwner.getAddrFiWallet(store)) {
-        assert (
-            store.active
-        ) throw ACCOUNT_INACTIVE;
+        assert (store.active) throw ACCOUNT_INACTIVE;
     } else {
         var addrs = lazy store.addresses.load();
         assert (sender == addrs.trustedJettonAddrs.load().minterAddr) throw ERROR_NOT_VALID_WALLET;
@@ -209,7 +206,7 @@ fun requestUpgrade(store: FiWalletStore) {
         value: 0,
         body: RequestUpgradeCode { sender: addrs.initialOwnerAddr, version: store.version },
     })
-        .send(SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE | SEND_MODE_IGNORE_ERRORS);
+        .send(SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
 }
 
 fun burnForce(sender: address, amount: int, store: FiWalletStore) {

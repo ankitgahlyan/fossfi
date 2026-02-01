@@ -9,7 +9,7 @@ import "../common/utils"
 
 type AllowedMessageToMinter =
     | MintNewJettons
-    | BurnNotificationForMinter
+    | NotifyMinter
     | RequestWalletAddress
     | ChangeMinterAdmin
     | ClaimMinterAdmin
@@ -50,8 +50,11 @@ fun onInternalMessage(in: InMessage) {
             store.totalSupply += 11 * MBRP_AMOUNT; // todo: broadcast id for explorers or dbs
         }
 
-        BurnNotificationForMinter => {
+        NotifyMinter => {
             checkCorrectSender(in.senderAddress, msg.burnInitiator, store);
+
+            // determine whether MINT or BURN
+            msg.queryId ? store.totalSupply += msg.jettonAmount:
             store.totalSupply -= msg.jettonAmount;
 
             if (msg.sendExcessesTo == null) {
@@ -174,10 +177,7 @@ fun onInternalMessage(in: InMessage) {
                 }
             }
         }
-        // 2 => {
-        //     store.jettonWalletCode = msg.newCode!;
-        // }
-        // todo: what about personalJettonMinter upgrades
+        
         RequestUpgradeCode => {
             checkCorrectSender(in.senderAddress, msg.sender, store);
             if (msg.version < store.walletVersion) {
@@ -188,6 +188,7 @@ fun onInternalMessage(in: InMessage) {
         TopUpTons => {
             // deploy + accept tons + deploy jettonWallet
             if (in.senderAddress == store.adminAddress) {
+                store.totalSupply += ton("1"); // needed for semantic txn minted to deployer
                 val deployTopUpMsg = createMessage({
                     // bounce for collecting fees back
                     bounce: BounceMode.Only256BitsOfBody,

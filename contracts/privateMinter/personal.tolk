@@ -10,7 +10,7 @@ import "../fossFi/jetton-utils"
 type AllowedMessageToMinter =
     | InternalTransferStep
     | MintNewJettons
-    | BurnNotificationForMinter
+    | NotifyMinter
     | RequestWalletAddress
     | ChangeMinterAdmin
     | ClaimMinterAdmin
@@ -119,7 +119,7 @@ fun onInternalMessage(in: InMessage) {
         }
         // storage.jettonBalance += feeAdjusted;
         // todo: need to call jetton wallet
-        BurnNotificationForMinter => {
+        NotifyMinter => {
             assert (
                 in.senderAddress ==
                 calcAddrPriWallet(
