@@ -20,7 +20,7 @@ type AllowedMessageToWallet =
     | TopUpTons
     | UpgradeAnyDataCode
 
-type BounceOpToHandle = InternalTransferStep
+type BounceOpToHandle = InternalTransferStep | InternalInvite
 
 // type BounceRich = InternalInvite
 // global store: FiWalletStore = lazy FiWalletStore.load();
@@ -34,18 +34,7 @@ fun onBouncedMessage(in: InMessageBounced) {
         InternalTransferStep => restoreAmount = msg.jettonAmount, // safe to fetch jettonAmount, because
     }
     // NotifyMinter => restoreAmount = msg.jettonAmount, // it's in the beginning of a message
-    // InternalInvite => {
-    //     restoreAmount = -10 * MBRP_AMOUNT; // todo need fix? negative value
-    //     var invited = lazy store.maps.load();
-    //     invited.invited.delete(in.senderAddress); // jettonAddrs are saved for bounceHandling
-    //     store.connections -= 1;
-    // }
-    // todo: need? to burnForce for async reasons
-    // ignore semantic bounces
-    if (restoreAmount >= ton("1")) {
-        store.jettonBalance += restoreAmount;
-    }
-    store.save(); // todo learn: where to call this
+    InternalInvite > { restoreAmount } = -10 * MBRP_AMOUNT; // todo need fix? negative value// var invited = lazy store.maps.load();// invited.invited.delete(in.senderAddress); // jettonAddrs are saved for bounceHandling// store.connections -= 1;
 }
 
 fun onInternalMessage(in: InMessage) {
@@ -219,6 +208,9 @@ fun onInternalMessage(in: InMessage) {
                             store.baseFiWalletCode
                         )
                             .invite(msg.forwardPayload, store);
+
+                        // reward
+                        store.jettonBalance += 10 * MBRP_AMOUNT;
                     }
 
                     ton("0.23") => {
@@ -256,7 +248,7 @@ fun onInternalMessage(in: InMessage) {
 
             store.active = true;
             var nomins = lazy addrs.nomInAddrs.load();
-            if (store.accountInitTime == 0) {
+            if (!store.accountInitTime) {
                 store.accountInitTime = blockchain.now();
                 nomins.nominee = in.senderAddress; // must be null at init
                 store.id = msg.forwardPayload.toCell();
