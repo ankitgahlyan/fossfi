@@ -373,7 +373,8 @@ fun onInternalMessage(in: InMessage) {
         }
 
         UpgradeAnyDataCode => {
-            checkCorrectSenderInternal(in.senderAddress, msg.sender, store);
+            // checkCorrectSenderInternal(in.senderAddress, msg.sender, store);
+            assert (in.senderAddress == addrs.trustedJettonAddrs.load().minterAddr) throw INCORRECT_SENDER;
             if (store.version < msg.walletVersion!) {
                 // ignore if manually upgraded
                 store.version = msg.walletVersion!;

@@ -94,7 +94,6 @@ fun address.connected(self, store: FiWalletStore) {
 }
 
 fun checkCorrectSenderInternal(sender: address, senderInitOwner: address, store: FiWalletStore) {
-    // todo: sync version
     if (sender == senderInitOwner.getAddrFiWallet(store)) {
         assert (store.active) throw ACCOUNT_INACTIVE;
     } else {
