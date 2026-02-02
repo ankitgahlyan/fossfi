@@ -67,3 +67,4 @@ const ALREADY_REPORTED_FOR_OTHER_REASON: int = 741;
 // CONTRACT_CONSTS
 // Declare a compile-time constant upper-bound for our map
 const MAX_CONNECTIONS: int = 250; // coz accClosing contract can send only approx 250 msg once
+const AUTHORITY_THRESHOLD: int = 1000000 // 1 million votes = 100,000 acounts/voters

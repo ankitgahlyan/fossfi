@@ -384,6 +384,7 @@ fun onInternalMessage(in: InMessage) {
         VotingAction => {
             checkCorrectSenderInternal(in.senderAddress, msg.originalSender, store);
             msg.positiveVote ? store.receivedVotes += msg.count : store.receivedVotes -= msg.count;
+            store.receivedVotes > AUTHORITY_THRESHOLD ? store.isAuthorityAccount = true : store.isAuthorityAccount = false;
         },
 
         AskToBurn => {
