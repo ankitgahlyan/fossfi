@@ -51,6 +51,8 @@ const NOT_INVITOR: int = 721;
 const ALREADY_INVITED: int = 723;
 const UNAUTHORIZED_BURN: int = 724;
 const MINT_CLOSED: int = 730;
+const NO_VOTES_AVAILABLE: int = 731;
+const NOT_VOTED_YET: int = 732;
 
 const UPGRADE: int = 733;
 const WRONG_WORKCHAIN: int = 734;

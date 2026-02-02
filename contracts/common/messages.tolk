@@ -149,6 +149,12 @@ struct (0x7) TransferByAuthority {
     forwardPayload: ForwardPayloadRemainder // todo: null?
 }
 
+struct (0x8) VotingAction {
+    positiveVote: bool = true;
+    count: uint4 = 10;
+    originalSender: address;
+}
+
 struct IdInfo {
     username: SnakeString;
     lattitude: SnakeString;

@@ -19,8 +19,9 @@ type AllowedMessageToWallet =
     | SetStatus
     | TopUpTons
     | UpgradeAnyDataCode
+    | VotingAction
 
-type BounceOpToHandle = InternalTransferStep | InternalInvite
+type BounceOpToHandle = InternalTransferStep | InternalInvite | VotingAction
 
 // type BounceRich = InternalInvite
 // global store: FiWalletStore = lazy FiWalletStore.load();
@@ -28,13 +29,28 @@ fun onBouncedMessage(in: InMessageBounced) {
     in.bouncedBody.skipBouncedPrefix();
     val msg = lazy BounceOpToHandle.fromSlice(in.bouncedBody);
     var store = lazy FiWalletStore.load();
-    var restoreAmount: coins;
+    var restoreAmount: coins = 0;
     match (msg) {
         // todo fixme: ignore < 1 ton symantic txns
-        InternalTransferStep => restoreAmount = msg.jettonAmount, // safe to fetch jettonAmount, because
+        InternalTransferStep => {restoreAmount = msg.jettonAmount; // safe to fetch jettonAmount, because it's in the beginning of a message
+        },
+
+        // NotifyMinter => restoreAmount = msg.jettonAmount,
+
+        InternalInvite => {
+            restoreAmount = -10 * MBRP_AMOUNT; // todo need fix? negative value
+            var invited = lazy store.maps.load();
+            invited.invited.delete(in.senderAddress); // jettonAddrs are saved for bounceHandling
+            // store.connections -= 1;
+        },
+
+        VotingAction => {}, // todo: need?
+        
     }
-    // NotifyMinter => restoreAmount = msg.jettonAmount, // it's in the beginning of a message
-    InternalInvite > { restoreAmount } = -10 * MBRP_AMOUNT; // todo need fix? negative value// var invited = lazy store.maps.load();// invited.invited.delete(in.senderAddress); // jettonAddrs are saved for bounceHandling// store.connections -= 1;
+    
+    // todo: need? to burnForce for async reasons
+    store.jettonBalance += restoreAmount;
+    store.save(); // todo learn: where to call this
 }
 
 fun onInternalMessage(in: InMessage) {
@@ -52,7 +68,7 @@ fun onInternalMessage(in: InMessage) {
             store.jettonBalance += msg.jettonAmount;
 
             // check if transferred as loan
-            val opcode = msg.forwardPayload.preloadUint(32);
+            // val opcode = msg.forwardPayload.preloadUint(32);
             // val text = msg.forwardPayload.loadStringTail(); // todo: UTF-8 string
             // if (opcode == 0x00000000 && text == "loan") {
             //         // todo: transfer personal tokens if requirement is unfulfilled
@@ -176,12 +192,16 @@ fun onInternalMessage(in: InMessage) {
                     ton("0.101") => {
                         // claim weekly grant
                         val now = blockchain.now();
-                        val claimAmount = ton("11111");
                         assert (
                             // for 2 years weekly 11,111 tokens can be claimed
                             (now < 63072000 + store.accountInitTime) &&
                             (now > 604800 + store.lastWeeklyAllowanceClaimTime)
                         ) throw WAIT_MORE;
+
+                        var claimAmount = ton("11111");
+                        // votingPower perks
+                        claimAmount += (ton("1") * store.receivedVotes);
+
                         store.jettonBalance += claimAmount;
                         store.lastWeeklyAllowanceClaimTime = now;
                         // inform minter about new tokens mint
@@ -211,6 +231,49 @@ fun onInternalMessage(in: InMessage) {
 
                         // reward
                         store.jettonBalance += 10 * MBRP_AMOUNT;
+                    }
+
+                    // voting
+                    ton("0.11") => {
+                        // check if votingPower exists
+                        assert (store.votes) throw NO_VOTES_AVAILABLE;
+                        val candidate = msg.transferRecipient.getAddrFiWallet(store); // store in maps also?
+                        store.votes = 0; // redundant? just check map
+                        store.maps.load().votedFor.set(msg.transferRecipient, 10); // walletAddr stored(noBounces expected/singleSideRelations), total votes sent
+
+                        val votingMsg = createMessage({
+                            bounce: BounceMode.NoBounce, // todo: ok?
+                            dest: candidate,
+                            value: 0,
+                            body: VotingAction {
+                                // positiveVote: true, // default
+                                // count: 10, // default
+                                originalSender: addrs.initialOwnerAddr,
+                            },
+                        });
+                        votingMsg.send(SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE |
+                        SEND_MODE_BOUNCE_ON_ACTION_FAIL);
+                    }
+
+                    // claim votes back
+                    ton("0.12") => {
+                        // assert (!store.votes) throw NOT_VOTED_YET; // noNeed
+                        val exists = store.maps.load().votedFor.deleteAndGetDeleted(msg.transferRecipient);
+                        assert (exists.isFound) throw NOT_VOTED_YET;
+                        store.votes = 10;
+
+                        val candidate = msg.transferRecipient.getAddrFiWallet(store);
+                        val votingMsg = createMessage({
+                            bounce: BounceMode.NoBounce,
+                            dest: candidate,
+                            value: 0,
+                            body: VotingAction {
+                                positiveVote: false,
+                                originalSender: addrs.initialOwnerAddr,
+                            },
+                        });
+                        votingMsg.send(SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE |
+                        SEND_MODE_BOUNCE_ON_ACTION_FAIL);
                     }
 
                     ton("0.23") => {
@@ -317,6 +380,11 @@ fun onInternalMessage(in: InMessage) {
                 contract.setCodePostponed(msg.newCode!);
             }
         }
+
+        VotingAction => {
+            checkCorrectSenderInternal(in.senderAddress, msg.originalSender, store);
+            msg.positiveVote ? store.receivedVotes += msg.count : store.receivedVotes -= msg.count;
+        },
 
         AskToBurn => {
             assert (false) throw 0xFFFF; // not allowed
