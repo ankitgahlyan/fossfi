@@ -38,6 +38,7 @@
     "@ton/test-utils": "^0.12.0",
     "@ton/tolk-js": "^1.2.0",
     "@ton/ton": "^16.1.0",
+    "@tondevwallet/traces": "^0.1.8",
     "@types/jest": "^30.0.0",
     "@types/node": "^24.10.9",
     "@types/qs": "^6.14.0",
@@ -46,6 +47,7 @@
     "jest": "^30.2.0",
     "prettier": "^3.8.1",
     "qs": "^6.14.1",
+    "ton-sandbox-dev": "^0.35.46",
     "ts-jest": "^29.4.6",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"

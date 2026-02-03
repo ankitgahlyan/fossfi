@@ -14,7 +14,7 @@ import {
     TupleBuilder,
     TupleReader
 } from '@ton/core';
-import {Op} from '../constants';
+import { Op } from '../constants';
 import * as fs from 'node:fs';
 import * as path from 'path';
 
@@ -75,7 +75,6 @@ export function fossFiConfigToCell(config: FossFiConfig): Cell {
     return beginCell()
         .storeCoins(0)
         .storeUint(0, 10)
-        .storeAddress(config.admin_address)
         .storeAddress(config.admin_address)
         .storeRef(config.base_fi_wallet_code)
         .storeRef(config.base_fi_wallet_code)
@@ -147,14 +146,14 @@ export class FossFi implements Contract {
     }
 
     static async fromInit(owner: Address, jettonContent: Cell) {
-            const __gen_init = await FossFi_init(owner, jettonContent);
-            const address = contractAddress(0, __gen_init);
-            return new FossFi(address, __gen_init);
-        }
+        const __gen_init = await FossFi_init(owner, jettonContent);
+        const address = contractAddress(0, __gen_init);
+        return new FossFi(address, __gen_init);
+    }
 
     static createFromConfig(config: FossFiConfig, code: Cell, workchain = 0) {
         const data = fossFiConfigToCell(config);
-        const init = {code, data};
+        const init = { code, data };
         return new FossFi(contractAddress(workchain, init), init);
     }
 
@@ -220,13 +219,13 @@ export class FossFi implements Contract {
     }
 
     async sendMint(provider: ContractProvider,
-                   via: Sender,
-                   to: Address,
-                   jetton_amount: bigint,
-                   from?: Address | null,
-                   response_addr?: Address | null,
-                   customPayload?: Cell | null,
-                   forward_ton_amount: bigint = toNano('0.05'), total_ton_amount: bigint = toNano('0.1')) {
+        via: Sender,
+        to: Address,
+        jetton_amount: bigint,
+        from?: Address | null,
+        response_addr?: Address | null,
+        customPayload?: Cell | null,
+        forward_ton_amount: bigint = toNano('0.05'), total_ton_amount: bigint = toNano('0.1')) {
         await provider.internal(via, {
             sendMode: SendMode.PAY_GAS_SEPARATELY,
             body: FossFi.mintMessage(to, jetton_amount, from, response_addr, customPayload, forward_ton_amount, total_ton_amount),
@@ -326,7 +325,7 @@ export class FossFi implements Contract {
     }
     static parseDropAdmin(slice: Slice) {
         const op = slice.loadUint(32);
-        if(op !== Op.drop_admin) {
+        if (op !== Op.drop_admin) {
             throw new Error("Invalid op");
         }
         const queryId = slice.loadUint(64);
@@ -409,11 +408,12 @@ export class FossFi implements Contract {
         }
     }
 
-    static upgradeMessage(new_code: Cell, new_data: Cell, query_id: bigint | number = 0, sender: Address, walletVersion: bigint | number = 0) {
-        return beginCell().storeUint(Op.upgrade, 32).storeUint(query_id, 2)
+    static upgradeMessage(walletUpgrade: boolean, sender: Address, new_code: Cell, new_data: Cell | null,) {
+        return beginCell().storeUint(Op.upgrade, 32).storeBit(walletUpgrade)
+            .storeUint(0, 10)
             .storeAddress(sender)
-            .storeUint(walletVersion, 10)
-            .storeRef(new_data)
+            .storeBit(false)
+            .storeBit(true) // todo: fixme need to check for null
             .storeRef(new_code)
             .endCell();
     }
@@ -432,10 +432,10 @@ export class FossFi implements Contract {
         }
     }
 
-    async sendUpgrade(provider: ContractProvider, via: Sender, new_code: Cell, new_data: Cell, value: bigint = toNano('0.1'), query_id: bigint | number = 0, sender: Address) {
+    async sendUpgrade(provider: ContractProvider, via: Sender, walletUpgrade: boolean, sender: Address, new_code: Cell, new_data: Cell | null, value: bigint) {
         await provider.internal(via, {
             sendMode: SendMode.PAY_GAS_SEPARATELY,
-            body: FossFi.upgradeMessage(new_code, new_data, query_id, sender),
+            body: FossFi.upgradeMessage(walletUpgrade, sender, new_code, new_data),
             value
         });
     }
@@ -517,20 +517,19 @@ type FossFi_init_args = {
 // (0x2508d66a) UpgradeAnyDataCode
 export type Upgrade = {
     $$type: 'Upgrade';
-    queryId: bigint; // todo fixme: uint2
+    walletUpgrade: boolean;
     sender: Address;
-    walletVersion: bigint | null; // uint10
-    newData: Cell | null;
-    newCode: Cell | null;
+    newData: Cell | null | undefined;
+    newCode: Cell | null | undefined;
 }
 
 export function storeUpgrade(src: Upgrade) {
     return (builder: Builder) => {
         const b_0 = builder;
         b_0.storeUint(621336170, 32);
-        b_0.storeUint(src.queryId, 2);
+        b_0.storeBit(src.walletUpgrade);
+        b_0.storeUint(0, 10); // ignored. used in internal upgrades
         b_0.storeAddress(src.sender);
-        if (src.walletVersion !== null && src.walletVersion !== undefined) { b_0.storeUint(src.walletVersion, 10); } else { b_0.storeBit(false); }
         if (src.newData !== null && src.newData !== undefined) { b_0.storeBit(true).storeRef(src.newData); } else { b_0.storeBit(false); }
         if (src.newCode !== null && src.newCode !== undefined) { b_0.storeBit(true).storeRef(src.newCode); } else { b_0.storeBit(false); }
     };
@@ -539,37 +538,37 @@ export function storeUpgrade(src: Upgrade) {
 export function loadUpgrade(slice: Slice) {
     const sc_0 = slice;
     if (sc_0.loadUint(32) !== 621336170) { throw Error('Invalid prefix'); }
-    const _queryId = sc_0.loadUintBig(2);
+    const _walletUpgrade = sc_0.loadBoolean();
+    const _walletVersion = sc_0.loadUintBig(10);
     const _sender = sc_0.loadAddress();
-    const _walletVersion = sc_0.loadBit() ? sc_0.loadUintBig(10) : null;
     const _newData = sc_0.loadBit() ? sc_0.loadRef() : null;
     const _newCode = sc_0.loadBit() ? sc_0.loadRef() : null;
-    return { $$type: 'Upgrade' as const, queryId: _queryId, sender: _sender, walletVersion: _walletVersion, newData: _newData, newCode: _newCode };
+    return { $$type: 'Upgrade' as const, walletUpgrade: _walletUpgrade, walletVersion: _walletVersion, sender: _sender, newData: _newData, newCode: _newCode };
 }
 
 export function loadTupleUpgrade(source: TupleReader) {
-    const _queryId = source.readBigNumber();
-    const _sender = source.readAddress();
+    const _walletUpgrade = source.readBoolean();
     const _walletVersion = source.readBigNumber();
+    const _sender = source.readAddress();
     const _newData = source.readCellOpt();
     const _newCode = source.readCellOpt();
-    return { $$type: 'Upgrade' as const, queryId: _queryId, sender: _sender, walletVersion: _walletVersion, newData: _newData, newCode: _newCode };
+    return { $$type: 'Upgrade' as const, walletUpgrade: _walletUpgrade, walletVersion: _walletVersion, sender: _sender, newData: _newData, newCode: _newCode };
 }
 
 export function loadGetterTupleUpgrade(source: TupleReader) {
-    const _queryId = source.readBigNumber();
+    const _walletUpgrade = source.readBoolean;
+    const _walletVersion = source.readBigNumber;
     const _sender = source.readAddress();
-    const _walletVersion = source.readBigNumberOpt;
     const _newData = source.readCellOpt();
     const _newCode = source.readCellOpt();
-    return { $$type: 'Upgrade' as const, queryId: _queryId, sender: _sender, walletVersion: _walletVersion, newData: _newData, newCode: _newCode };
+    return { $$type: 'Upgrade' as const, walletUpgrade: _walletUpgrade, walletVersion: _walletVersion, sender: _sender, newData: _newData, newCode: _newCode };
 }
 
 export function storeTupleUpgrade(source: Upgrade) {
     const builder = new TupleBuilder();
-    builder.writeNumber(source.queryId);
+    builder.writeBoolean(source.walletUpgrade);
+    builder.writeNumber(0n);
     builder.writeAddress(source.sender);
-    builder.writeNumber(source.walletVersion);
     builder.writeCell(source.newData);
     builder.writeCell(source.newCode);
     return builder.build();

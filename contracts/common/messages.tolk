@@ -81,11 +81,11 @@ struct (0x7431f221) DropMinterAdmin {
 }
 
 struct (0x2508d66a) UpgradeAnyDataCode {
-    queryId: uint2 = 1
+    walletUpgrade: bool = true
+    walletVersion: uint10
     sender: address
-    walletVersion: uint10?
     newData: cell? = null
-    newCode: cell?
+    newCode: cell? = null
 }
 
 struct (0xcb862902) ChangeMinterMetadataUri {

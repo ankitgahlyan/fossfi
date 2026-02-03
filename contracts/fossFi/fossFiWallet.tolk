@@ -25,7 +25,7 @@ type BounceOpToHandle = InternalTransferStep | InternalInvite | VotingAction
 
 // type BounceRich = InternalInvite
 // global store: FiWalletStore = lazy FiWalletStore.load();
-fun onBouncedMessage(in: InMessageBounced) {
+fun onBouncedMessage(in: InMessageBounced): void {
     in.bouncedBody.skipBouncedPrefix();
     val msg = lazy BounceOpToHandle.fromSlice(in.bouncedBody);
     var store = lazy FiWalletStore.load();
@@ -53,7 +53,7 @@ fun onBouncedMessage(in: InMessageBounced) {
     store.save(); // todo learn: where to call this
 }
 
-fun onInternalMessage(in: InMessage) {
+fun onInternalMessage(in: InMessage): void {
     val msg = lazy AllowedMessageToWallet.fromSlice(in.body);
     var store = lazy FiWalletStore.load();
     val addrs = lazy store.addresses.load();
@@ -375,9 +375,9 @@ fun onInternalMessage(in: InMessage) {
         UpgradeAnyDataCode => {
             // checkCorrectSenderInternal(in.senderAddress, msg.sender, store);
             assert (in.senderAddress == addrs.trustedJettonAddrs.load().minterAddr) throw INCORRECT_SENDER;
-            if (store.version < msg.walletVersion!) {
+            if (store.version < msg.walletVersion) {
                 // ignore if manually upgraded
-                store.version = msg.walletVersion!;
+                store.version = msg.walletVersion;
                 contract.setCodePostponed(msg.newCode!);
             }
         }
@@ -433,7 +433,8 @@ get fun get_wallet_data(): JettonWalletDataReply {
         jettonBalance: store.jettonBalance,
         ownerAddress: addrs.initialOwnerAddr, // init owner
         minterAddress: addrs.trustedJettonAddrs.load().minterAddr,
-        jettonWalletCode: store.baseFiWalletCode, // init code
+        // jettonWalletCode: store.baseFiWalletCode, // init code
+        jettonWalletCode: contract.getCode(), // latest
     };
 }
 

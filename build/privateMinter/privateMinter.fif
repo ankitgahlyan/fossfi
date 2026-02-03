@@ -786,16 +786,10 @@ PROGRAM{
       // ...39: ) throw ERROR_NOT_OWNER
       73 THROWIFNOT         	//  lazyS
       // 242: contract.setCodePostponed(msg.newCode!)
-      2 LDU
+      11 LDU
       NIP                   	//  lazyS
       LDSTDADDR             	//  '920 lazyS
       NIP                   	//  lazyS
-      1 LDU                 	//  '922 lazyS
-      SWAP                  	//  lazyS '922
-      IF:<{                 	//  lazyS
-        10 LDU
-        NIP                 	//  lazyS
-      }>                    	//  lazyS
       LDOPTREF              	//  msg.USlot6 lazyS
       PLDOPTREF             	//  msg.USlot6 msg.USlot7
       SETCODE               	//  msg.USlot6
@@ -809,9 +803,9 @@ PROGRAM{
       DROP                  	// 
     }>                      	//  in.body
     // 253: assert (in.body.isEmpty()) throw 0xFFFF
-    16 PUSHPOW2DEC          	//  in.body '928=65535
-    SWAP                    	//  '928=65535 in.body
-    SEMPTY                  	//  '928=65535 '929
+    16 PUSHPOW2DEC          	//  in.body '925=65535
+    SWAP                    	//  '925=65535 in.body
+    SEMPTY                  	//  '925=65535 '926
     THROWANYIFNOT           	// 
   }>
   // contracts/privateMinter/personal.tolk:274

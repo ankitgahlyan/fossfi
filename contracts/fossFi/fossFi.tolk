@@ -12,14 +12,13 @@ type AllowedMessageToMinter =
     | NotifyMinter
     | RequestWalletAddress
     | ChangeMinterAdmin
-    | ClaimMinterAdmin
     | ChangeMinterMetadataUri
     | UpgradeAnyDataCode
     | TopUpTons
     | InformMinterInviteInternal
     | RequestUpgradeCode
 
-fun onBouncedMessage(in: InMessageBounced) {
+fun onBouncedMessage(in: InMessageBounced): void {
     in.bouncedBody.skipBouncedPrefix();
     // process only mint bounces; on other messages, an exception will be thrown, it's okay
     val msg = lazy InternalTransferStep.fromSlice(in.bouncedBody);
@@ -39,12 +38,13 @@ fun onBouncedMessage(in: InMessageBounced) {
 //         senderAddress == adminAddress
 //     ) throw ERROR_NOT_OWNER; // then, if admin is `null`, error code 7 will be thrown (while executing operator `==`),// it's suitable for current implementation
 // }
-fun onInternalMessage(in: InMessage) {
+fun onInternalMessage(in: InMessage): void {
     val msg = lazy AllowedMessageToMinter.fromSlice(in.body);
     var store = lazy FiStore.load();
 
     match (msg) {
-        InformMinterInviteInternal => { // todo: use notifyMinter but forwardPayload?
+        InformMinterInviteInternal => {
+            // todo: use notifyMinter but forwardPayload?
             checkCorrectSender(in.senderAddress, msg.sender, store);
             var store = lazy FiStore.load();
             store.totalSupply += 10 * MBRP_AMOUNT; // todo: broadcast id for explorers or dbs
@@ -54,8 +54,9 @@ fun onInternalMessage(in: InMessage) {
             checkCorrectSender(in.senderAddress, msg.burnInitiator, store);
 
             // determine whether MINT or BURN
-            msg.queryId ? store.totalSupply += msg.jettonAmount:
-            store.totalSupply -= msg.jettonAmount;
+            msg.queryId
+                ? store.totalSupply += msg.jettonAmount
+                : store.totalSupply -= msg.jettonAmount;
 
             if (msg.sendExcessesTo == null) {
                 return;
@@ -134,20 +135,9 @@ fun onInternalMessage(in: InMessage) {
 
         ChangeMinterAdmin => {
             assert (in.senderAddress == store.adminAddress) throw ERROR_NOT_OWNER;
-            store.nextAdminAddress = msg.newAdminAddress;
+            store.adminAddress = msg.newAdminAddress;
         }
 
-        ClaimMinterAdmin => {
-            assert (in.senderAddress == store.adminAddress) throw ERROR_NOT_OWNER;
-            store.adminAddress = store.nextAdminAddress!;
-            store.nextAdminAddress = null;
-        }
-
-        // DropMinterAdmin => {
-        //     assertSenderIsAdmin(in.senderAddress, store.adminAddress);
-        //     store.adminAddress = ZERO_ADDRESS;
-        //     store.nextAdminAddress = null;
-        // }
         ChangeMinterMetadataUri => {
             assert (in.senderAddress == store.adminAddress) throw ERROR_NOT_OWNER;
             store.metadataUri = msg.newMetadataUri.toCell();
@@ -155,8 +145,14 @@ fun onInternalMessage(in: InMessage) {
 
         UpgradeAnyDataCode => {
             assert (in.senderAddress == store.adminAddress) throw ERROR_NOT_OWNER;
-            match (msg.queryId) {
-                0 => {
+            match (msg.walletUpgrade) {
+                true => {
+                    // for jettonWallet of FOSSFIAT/MINT
+                    store.walletVersion += 1;
+                    store.latestFiWalletCode = msg.newCode!; // shouldn't be null for other than minterUpgrade
+                }
+
+                false => {
                     // for minter
                     if (msg.newCode != null) {
                         contract.setCodePostponed(msg.newCode);
@@ -165,23 +161,26 @@ fun onInternalMessage(in: InMessage) {
                         contract.setData(msg.newData);
                     }
                 }
-
-                1 => {
-                    // for jettonWallet of FOSSFIAT/MINT
-                    store.walletVersion += 1;
-                    store.latestFiWalletCode = msg.newCode!; // shouldn't be null for other than minterUpgrade
-                }
-
-                else => {
-                    throw INVALID_FWD_PAYLOAD;
-                }
             }
         }
-        
+
         RequestUpgradeCode => {
             checkCorrectSender(in.senderAddress, msg.sender, store);
             if (msg.version < store.walletVersion) {
-                sendUpgradeMinter(in.senderAddress, store);
+                // sendUpgradeMinter(in.senderAddress, store);
+                val upgradeMsg = createMessage({
+                    // bounce for collecting fees back
+                    bounce: BounceMode.NoBounce,
+                    value: 0,
+                    dest: in.senderAddress,
+                    body: UpgradeAnyDataCode {
+                        walletVersion: store.walletVersion,
+                        sender: store.adminAddress,
+                        newCode: store.latestFiWalletCode,
+                    },
+                });
+                upgradeMsg.send(SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE |
+                SEND_MODE_IGNORE_ERRORS);
             }
         }
 
@@ -269,7 +268,7 @@ get fun get_wallet_address(ownerAddress: address): address {
 
 get fun get_next_admin_address(): address? {
     val store = lazy FiStore.load();
-    return store.nextAdminAddress;
+    return store.adminAddress;
 }
 
 fun checkCorrectSender(sender: address, senderInitOwner: address, store: FiStore) {
@@ -283,20 +282,4 @@ fun checkCorrectSender(sender: address, senderInitOwner: address, store: FiStore
         )
             .calculateAddress()
     ) throw ERROR_NOT_VALID_WALLET;
-}
-
-@inline
-fun sendUpgradeMinter(to: address, store: FiStore) {
-    val upgradeMsg = createMessage({
-        // bounce for collecting fees back
-        bounce: BounceMode.NoBounce,
-        value: 0,
-        dest: to,
-        body: UpgradeAnyDataCode {
-            sender: store.adminAddress,
-            walletVersion: store.walletVersion,
-            newCode: store.latestFiWalletCode,
-        },
-    });
-    upgradeMsg.send(SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE | SEND_MODE_IGNORE_ERRORS);
 }

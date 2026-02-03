@@ -20,13 +20,13 @@ export async function run(provider: NetworkProvider) {
     // const fossFi = provider.open(await buildJettonMinterFromEnv(deployerAddress));
 
     // ====================================================================================
-    const walletCode = await compile('FossFiWallet')
+    // const walletCode = await compile('FossFiWallet')
 
-    const fossFiConfig: FossFiConfig = {
-        admin_address: deployerAddress,
-        base_fi_wallet_code: walletCode,
-        metadata_uri: envContent // content
-    };
+    // const fossFiConfig: FossFiConfig = {
+    //     admin_address: deployerAddress,
+    //     base_fi_wallet_code: walletCode,
+    //     metadata_uri: envContent // content
+    // };
 
     const fossFi = provider.open(FossFi.createFromAddress(Address.parse(FI_ADDRESS)));
 
@@ -50,14 +50,13 @@ export async function run(provider: NetworkProvider) {
 
     console.log("Upgrade selection:", upgradeMinter ? "minter" : "", upgradeWallet ? "wallet" : "")
 
-    const upgrade = {
+    const upgrade: Upgrade = {
         $$type: "Upgrade",
-        queryId: upgradeMinter ? 0n : upgradeWallet ? 1n : 2n, // 0 for minter, 1 for wallet
+        walletUpgrade: upgradeMinter ? false : true,
         sender: deployerAddress,
-        walletVersion: null,
         newData: null,
         newCode: code,
-    } as Upgrade;
+    };
 
     await provider.sender().send(
         {

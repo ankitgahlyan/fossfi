@@ -72,10 +72,9 @@ struct FiStore {
     totalSupply: coins = 0
     walletVersion: uint10 = 0
     adminAddress: address
-    nextAdminAddress: address? = null
     readonly baseFiWalletCode: cell // for address calculation
     latestFiWalletCode: cell // for upgrades
-    metadataUri: cell // Cell<SnakeString> // noNeed2bnull for fossFi minter
+    metadataUri: cell // Cell<SnakeString>
 }
 
 fun FiStore.load() {

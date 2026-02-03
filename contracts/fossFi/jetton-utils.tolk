@@ -241,11 +241,9 @@ fun sendUpgrade(to: address, newCode: cell, store: FiWalletStore) {
         value: ton("0.2"),
         bounce: false,
         body: UpgradeAnyDataCode {
-            queryId: 0,
-            sender: store.addresses.load().initialOwnerAddr,
             walletVersion: store.version,
+            sender: store.addresses.load().initialOwnerAddr,
             newCode,
-            newData: null,
         },
     })
         .send(SEND_MODE_PAY_FEES_SEPARATELY | SEND_MODE_IGNORE_ERRORS); // todo don't ignore
