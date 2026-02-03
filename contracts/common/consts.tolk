@@ -36,6 +36,7 @@ const RESERVED_INTERNAL: int = 704;
 // const UPGRADE_WALLET: int = 705;
 const NO_PENDING_REQUEST: int = 706;
 const CANT_UNFOLLOW_REPORTED: int = 707;
+const INCORRECT_RECEIVER: int = 708;
 
 const INSUFFICIENT_BALANCE: int = 709;
 const ALREADY_REPORTED: int = 710;

@@ -198,9 +198,8 @@ fun onInternalMessage(in: InMessage): void {
                             (now > 604800 + store.lastWeeklyAllowanceClaimTime)
                         ) throw WAIT_MORE;
 
-                        var claimAmount = ton("11111");
-                        // votingPower perks
-                        claimAmount += (ton("1") * store.receivedVotes);
+                        // votingPower based mint
+                        var claimAmount = ton("11111") + (ton("1") * store.receivedVotes);
 
                         store.jettonBalance += claimAmount;
                         store.lastWeeklyAllowanceClaimTime = now;
@@ -237,6 +236,7 @@ fun onInternalMessage(in: InMessage): void {
                     ton("0.11") => {
                         // check if votingPower exists
                         assert (store.votes) throw NO_VOTES_AVAILABLE;
+                        assert (msg.transferRecipient != in.senderAddress) throw INCORRECT_RECEIVER; // no self-voting
                         val candidate = msg.transferRecipient.getAddrFiWallet(store); // store in maps also?
                         store.votes = 0; // redundant? just check map
                         store.maps.load().votedFor.set(msg.transferRecipient, 10); // walletAddr stored(noBounces expected/singleSideRelations), total votes sent
