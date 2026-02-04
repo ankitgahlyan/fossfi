@@ -385,7 +385,7 @@ fun onInternalMessage(in: InMessage): void {
         VotingAction => {
             checkCorrectSenderInternal(in.senderAddress, msg.originalSender, store);
             msg.positiveVote ? store.receivedVotes += msg.count : store.receivedVotes -= msg.count;
-            store.receivedVotes > AUTHORITY_THRESHOLD ? store.isAuthorityAccount = true : store.isAuthorityAccount = false;
+            store.isAuthorityAccount = store.receivedVotes > AUTHORITY_THRESHOLD ? true : false;
         },
 
         AskToBurn => {
@@ -398,13 +398,12 @@ fun onInternalMessage(in: InMessage): void {
                 !store.accountInitTime &&
                 (in.senderAddress == addrs.trustedJettonAddrs.load().minterAddr)
             ) {
-                var invitors = lazy addrs.nomInAddrs.load();
                 store.active = true;
                 store.jettonBalance += ton("1"); // need for semantic txns.
                 store.isAuthorityAccount = true;
                 store.accountInitTime = blockchain.now();
-                invitors.invitor = contract.getAddress();
-                invitors.invitor0 = contract.getAddress();
+                store.addresses.load().nomInAddrs.load().invitor = contract.getAddress();
+                store.addresses.load().nomInAddrs.load().invitor0 = contract.getAddress();
             }
         }
 

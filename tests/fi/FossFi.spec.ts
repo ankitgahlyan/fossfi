@@ -31,57 +31,61 @@ describe('FossFi', () => {
     let blockchain: Blockchain;
     let deployer: SandboxContract<TreasuryContract>;
     let user: SandboxContract<TreasuryContract>;
-    let fossFi: SandboxContract<FossFi>;
-    let fiWallet: SandboxContract<FossFiWallet>;
+    let fi: SandboxContract<FossFi>;
+    let fiJetton: SandboxContract<FossFiWallet>;
 
     const newCode = beginCell().storeStringTail('new code').endCell();
     const newData = beginCell().storeStringTail('new data').endCell();
 
     beforeEach(async () => {
-        blockchain = await Blockchain.create();
         // blockchain = await Blockchain.create({webUI: true});
         // blockchain.verbosity.vmLogs = "vm_logs";
+        blockchain = await Blockchain.create();
         deployer = await blockchain.treasury('deployer');
         user = await blockchain.treasury('user');
-        let fossFiConfig: FossFiConfig = {
+        fi = blockchain.openContract(FossFi.createFromConfig({
             admin_address: deployer.address,
             base_fi_wallet_code: fiWalletCode,
             metadata_uri: envContent
-        }
+        }, fiCode));
 
-        // let fiWalletConfig: FossFiWalletConfig = {
+        // const fossFiWallet = blockchain.openContract(FossFiWallet.createFromConfig({
         //     balance: 0n,
         //     votes: 10,
         //     id: new Cell,
         //     addresses: beginCell().endCell(),
         //     maps: beginCell().endCell(),
         //     base_fi_wallet_code: fiWalletCode
-        // }
-        // const fossFiWallet = blockchain.openContract(FossFiWallet.createFromConfig(fiWalletConfig, fiWalletCode));
+        // }, fiWalletCode)); // todo: fixme: address doesn't match
 
-        fossFi = blockchain.openContract(FossFi.createFromConfig(fossFiConfig, fiCode));
+        const result = await fi.sendDeploy(deployer.getSender(), toNano('0.5'));
+        fiJetton = blockchain.openContract(FossFiWallet.createFromAddress(await fi.getWalletAddress(deployer.address)));
 
-        const result = await fossFi.sendDeploy(deployer.getSender(), toNano('0.5'));
-        fiWallet = blockchain.openContract(FossFiWallet.createFromAddress(await fossFi.getWalletAddress(deployer.address)));
-
-        // expect(fossFiWallet.address).toEqualAddress(fiWallet.address);
+        // expect(fossFiWallet.address).toEqualAddress(fiJetton.address);
         // const deployResultWallet = await fossFiWallet.sendDeploy(deployer.getSender(), toNano('0.05'));
 
         // for (const tx of result.transactions) {
         //     console.log(flattenTransaction(tx));
         // }
 
-        // expect(result.transactions).toHaveTransaction({
-        //     from: deployer.address,
-        //     to: fossFi.address,
-        //     deploy: true,
-        //     success: true,
-        // });
+        expect(result.transactions).toHaveTransaction({
+            from: deployer.address,
+            to: fi.address,
+            deploy: true,
+            success: true,
+        });
+
+        expect(result.transactions).toHaveTransaction({
+            from: fi.address,
+            to: fiJetton.address,
+            deploy: true,
+            success: true,
+        });
 
         // const txToInspect = findTransaction(
         //     result.transactions,
         //     {
-        //         to: fossFi.address,
+        //         to: fi.address,
         //         deploy: true,
         //     },
         // );
@@ -90,51 +94,43 @@ describe('FossFi', () => {
         // }
         // User-friendly output
         // console.log(flattenTransaction(txToInspect));
-
-        // expect(deployResult.transactions).toHaveTransaction({
-        //     from: fossFi.address,
-        //     to: fossFiWallet.address,
-        //     deploy: true,
-        //     success: true,
-        // });
     });
 
     it('should deploy', async () => {
         // the check is done inside beforeEach
-        // blockchain and fossFi and fossFiWallet are ready to use
-        // const jettonDataAll = await fossFi.getjettonDataAll();
-        // expect(jettonDataAll.baseFiWalletCode).toEqualCell(jettonDataAll.latestFiWalletCode);
+        // blockchain and fi and fiJetton are ready to use
+        const jettonDataAll = await fi.getjettonDataAll();
+        expect(jettonDataAll.baseFiWalletCode).toEqualCell(jettonDataAll.latestFiWalletCode);
 
-        const upgradeResult = await fossFi.sendUpgrade(deployer.getSender(), true, deployer.address, newCode, null, toNano(1));
+        const upgradeResult = await fi.sendUpgrade(deployer.getSender(), true, deployer.address, newCode, null, toNano(1));
 
-        const newAccountState = (await blockchain.getContract(fossFi.address)).accountState;
-        if (newAccountState?.type !== 'active') {
+        const fiState = (await blockchain.getContract(fi.address)).accountState;
+        if (fiState?.type !== 'active') {
             throw new Error('Fi contract is not active');
         }
 
-        const fiWalletState = (await blockchain.getContract(fiWallet.address)).accountState;
-        if (fiWalletState?.type !== 'active') {
+        const fiJettonState = (await blockchain.getContract(fiJetton.address)).accountState;
+        if (fiJettonState?.type !== 'active') {
             throw new Error('FiWallet contract is not active');
         }
 
-        // const jettonDataAll2 = await fossFi.getjettonDataAll();
-        // expect(jettonDataAll2.latestFiWalletCode).toEqualCell(newCode);
-
-        // expect(jettonData.adminAddress).toEqualAddress(deployer.address)
-        // expect(jettonData.content).toEqualCell(envContent)
-        // expect(jettonData.walletCode).toEqualCell(newCode);
+        const jettonDataAll2 = await fi.getjettonDataAll();
+        expect(jettonDataAll2.latestFiWalletCode).toEqualCell(newCode);
+        expect(jettonDataAll2.adminAddress).toEqualAddress(deployer.address);
+        expect(jettonDataAll2.content).toEqualCell(envContent);
+        expect(jettonDataAll2.walletVersion).toBe(1n);
 
         // Fi upgrades
-        // const updatedData = newAccountState?.state.data!;
-        // const updatedCode = newAccountState?.state.code!;
+        // const updatedData = fiState?.state.data!;
+        // const updatedCode = fiState?.state.code!;
         // expect(updatedCode).toEqualCell(newCode);
 
         // send upgradeRequest msg from jettonWallet
 
-        const upgradeRequestResult = await fiWallet.send(
+        const upgradeRequestResult = await fiJetton.send(
             deployer.getSender(),
             {
-                value: toNano(0.5)
+                value: toNano(1)
             },
             {
                 $$type: 'JettonTransfer',
@@ -149,13 +145,23 @@ describe('FossFi', () => {
         )
 
         // console.log(upgradeRequestResult);
+        expect(upgradeRequestResult.transactions).toHaveTransaction({
+            from: fi.address,
+            on: fiJetton.address,
+            // deploy: true,
+            success: true,
+        });
 
         // await sleep(5000);
 
-        const updatedCode = fiWalletState?.state.code!;
+        const fiJettonState2 = (await blockchain.getContract(fiJetton.address)).accountState;
+        if (fiJettonState2?.type !== 'active') {
+            throw new Error('FiJetton contract is not active');
+        }
+        const updatedCode = fiJettonState2?.state.code!;
         // expect(updatedCode).toEqualCell(newCode);
 
-        // const fiWalletData = await fiWallet.getGetWalletData();
+        // const fiWalletData = await fiJetton.getGetWalletData();
         // expect(fiWalletData?.code).toEqualCell(fiWalletCode);
         // expect(fiWalletData.owner).toEqualAddress(deployer.address)
         // expect(fiWalletData.balance).toBe(toNano(1))
