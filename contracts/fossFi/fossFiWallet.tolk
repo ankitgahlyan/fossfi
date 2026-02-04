@@ -39,8 +39,7 @@ fun onBouncedMessage(in: InMessageBounced): void {
 
         InternalInvite => {
             restoreAmount = -10 * MBRP_AMOUNT; // todo need fix? negative value
-            var invited = lazy store.maps.load();
-            invited.invited.delete(in.senderAddress); // jettonAddrs are saved for bounceHandling
+            store.maps.load().invited.delete(in.senderAddress); // jettonAddrs are saved for bounceHandling
             // store.connections -= 1;
         },
 
@@ -57,6 +56,7 @@ fun onInternalMessage(in: InMessage): void {
     val msg = lazy AllowedMessageToWallet.fromSlice(in.body);
     var store = lazy FiWalletStore.load();
     val addrs = lazy store.addresses.load();
+    // var maps = lazy store.maps.load();
     match (msg) {
         InternalTransferStep => {
             checkCorrectSenderInternal(in.senderAddress, msg.transferInitiator, store);
@@ -237,10 +237,10 @@ fun onInternalMessage(in: InMessage): void {
                         // check if votingPower exists
                         assert (store.votes) throw NO_VOTES_AVAILABLE;
                         assert (msg.transferRecipient != in.senderAddress) throw INCORRECT_RECEIVER; // no self-voting
-                        val candidate = msg.transferRecipient.getAddrFiWallet(store); // store in maps also?
-                        store.votes = 0; // redundant? just check map
-                        store.maps.load().votedFor.set(msg.transferRecipient, 10); // walletAddr stored(noBounces expected/singleSideRelations), total votes sent
-
+                        val candidate = msg.transferRecipient.getAddrFiWallet(store);
+                        store.votes = 0;
+                        store.maps.load().votedFor.set(candidate, 10); // store to unVoteLater + total votes sent
+                        
                         val votingMsg = createMessage({
                             bounce: BounceMode.NoBounce, // todo: ok?
                             dest: candidate,
@@ -258,11 +258,11 @@ fun onInternalMessage(in: InMessage): void {
                     // claim votes back
                     ton("0.12") => {
                         // assert (!store.votes) throw NOT_VOTED_YET; // noNeed
-                        val exists = store.maps.load().votedFor.deleteAndGetDeleted(msg.transferRecipient);
-                        assert (exists.isFound) throw NOT_VOTED_YET;
-                        store.votes = 10;
-
                         val candidate = msg.transferRecipient.getAddrFiWallet(store);
+                        val exists = store.maps.load().votedFor.deleteAndGetDeleted(candidate);
+                        assert (exists.isFound) throw NOT_VOTED_YET;
+                        store.votes += exists.loadValue();
+
                         val votingMsg = createMessage({
                             bounce: BounceMode.NoBounce,
                             dest: candidate,

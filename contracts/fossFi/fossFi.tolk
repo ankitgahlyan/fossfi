@@ -219,16 +219,16 @@ struct JettonDataReply {
     mintable: bool
     adminAddress: address
     jettonContent: cell // Cell<OnchainMetadataReply>
-    jettonWalletCode: cell // name is not baseFiWalletCode coz of standard
+    jettonWalletCode: cell
 }
 
-struct (0x00) OnchainMetadataReply {
-    contentDict: map<uint256, Cell<SnakeDataReply>>
-}
+// struct (0x00) OnchainMetadataReply {
+//     contentDict: map<uint256, Cell<SnakeDataReply>>
+// }
 
-struct (0x00) SnakeDataReply {
-    string: SnakeString
-}
+// struct (0x00) SnakeDataReply {
+//     string: SnakeString
+// }
 
 get fun get_jetton_data(): JettonDataReply {
     val store = lazy FiStore.load();
@@ -251,10 +251,10 @@ get fun get_jetton_data(): JettonDataReply {
 }
 
 get fun get_jetton_data_all() {
-    return FiStore.load();
+    return FiStore.load(); // todo: return contract code + data also
 }
 
-get fun get_wallet_address(ownerAddress: address): address {
+get fun get_wallet_address(ownerAddress: address) {
     val store = lazy FiStore.load();
     return calcDeployFiWallet(
         ownerAddress,
@@ -266,7 +266,7 @@ get fun get_wallet_address(ownerAddress: address): address {
         .calculateAddress();
 }
 
-get fun get_next_admin_address(): address? {
+get fun get_next_admin_address() {
     val store = lazy FiStore.load();
     return store.adminAddress;
 }

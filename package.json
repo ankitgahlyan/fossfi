@@ -13,7 +13,7 @@
     "bp": "blueprint",
     "b": "blueprint build",
     "rn": "blueprint run",
-    "t": "jest --verbose",
+    "t": "jest",
     "release": "blueprint pack && npm publish --access public",
     "clear": "rm -f bench-snapshots/*.last.json",
     "test:all": "npm run clear && jest",
@@ -48,6 +48,7 @@
     "prettier": "^3.8.1",
     "qs": "^6.14.1",
     "ton-sandbox-dev": "^0.35.46",
+    "ton-sandbox-server-dev": "^0.0.6",
     "ts-jest": "^29.4.6",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"

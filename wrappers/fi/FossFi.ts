@@ -452,7 +452,7 @@ export class FossFi implements Contract {
         let res = await provider.get('get_jetton_data', []);
         let totalSupply = res.stack.readBigNumber();
         let mintable = res.stack.readBoolean();
-        let adminAddress = res.stack.readAddressOpt();
+        let adminAddress = res.stack.readAddress();
         let content = res.stack.readCell();
         let walletCode = res.stack.readCell();
         return {
@@ -461,6 +461,24 @@ export class FossFi implements Contract {
             adminAddress,
             content,
             walletCode,
+        };
+    }
+
+    async getjettonDataAll(provider: ContractProvider) {
+        let res = await provider.get('get_jetton_data_all', []);
+        let totalSupply = res.stack.readBigNumber();
+        let walletVersion = res.stack.readBigNumber();
+        let adminAddress = res.stack.readAddress();
+        let baseFiWalletCode = res.stack.readCell();
+        let latestFiWalletCode = res.stack.readCell();
+        let content = res.stack.readCell();
+        return {
+            totalSupply,
+            walletVersion,
+            adminAddress,
+            baseFiWalletCode,
+            latestFiWalletCode,
+            content,
         };
     }
 
@@ -486,8 +504,10 @@ export class FossFi implements Contract {
 }
 
 async function FossFi_init(owner: Address, jettonContent: Cell) {
-    const codefile = fs.readFileSync(path.resolve(__dirname, '../build/', 'FossFi.compiled.json'));
-    const codeHex: string = ""; // todo fixme add code
+    const codefile = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../build/', 'FossFi.compiled.json'), 'utf-8'));
+    const keys = Object.keys(codefile);
+    const thirdValue = codefile[keys[2]];        // dynamic third property
+    const codeHex: string = String(thirdValue);  // or: const codeHex = codefile.hex;
     const __code = Cell.fromHex(codeHex);
     const builder = beginCell();
     builder.storeUint(0, 1);
