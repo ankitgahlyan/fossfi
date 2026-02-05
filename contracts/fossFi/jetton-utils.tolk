@@ -240,7 +240,7 @@ fun sendUpgrade(to: address, newCode: cell, store: FiWalletStore) {
         dest: to,
         value: ton("0.2"),
         bounce: false,
-        body: UpgradeAnyDataCode {
+        body: Upgrade {
             walletVersion: store.version,
             sender: store.addresses.load().initialOwnerAddr,
             newCode,

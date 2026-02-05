@@ -80,7 +80,7 @@ struct (0x7431f221) DropMinterAdmin {
     queryId: uint64
 }
 
-struct (0x2508d66a) UpgradeAnyDataCode {
+struct (0x2508d66a) Upgrade {
     walletUpgrade: bool = true
     walletVersion: uint10
     sender: address
@@ -107,7 +107,7 @@ fun ForwardPayloadRemainder.checkIsCorrectTLBEither(self) {
     }
 }
 
-struct (0x1) InternalInvite {
+struct (0x00000001) InternalInvite {
     queryId: uint64;
     version: uint10;
     id: IdInfo?;
@@ -117,39 +117,39 @@ struct (0x1) InternalInvite {
     forwardPayload: ForwardPayloadRemainder;
 }
 
-struct (0x2) InternalDeActivate {}
+struct (0x00000002) InternalDeActivate {}
 
-struct (0x3) InternalInviteApproval {
+struct (0x00000003) InternalInviteApproval {
     sender: address;
 }
 
-struct (0x38) RequestUpgradeCode {
+struct (0x00000038) RequestUpgradeCode {
     sender: address;
     version: uint10;
 }
 
-struct (0x4) InformMinterInviteInternal {
+struct (0x00000004) InformMinterInviteInternal {
     sender: address;
     invitor: address;
     forwardPayload: ForwardPayloadRemainder;
 }
 
-struct (0x5) AuthorityAction {
+struct (0x00000005) AuthorityAction {
     sender: address;
 }
 
-struct (0x6) SetStatus {
+struct (0x00000006) SetStatus {
     sender: address;
     status: uint2;
 }
 
-struct (0x7) TransferByAuthority {
+struct (0x00000007) TransferByAuthority {
     amount: coins
     receiver: address
     forwardPayload: ForwardPayloadRemainder // todo: null?
 }
 
-struct (0x8) VotingAction {
+struct (0x00000008) VotingAction {
     positiveVote: bool = true;
     count: uint4 = 10;
     originalSender: address;

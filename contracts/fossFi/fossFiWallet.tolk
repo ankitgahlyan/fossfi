@@ -6,8 +6,6 @@ import "../common/consts"
 import "../common/errors"
 import "../common/messages"
 import "../common/sharding"
-import "../privateMinter/jetton-utils"
-import "../privateMinter/storage"
 
 type AllowedMessageToWallet =
     | AskToTransfer
@@ -18,7 +16,7 @@ type AllowedMessageToWallet =
     | InternalDeActivate
     | SetStatus
     | TopUpTons
-    | UpgradeAnyDataCode
+    | Upgrade
     | VotingAction
 
 type BounceOpToHandle = InternalTransferStep | InternalInvite | VotingAction
@@ -55,8 +53,10 @@ fun onBouncedMessage(in: InMessageBounced): void {
 fun onInternalMessage(in: InMessage): void {
     val msg = lazy AllowedMessageToWallet.fromSlice(in.body);
     var store = lazy FiWalletStore.load();
-    val addrs = lazy store.addresses.load();
-    // var maps = lazy store.maps.load();
+    var addrs = lazy store.addresses.load();
+    var maps = lazy store.maps.load();
+    var nomins = lazy addrs.nomInAddrs.load();
+
     match (msg) {
         InternalTransferStep => {
             checkCorrectSenderInternal(in.senderAddress, msg.transferInitiator, store);
@@ -239,7 +239,7 @@ fun onInternalMessage(in: InMessage): void {
                         assert (msg.transferRecipient != in.senderAddress) throw INCORRECT_RECEIVER; // no self-voting
                         val candidate = msg.transferRecipient.getAddrFiWallet(store);
                         store.votes = 0;
-                        store.maps.load().votedFor.set(candidate, 10); // store to unVoteLater + total votes sent
+                        maps.votedFor.set(candidate, 10); // store to unVoteLater + total votes sent
                         
                         val votingMsg = createMessage({
                             bounce: BounceMode.NoBounce, // todo: ok?
@@ -259,7 +259,7 @@ fun onInternalMessage(in: InMessage): void {
                     ton("0.12") => {
                         // assert (!store.votes) throw NOT_VOTED_YET; // noNeed
                         val candidate = msg.transferRecipient.getAddrFiWallet(store);
-                        val exists = store.maps.load().votedFor.deleteAndGetDeleted(candidate);
+                        val exists = maps.votedFor.deleteAndGetDeleted(candidate);
                         assert (exists.isFound) throw NOT_VOTED_YET;
                         store.votes += exists.loadValue();
 
@@ -310,7 +310,6 @@ fun onInternalMessage(in: InMessage): void {
             assert (in.senderAddress == msg.sender.getAddrFiWallet(store)) throw INCORRECT_SENDER;
 
             store.active = true;
-            var nomins = lazy addrs.nomInAddrs.load();
             if (!store.accountInitTime) {
                 store.accountInitTime = blockchain.now();
                 nomins.nominee = in.senderAddress; // must be null at init
@@ -372,9 +371,8 @@ fun onInternalMessage(in: InMessage): void {
             store.status = msg.status;
         }
 
-        UpgradeAnyDataCode => {
-            // checkCorrectSenderInternal(in.senderAddress, msg.sender, store);
-            assert (in.senderAddress == addrs.trustedJettonAddrs.load().minterAddr) throw INCORRECT_SENDER;
+        Upgrade => {
+            checkCorrectSenderInternal(in.senderAddress, msg.sender, store);
             if (store.version < msg.walletVersion) {
                 // ignore if manually upgraded
                 store.version = msg.walletVersion;
@@ -402,8 +400,8 @@ fun onInternalMessage(in: InMessage): void {
                 store.jettonBalance += ton("1"); // need for semantic txns.
                 store.isAuthorityAccount = true;
                 store.accountInitTime = blockchain.now();
-                store.addresses.load().nomInAddrs.load().invitor = contract.getAddress();
-                store.addresses.load().nomInAddrs.load().invitor0 = contract.getAddress();
+                nomins.invitor = contract.getAddress();
+                nomins.invitor0 = contract.getAddress();
             }
         }
 
@@ -414,6 +412,9 @@ fun onInternalMessage(in: InMessage): void {
         }
     }
 
+    addrs.nomInAddrs = nomins.toCell();
+    store.addresses = addrs.toCell();
+    store.maps = maps.toCell();
     store.save(); // save once for any matches above
 }
 

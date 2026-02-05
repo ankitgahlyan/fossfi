@@ -74,7 +74,7 @@ PROGRAM{
     LDREF                   	//  in.body lazyS store.totalSupply store.walletVersion store.adminAddress store.baseFiWalletCode store.latestFiWalletCode lazyS
     PLDREF                  	//  in.body lazyS store.totalSupply store.walletVersion store.adminAddress store.baseFiWalletCode store.latestFiWalletCode store.metadataUri
     s0 s6 XCHG              	//  in.body store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.baseFiWalletCode store.latestFiWalletCode lazyS
-    x{4} SDBEGINSQ          	//  in.body store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.baseFiWalletCode store.latestFiWalletCode lazyS '65
+    x{00000004} SDBEGINSQ   	//  in.body store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.baseFiWalletCode store.latestFiWalletCode lazyS '65
     IF:<{                   	//  in.body store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.baseFiWalletCode store.latestFiWalletCode lazyS
       // 48: checkCorrectSender(in.senderAddress, msg.sender, store)
       s7 POP                	//  lazyS store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.baseFiWalletCode store.latestFiWalletCode
@@ -930,7 +930,7 @@ PROGRAM{
                   }>
                 }>ELSE<{    	//  in.body store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.baseFiWalletCode store.latestFiWalletCode lazyS
                   // 45: match (msg)
-                  x{38} SDBEGINSQ	//  in.body store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.baseFiWalletCode store.latestFiWalletCode lazyS '65
+                  x{00000038} SDBEGINSQ	//  in.body store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.baseFiWalletCode store.latestFiWalletCode lazyS '65
                   IF:<{     	//  in.body store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.baseFiWalletCode store.latestFiWalletCode lazyS
                     // 168: checkCorrectSender(in.senderAddress, msg.sender, store)
                     s7 POP  	//  lazyS store.metadataUri store.totalSupply store.walletVersion store.adminAddress store.baseFiWalletCode store.latestFiWalletCode

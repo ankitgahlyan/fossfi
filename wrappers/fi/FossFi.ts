@@ -410,6 +410,7 @@ export class FossFi implements Contract {
 
     static upgradeMessage(walletUpgrade: boolean, sender: Address, new_code: Cell, new_data: Cell | null,) {
         return beginCell().storeUint(Op.upgrade, 32).storeBit(walletUpgrade)
+        // return beginCell().storeUint(Op.upgrade, 32).storeBit(walletUpgrade)
             .storeUint(0, 10)
             .storeAddress(sender)
             .storeBit(false)

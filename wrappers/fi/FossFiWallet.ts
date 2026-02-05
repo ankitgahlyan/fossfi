@@ -7,6 +7,7 @@ import {
     ContractABI,
     contractAddress,
     ContractProvider,
+    Dictionary,
     DictionaryValue,
     Sender,
     SendMode,
@@ -145,11 +146,18 @@ export class FossFiWallet implements Contract {
     }
 
     async getGetWalletData(provider: ContractProvider) {
-            const builder = new TupleBuilder();
-            const source = (await provider.get('get_wallet_data', builder.build())).stack;
-            const result = loadGetterTupleJettonWalletData(source);
-            return result;
-        }
+        const builder = new TupleBuilder();
+        const source = (await provider.get('get_wallet_data', builder.build())).stack;
+        const result = loadGetterTupleJettonWalletData(source);
+        return result;
+    }
+
+    async getGetWalletDataAll(provider: ContractProvider) {
+        const builder = new TupleBuilder();
+        const source = (await provider.get('get_wallet_data_all', builder.build())).stack;
+        const result = loadGetterTupleFiJetton$Data(source);
+        return result;
+    }
 }
 
 export type JettonTransfer = {
@@ -379,4 +387,76 @@ export function dictValueParserJettonWalletData(): DictionaryValue<JettonWalletD
             return loadJettonWalletData(src.loadRef().beginParse());
         }
     }
+}
+
+export function loadGetterTupleFiJetton$Data(source: TupleReader) {
+    const _balance = source.readBigNumber();
+    const _txnCount = source.readBigNumber();
+    const _status = source.readBigNumber();
+    const _isAuthority = source.readBoolean();
+    const _creditNeed = source.readBigNumber();
+    const _accumulatedFees = source.readBigNumber();
+    const _debt = source.readBigNumber();
+    const _debts = source.readBoolean();
+    const _votes = source.readBigNumber();
+    const _receivedVotes = source.readBigNumber();
+    const _connections = source.readBigNumber();
+    const _active = source.readBoolean();
+    const _mintable = source.readBoolean();
+    const _accountInitTime = source.readBigNumber();
+    const _version = source.readBigNumber();
+    const _lastWeeklyClaimTime = source.readBigNumber();
+    const _id = source.readCell();
+    const _addresses = loadGetterTupleAddresses(source);
+    const _maps = source.readCell(); // todo: parseIt
+    const _baseFiWalletCode = source.readCell();
+    return {
+        $$type: 'FiJetton$Data' as const,
+        owner: _addresses.owner,
+        treasury: _addresses.treasury,
+        initialOwner: _addresses.initialOwner,
+        minter: _addresses.minter,
+        personalMinter: _addresses.personalMinter,
+        personalJetton: _addresses.personalJetton,
+        nominee: _addresses.nominee,
+        invitor: _addresses.invitor,
+        invitor0: _addresses.invitor0,
+        authorisedAccs: _addresses.authorisedAccs,
+        balance: _balance,
+        txnCount: _txnCount,
+        status: _status,
+        isAuthority: _isAuthority,
+        creditNeed: _creditNeed,
+        accumulatedFees: _accumulatedFees,
+        debt: _debt,
+        debts: _debts,
+        votes: _votes,
+        receivedVotes: _receivedVotes,
+        connections: _connections,
+        active: _active,
+        mintable: _mintable,
+        accountInitTime: _accountInitTime,
+        lastWeeklyClaimTime: _lastWeeklyClaimTime,
+        version: _version,
+        id: _id,
+        maps: _maps,
+        // baseFiWalletCode: _baseFiWalletCode
+    };
+}
+
+export function loadGetterTupleAddresses(source: TupleReader) {
+    const slice = source.readCell().beginParse();
+    const _owner = slice.loadAddress();
+    const _treasury = slice.loadAddress();
+    const _initialOwner = slice.loadAddress();
+    const nomins = slice.loadRef().beginParse();
+    const _nominee = nomins.loadAddressAny();
+    const _invitor = nomins.loadAddressAny();
+    const _invitor0 = nomins.loadAddressAny();
+    const trustedAddrs = slice.loadRef().beginParse();
+    const _minter = trustedAddrs.loadAddress();
+    const _personalMinter = trustedAddrs.loadAddressAny();
+    const _personalJetton = trustedAddrs.loadAddressAny();
+    const _authorisedAccs = trustedAddrs.loadDict(Dictionary.Keys.Address(), Dictionary.Values.Address());
+    return { $$type: 'Addresses' as const, owner: _owner, treasury: _treasury, initialOwner: _initialOwner, nominee: _nominee, invitor: _invitor, invitor0: _invitor0, minter: _minter, personalMinter: _personalMinter, personalJetton: _personalJetton, authorisedAccs: _authorisedAccs };
 }

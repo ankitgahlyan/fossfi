@@ -13,7 +13,7 @@ type AllowedMessageToMinter =
     | RequestWalletAddress
     | ChangeMinterAdmin
     | ChangeMinterMetadataUri
-    | UpgradeAnyDataCode
+    | Upgrade
     | TopUpTons
     | InformMinterInviteInternal
     | RequestUpgradeCode
@@ -143,7 +143,7 @@ fun onInternalMessage(in: InMessage): void {
             store.metadataUri = msg.newMetadataUri.toCell();
         }
 
-        UpgradeAnyDataCode => {
+        Upgrade => {
             assert (in.senderAddress == store.adminAddress) throw ERROR_NOT_OWNER;
             match (msg.walletUpgrade) {
                 true => {
@@ -173,7 +173,7 @@ fun onInternalMessage(in: InMessage): void {
                     bounce: BounceMode.NoBounce,
                     value: 0,
                     dest: in.senderAddress,
-                    body: UpgradeAnyDataCode {
+                    body: Upgrade {
                         walletVersion: store.walletVersion,
                         sender: store.adminAddress,
                         newCode: store.latestFiWalletCode,
