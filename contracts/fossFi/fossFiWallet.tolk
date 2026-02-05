@@ -6,6 +6,7 @@ import "../common/consts"
 import "../common/errors"
 import "../common/messages"
 import "../common/sharding"
+import "../common/utils"
 
 type AllowedMessageToWallet =
     | AskToTransfer
@@ -30,21 +31,19 @@ fun onBouncedMessage(in: InMessageBounced): void {
     var restoreAmount: coins = 0;
     match (msg) {
         // todo fixme: ignore < 1 ton symantic txns
-        InternalTransferStep => {restoreAmount = msg.jettonAmount; // safe to fetch jettonAmount, because it's in the beginning of a message
-        },
+        InternalTransferStep => {
+            restoreAmount = msg.jettonAmount; // safe to fetch jettonAmount, because it's in the beginning of a message
+        }
 
         // NotifyMinter => restoreAmount = msg.jettonAmount,
-
         InternalInvite => {
-            restoreAmount = -10 * MBRP_AMOUNT; // todo need fix? negative value
-            store.maps.load().invited.delete(in.senderAddress); // jettonAddrs are saved for bounceHandling
-            // store.connections -= 1;
-        },
+            restoreAmount = - MBRP_AMOUNT; // todo need fix? negative value
+            store.maps.load().invited.delete(in.senderAddress); // jettonAddrs are saved for bounceHandling// store.connections -= 1;
+        }
 
-        VotingAction => {}, // todo: need?
-        
+        VotingAction => {} // todo: need?
     }
-    
+
     // todo: need? to burnForce for async reasons
     store.jettonBalance += restoreAmount;
     store.save(); // todo learn: where to call this
@@ -67,12 +66,16 @@ fun onInternalMessage(in: InMessage): void {
             // require(!incomingTransfersLocked, "Incoming transfers are locked");
             store.jettonBalance += msg.jettonAmount;
 
-            // check if transferred as loan
-            // val opcode = msg.forwardPayload.preloadUint(32);
-            // val text = msg.forwardPayload.loadStringTail(); // todo: UTF-8 string
-            // if (opcode == 0x00000000 && text == "loan") {
-            //         // todo: transfer personal tokens if requirement is unfulfilled
-            // }
+            var payload = msg.forwardPayload;
+            if (payload.remainingBitsCount() >= 32) {
+                // check if transferred as loan
+                val opcode = payload.loadUint(32);
+                if (opcode == 0) {
+                    // todo: transfer personal tokens if requirement is unfulfilled
+                    val expected = payload.bitsEqual("fail"); // UTF-8 string
+                    assert (expected) throw INCORRECT_RECEIVER;
+                }
+            }
             if (msg.forwardTonAmount) {
                 val notifyOwnerMsg = createMessage({
                     bounce: BounceMode.NoBounce, // cause receiver can have uninitialized contract
@@ -229,18 +232,20 @@ fun onInternalMessage(in: InMessage): void {
                             .invite(msg.forwardPayload, store);
 
                         // reward
-                        store.jettonBalance += 10 * MBRP_AMOUNT;
+                        store.jettonBalance += MBRP_AMOUNT;
                     }
 
                     // voting
                     ton("0.11") => {
                         // check if votingPower exists
                         assert (store.votes) throw NO_VOTES_AVAILABLE;
-                        assert (msg.transferRecipient != in.senderAddress) throw INCORRECT_RECEIVER; // no self-voting
+                        assert (
+                            msg.transferRecipient != in.senderAddress
+                        ) throw INCORRECT_RECEIVER; // no self-voting
                         val candidate = msg.transferRecipient.getAddrFiWallet(store);
                         store.votes = 0;
                         maps.votedFor.set(candidate, 10); // store to unVoteLater + total votes sent
-                        
+
                         val votingMsg = createMessage({
                             bounce: BounceMode.NoBounce, // todo: ok?
                             dest: candidate,
@@ -384,7 +389,7 @@ fun onInternalMessage(in: InMessage): void {
             checkCorrectSenderInternal(in.senderAddress, msg.originalSender, store);
             msg.positiveVote ? store.receivedVotes += msg.count : store.receivedVotes -= msg.count;
             store.isAuthorityAccount = store.receivedVotes > AUTHORITY_THRESHOLD ? true : false;
-        },
+        }
 
         AskToBurn => {
             assert (false) throw 0xFFFF; // not allowed

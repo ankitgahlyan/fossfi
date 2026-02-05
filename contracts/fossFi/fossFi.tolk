@@ -47,7 +47,7 @@ fun onInternalMessage(in: InMessage): void {
             // todo: use notifyMinter but forwardPayload?
             checkCorrectSender(in.senderAddress, msg.sender, store);
             var store = lazy FiStore.load();
-            store.totalSupply += 10 * MBRP_AMOUNT; // todo: broadcast id for explorers or dbs
+            store.totalSupply += MBRP_AMOUNT; // todo: broadcast id for explorers or dbs
         }
 
         NotifyMinter => {
