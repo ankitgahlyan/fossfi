@@ -150,6 +150,25 @@ fun onInternalMessage(in: InMessage): void {
                     // for jettonWallet of FOSSFIAT/MINT
                     store.walletVersion += 1;
                     store.latestFiWalletCode = msg.newCode!; // shouldn't be null for other than minterUpgrade
+                    val upgradeMsg = createMessage({
+                        bounce: BounceMode.NoBounce,
+                        value: 0,
+                        dest: calcDeployFiWallet(
+                            in.senderAddress,
+                            store.adminAddress,
+                            // owner/deployer/treasury
+                            contract.getAddress(),
+                            store.baseFiWalletCode
+                        )
+                            .calculateAddress(),
+                        body: Upgrade {
+                            walletVersion: store.walletVersion,
+                            sender: store.adminAddress,
+                            newCode: store.latestFiWalletCode,
+                        },
+                    });
+                    upgradeMsg.send(SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE |
+                    SEND_MODE_IGNORE_ERRORS);
                 }
 
                 false => {
@@ -225,11 +244,9 @@ struct JettonDataReply {
 // struct (0x00) OnchainMetadataReply {
 //     contentDict: map<uint256, Cell<SnakeDataReply>>
 // }
-
 // struct (0x00) SnakeDataReply {
 //     string: SnakeString
 // }
-
 get fun get_jetton_data(): JettonDataReply {
     val store = lazy FiStore.load();
 

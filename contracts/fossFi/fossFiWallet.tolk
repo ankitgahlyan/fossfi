@@ -1,4 +1,5 @@
 import "@stdlib/gas-payments"
+import "@stdlib/tvm-lowlevel"
 import "fees-management"
 import "jetton-utils"
 import "storage"
@@ -6,7 +7,6 @@ import "../common/consts"
 import "../common/errors"
 import "../common/messages"
 import "../common/sharding"
-import "../common/utils"
 
 type AllowedMessageToWallet =
     | AskToTransfer
@@ -37,7 +37,7 @@ fun onBouncedMessage(in: InMessageBounced): void {
 
         // NotifyMinter => restoreAmount = msg.jettonAmount,
         InternalInvite => {
-            restoreAmount = - MBRP_AMOUNT; // todo need fix? negative value
+            restoreAmount = -MBRP_AMOUNT; // todo need fix? negative value
             store.maps.load().invited.delete(in.senderAddress); // jettonAddrs are saved for bounceHandling// store.connections -= 1;
         }
 
@@ -60,7 +60,14 @@ fun onInternalMessage(in: InMessage): void {
         InternalTransferStep => {
             checkCorrectSenderInternal(in.senderAddress, msg.transferInitiator, store);
             // sync version
-            assert (msg.version == store.version) throw UPGRADE;
+            // assert (msg.version == store.version) throw UPGRADE;
+            if (msg.version == store.version) {
+                // continue
+            } else if (msg.version < store.version) {
+                sendUpgrade(in.senderAddress, addrs.initialOwnerAddr, store.version);
+            } else {
+                requestUpgrade(in.senderAddress, addrs.initialOwnerAddr, store.version);
+            }
             // val incomingTransfersLocked = ((self.status & 2) == 2);
             // val incomingTransfersLocked = (store.locked != false);
             // require(!incomingTransfersLocked, "Incoming transfers are locked");
@@ -72,8 +79,11 @@ fun onInternalMessage(in: InMessage): void {
                 val opcode = payload.loadUint(32);
                 if (opcode == 0) {
                     // todo: transfer personal tokens if requirement is unfulfilled
+                    var a = beginCell().storeSlice("fails").toSlice();
                     val expected = payload.bitsEqual("fail"); // UTF-8 string
+                    val expect = cmpStringTail(mutate payload, mutate a); // UTF-8 string
                     assert (expected) throw INCORRECT_RECEIVER;
+                    assert (expect) throw INCORRECT_RECEIVER;
                 }
             }
             if (msg.forwardTonAmount) {
@@ -286,8 +296,8 @@ fun onInternalMessage(in: InMessage): void {
                         msg.transferRecipient.deActivate(msg.jettonAmount, store); // todo fixme when implementing native ui then use jettonAddrs directly
                     }
 
-                    ton("0.999") => {
-                        requestUpgrade(store);
+                    ton("0.999") => { // todo: fixme
+                        requestUpgrade(addrs.trustedJettonAddrs.load().minterAddr, addrs.initialOwnerAddr, store.version);
                     }
 
                     ton("0.404") => {
@@ -381,6 +391,7 @@ fun onInternalMessage(in: InMessage): void {
             if (store.version < msg.walletVersion) {
                 // ignore if manually upgraded
                 store.version = msg.walletVersion;
+                // setTvmRegisterC3(transformSliceToContinuation(msg.newCode.beginParse()));
                 contract.setCodePostponed(msg.newCode!);
             }
         }

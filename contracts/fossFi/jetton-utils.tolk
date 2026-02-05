@@ -3,8 +3,6 @@ import "../common/consts"
 import "../common/errors"
 import "../common/messages"
 import "../common/sharding"
-import "../privateMinter/jetton-utils"
-import "../privateMinter/storage"
 
 fun calcDeployFiWallet(
     ownerAddress: address,
@@ -196,18 +194,6 @@ fun address.deActivate(self, commandAmount: coins, store: FiWalletStore) {
     SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE);
 }
 
-@inline
-fun requestUpgrade(store: FiWalletStore) {
-    val addrs = lazy store.addresses.load();
-    createMessage({
-        dest: addrs.trustedJettonAddrs.load().minterAddr,
-        bounce: BounceMode.NoBounce,
-        value: 0,
-        body: RequestUpgradeCode { sender: addrs.initialOwnerAddr, version: store.version },
-    })
-        .send(SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
-}
-
 fun burnForce(sender: address, amount: int, store: FiWalletStore) {
     // todo: refactor
     if (amount <= 0) {
@@ -233,18 +219,46 @@ fun burnForce(sender: address, amount: int, store: FiWalletStore) {
 }
 
 @inline
-fun sendUpgrade(to: address, newCode: cell, store: FiWalletStore) {
-    // FIXME use BasechainAddress
-    // noNeed to check version
+fun requestUpgrade(from: address, sender: address, version: uint10) {
+    createMessage({
+        dest: from,
+        bounce: BounceMode.NoBounce,
+        value: ton("0.1"),
+        body: RequestUpgradeCode { sender, version },
+    })
+        .send(SEND_MODE_PAY_FEES_SEPARATELY | SEND_MODE_IGNORE_ERRORS);
+}
+
+@inline
+fun sendUpgrade(to: address, sender: address, walletVersion: uint10) {
     createMessage({
         dest: to,
-        value: ton("0.2"),
+        value: ton("0.1"),
         bounce: false,
         body: Upgrade {
-            walletVersion: store.version,
-            sender: store.addresses.load().initialOwnerAddr,
-            newCode,
+            walletVersion,
+            sender,
+            newCode: contract.getCode(),
         },
     })
         .send(SEND_MODE_PAY_FEES_SEPARATELY | SEND_MODE_IGNORE_ERRORS); // todo don't ignore
+}
+
+fun cmpStringTail(mutate a: slice, mutate b: slice): bool {
+    val minBits = min(a.remainingBitsCount(), b.remainingBitsCount());
+    if (minBits > 0) {
+        val aBits = a.loadBits(minBits);
+        val bBits = b.loadBits(minBits);
+        if (!aBits.bitsEqual(bBits)) {
+            return false;
+        }
+    }
+    // Advance to refs if slices are empty of bits
+    if (a.isEndOfBits() && !a.isEndOfRefs()) {
+        a = a.loadRef().beginParse();
+    }
+    if (b.isEndOfBits() && !b.isEndOfRefs()) {
+        b = b.loadRef().beginParse();
+    }
+    return true;
 }

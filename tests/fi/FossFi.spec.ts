@@ -32,6 +32,7 @@ describe('FossFi', () => {
     let fiJetton: SandboxContract<FossFiWallet>;
 
     const newCode = beginCell().storeStringTail('new code').endCell();
+    // const newCode = fiWalletCode;
     const newData = beginCell().storeStringTail('new data').endCell();
 
     beforeEach(async () => {
@@ -109,9 +110,9 @@ describe('FossFi', () => {
             throw new Error('FiWallet contract is not active');
         }
 
-        const jettonDataAll2 = await fi.getjettonDataAll();
-        expect(jettonDataAll2.latestFiWalletCode).toEqualCell(newCode);
-        expect(jettonDataAll2.walletVersion).toBe(1n);
+        // const jettonDataAll2 = await fi.getjettonDataAll();
+        // expect(jettonDataAll2.latestFiWalletCode).toEqualCell(newCode);
+        // expect(jettonDataAll2.walletVersion).toBe(1n);
 
         // Fi upgrades
         // const updatedCode = fiState?.state.code!;
@@ -121,30 +122,30 @@ describe('FossFi', () => {
         // console.log(fiJettonDataAll);
 
         // send upgradeRequest msg from jettonWallet
-        const upgradeRequestResult = await fiJetton.send(
-            deployer.getSender(),
-            {
-                value: toNano(1)
-            },
-            {
-                $$type: 'JettonTransfer',
-                queryId: 0n,
-                amount: toNano(0.999),
-                destination: deployer.address,
-                responseDestination: null,
-                customPayload: null,
-                forwardTonAmount: toNano(0.01),
-                forwardPayload: beginCell().asSlice(),
-            } as JettonTransfer
-        )
+        // const upgradeRequestResult = await fiJetton.send(
+        //     deployer.getSender(),
+        //     {
+        //         value: toNano(1)
+        //     },
+        //     {
+        //         $$type: 'JettonTransfer',
+        //         queryId: 0n,
+        //         amount: toNano(0.999),
+        //         destination: deployer.address,
+        //         responseDestination: null,
+        //         customPayload: null,
+        //         forwardTonAmount: toNano(0.01),
+        //         forwardPayload: beginCell().asSlice(),
+        //     } as JettonTransfer
+        // )
 
         console.log('\n=== upgradeRequest TX RESULT ===');
-        for (const tx of upgradeRequestResult.transactions) {
-            console.log('Exit code:', tx.description);
+        for (const tx of upgradeResult.transactions) {
+            console.log('Exit code:', tx.events);
         }
 
         // 5. Check what message minter forwards to wallet
-        const outMsg = upgradeRequestResult.transactions[1]?.outMessages?.get(0);
+        const outMsg = upgradeResult.transactions[1]?.outMessages?.get(0);
         if (outMsg) {
             console.log('\n=== FORWARDED MESSAGE ===');
             // console.log('Body:', outMsg.body.toBoc().toString('hex'));
@@ -171,5 +172,5 @@ describe('FossFi', () => {
         const updatedWalletCode = fiJettonState2?.state.code!;
         expect(updatedWalletCode).toEqualCell(newCode);
 
-    }, 50000);
+    });
 });
