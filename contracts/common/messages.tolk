@@ -108,12 +108,12 @@ fun ForwardPayloadRemainder.checkIsCorrectTLBEither(self) {
 }
 
 struct (0x00000001) InternalInvite {
-    queryId: uint64;
+    queryId: uint64 = 0;
     version: uint10;
-    id: IdInfo?;
+    id: IdInfo? = null;
     sender: address;
     invitor: address;
-    currentWalletCode: cell;
+    currentWalletCode: cell? = null;
     forwardPayload: ForwardPayloadRemainder;
 }
 

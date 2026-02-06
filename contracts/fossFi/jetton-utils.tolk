@@ -54,29 +54,6 @@ fun address.getAddrFiWallet(self, store: FiWalletStore) {
         .calculateAddress();
 }
 
-fun AutoDeployAddress.invite(self, forwardPayload: slice, store: FiWalletStore) {
-    val addrs = lazy store.addresses.load();
-    // val jettonAddr = self.calculateAddress();
-    idActionChecks(store); // active, !reported
-
-    val inviteInternal = createMessage({
-        bounce: BounceMode.Only256BitsOfBody, // 
-        dest: self, // deploy in invite + standalone for idLess accounts
-        value: 0,
-        body: InternalInvite {
-            queryId: 0, // todo
-            version: store.version,
-            id: null,
-            sender: addrs.ownerAddress,
-            invitor: addrs.nomInAddrs.load().invitor!, // todo null?
-            currentWalletCode: contract.getCode(),
-            forwardPayload,
-        },
-    });
-    inviteInternal.send(SEND_MODE_BOUNCE_ON_ACTION_FAIL |
-    SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE);
-}
-
 fun address.connected(self, store: FiWalletStore) {
     // val store = lazy FiWalletStore.load();
     val addrs = lazy store.addresses.load();

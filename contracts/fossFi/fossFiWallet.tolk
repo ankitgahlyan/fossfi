@@ -15,8 +15,10 @@ type AllowedMessageToWallet =
     | InternalTransferStep
     | InternalInvite
     | InternalDeActivate
+    | RequestUpgradeCode
     | SetStatus
     | TopUpTons
+    | TransferNotificationForRecipient // forwards invite notif invitor0 owner
     | Upgrade
     | VotingAction
 
@@ -90,7 +92,7 @@ fun onInternalMessage(in: InMessage): void {
                 val notifyOwnerMsg = createMessage({
                     bounce: BounceMode.NoBounce, // cause receiver can have uninitialized contract
                     dest: addrs.ownerAddress, // notify current owner
-                    value: msg.forwardTonAmount,
+                    value: ton("0.001"), // todo
                     body: TransferNotificationForRecipient {
                         queryId: msg.queryId,
                         jettonAmount: msg.jettonAmount,
@@ -151,7 +153,7 @@ fun onInternalMessage(in: InMessage): void {
                         val notifyMinterMsg = createMessage({
                             bounce: BounceMode.NoBounce,
                             dest: addrs.trustedJettonAddrs.load().minterAddr,
-                            value: 0, // todo: fees
+                            value: ton("0.01"),
                             body: NotifyMinter {
                                 queryId: 0, // to inform about BURN
                                 jettonAmount: burnAmount,
@@ -233,16 +235,31 @@ fun onInternalMessage(in: InMessage): void {
                     }
 
                     ton("0.1") => {
-                        calcDeployFiWallet(
+                        idActionChecks(store); // active, !reported
+                        // reward
+                        store.jettonBalance += MBRP_AMOUNT;
+                        val to = calcDeployFiWallet(
                             msg.transferRecipient,
                             addrs.treasury,
                             addrs.trustedJettonAddrs.load().minterAddr,
                             store.baseFiWalletCode
-                        )
-                            .invite(msg.forwardPayload, store);
+                        );
 
-                        // reward
-                        store.jettonBalance += MBRP_AMOUNT;
+                        val inviteInternal = createMessage({
+                            bounce: BounceMode.Only256BitsOfBody, // 
+                            dest: to, // deploy in invite + standalone for idLess accounts
+                            value: 0,
+                            body: InternalInvite {
+                                queryId: 0, // todo
+                                version: store.version,
+                                sender: addrs.ownerAddress,
+                                invitor: nomins.invitor!, // todo null?
+                                currentWalletCode: store.version ? contract.getCode() : null,
+                                forwardPayload: msg.forwardPayload,
+                            },
+                        });
+                        inviteInternal.send(SEND_MODE_BOUNCE_ON_ACTION_FAIL |
+                        SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE);
                     }
 
                     // voting
@@ -296,8 +313,13 @@ fun onInternalMessage(in: InMessage): void {
                         msg.transferRecipient.deActivate(msg.jettonAmount, store); // todo fixme when implementing native ui then use jettonAddrs directly
                     }
 
-                    ton("0.999") => { // todo: fixme
-                        requestUpgrade(addrs.trustedJettonAddrs.load().minterAddr, addrs.initialOwnerAddr, store.version);
+                    ton("0.999") => {
+                        // todo: fixme
+                        requestUpgrade(
+                            addrs.trustedJettonAddrs.load().minterAddr,
+                            addrs.initialOwnerAddr,
+                            store.version
+                        );
                     }
 
                     ton("0.404") => {
@@ -332,17 +354,17 @@ fun onInternalMessage(in: InMessage): void {
 
                 if (msg.version > store.version) {
                     store.version = msg.version;
-                    contract.setCodePostponed(msg.currentWalletCode);
+                    contract.setCodePostponed(msg.currentWalletCode!);
                 }
             }
 
             nomins.invitor = in.senderAddress; // contract addr
-            nomins.invitor0 = msg.invitor.getAddrFiWallet(store); // can deactivate acc
+            nomins.invitor0 = msg.invitor; // todo: null, can deactivate acc
 
             val notifyInvitor0 = createMessage({
                 bounce: BounceMode.NoBounce,
-                dest: msg.invitor, // w5 wallet
-                value: 0,
+                dest: msg.invitor, // todo: fixme w5 wallet
+                value: ton("0.01"),
                 body: TransferNotificationForRecipient {
                     queryId: msg.queryId,
                     jettonAmount: ton("0.1"), // invite
@@ -355,7 +377,7 @@ fun onInternalMessage(in: InMessage): void {
             val notifyMinterMsg = createMessage({
                 bounce: BounceMode.NoBounce,
                 dest: addrs.trustedJettonAddrs.load().minterAddr,
-                value: 0,
+                value: ton("0.01"),
                 body: InformMinterInviteInternal {
                     sender: addrs.initialOwnerAddr, // different for mint for addr calc
                     invitor: msg.sender, // just invitor not invitor0
@@ -385,6 +407,11 @@ fun onInternalMessage(in: InMessage): void {
             // todo fixme : check correct sender
             store.status = msg.status;
         }
+
+        RequestUpgradeCode => {
+            checkCorrectSenderInternal(in.senderAddress, msg.sender, store);
+            sendUpgrade(in.senderAddress, addrs.initialOwnerAddr, store.version);
+        },
 
         Upgrade => {
             checkCorrectSenderInternal(in.senderAddress, msg.sender, store);
@@ -419,6 +446,16 @@ fun onInternalMessage(in: InMessage): void {
                 nomins.invitor = contract.getAddress();
                 nomins.invitor0 = contract.getAddress();
             }
+        }
+
+        TransferNotificationForRecipient => {
+            val notifyInvitor0 = createMessage({
+                bounce: BounceMode.NoBounce,
+                dest: addrs.ownerAddress,
+                value: ton("0.01"),
+                body: msg,
+            });
+            notifyInvitor0.send(SEND_MODE_PAY_FEES_SEPARATELY | SEND_MODE_IGNORE_ERRORS);
         }
 
         else => {

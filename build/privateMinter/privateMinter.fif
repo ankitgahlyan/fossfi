@@ -5,7 +5,7 @@ PROGRAM{
   106029 DECLMETHOD get_jetton_data()
   103289 DECLMETHOD get_wallet_address()
   78683 DECLMETHOD get_next_admin_address()
-  // 20 functions inlined in-place:
+  // 19 functions inlined in-place:
   // - calculateJettonWalletMinStorageFee (1 call)
   // - forwardInitStateOverhead (1 call)
   // - checkAmountIsEnoughToTransfer (1 call)
@@ -21,7 +21,6 @@ PROGRAM{
   // - calcDeployFiWallet (1 call)
   // - address.getAddrFiWallet (2 calls)
   // - address.connected (1 call)
-  // - idActionChecks (1 call)
   // - onBouncedMessage (0 calls)
   // - assertSenderIsAdmin (5 calls)
   // - MapEntry<address,coins>.getKey (1 call)

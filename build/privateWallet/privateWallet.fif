@@ -3,7 +3,7 @@
 PROGRAM{
   0 DECLMETHOD onInternalMessage()
   97026 DECLMETHOD get_wallet_data()
-  // 19 functions inlined in-place:
+  // 18 functions inlined in-place:
   // - calculateJettonWalletMinStorageFee (2 calls)
   // - forwardInitStateOverhead (1 call)
   // - checkAmountIsEnoughToTransfer (1 call)
@@ -19,7 +19,6 @@ PROGRAM{
   // - calcDeployFiWallet (1 call)
   // - address.getAddrFiWallet (2 calls)
   // - address.connected (1 call)
-  // - idActionChecks (1 call)
   // - onBouncedMessage (0 calls)
   // - MapEntry<address,coins>.getKey (1 call)
   // - MapEntry<address,coins>.loadValue (1 call)
