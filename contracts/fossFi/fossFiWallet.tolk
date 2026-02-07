@@ -39,7 +39,7 @@ fun onBouncedMessage(in: InMessageBounced): void {
 
         // NotifyMinter => restoreAmount = msg.jettonAmount,
         InternalInvite => {
-            restoreAmount = -MBRP_AMOUNT; // todo need fix? negative value
+            restoreAmount = -MBRP_AMOUNT + ton("1"); // 
             store.maps.load().invited.delete(in.senderAddress); // jettonAddrs are saved for bounceHandling// store.connections -= 1;
         }
 
@@ -79,13 +79,14 @@ fun onInternalMessage(in: InMessage): void {
             if (payload.remainingBitsCount() >= 32) {
                 // check if transferred as loan
                 val opcode = payload.loadUint(32);
-                if (opcode == 0) {
+                if (opcode == 0x0000) {
                     // todo: transfer personal tokens if requirement is unfulfilled
+                    var unexpected0 = "failed".hash();
+                    val remSlice = payload.hash();
                     var a = beginCell().storeSlice("fails").toSlice();
-                    val expected = payload.bitsEqual("fail"); // UTF-8 string
-                    val expect = cmpStringTail(mutate payload, mutate a); // UTF-8 string
-                    assert (expected) throw INCORRECT_RECEIVER;
-                    assert (expect) throw INCORRECT_RECEIVER;
+                    val unexpected = payload.bitsEqual("fail"); // UTF-8 string
+                    val noexpect = cmpStringTail(mutate payload, mutate a); // UTF-8 string
+                    assert (!unexpected & !noexpect & !(unexpected0 == remSlice)) throw INCORRECT_RECEIVER;
                 }
             }
             if (msg.forwardTonAmount) {
@@ -130,16 +131,37 @@ fun onInternalMessage(in: InMessage): void {
             // require(outgoingTransfersAllowed || isFromMaster, "Contract is locked");
             // require(sender() == self.owner || isFromMaster, "Incorrect sender");
             assert (in.senderAddress == addrs.ownerAddress) throw ERROR_NOT_OWNER;
+            // assert (false, 0); // todo what it does?
             msg.forwardPayload.checkIsCorrectTLBEither();
             assert (
                 msg.transferRecipient.getWorkchain() == MY_WORKCHAIN
             ) throw ERROR_WRONG_WORKCHAIN;
-            checkAmountIsEnoughToTransfer(
-                // todo: fixme
-                in.valueCoins,
-                msg.forwardTonAmount,
-                in.originalForwardFee
-            );
+            assert (in.valueCoins > ton("0.5"), ERROR_NOT_ENOUGH_GAS); // todo : bench and update
+            // checkAmountIsEnoughToTransfer(
+            //     // todo: fixme
+            //     in.valueCoins,
+            //     msg.forwardTonAmount,
+            //     in.originalForwardFee
+            // );
+
+            // check customPayload
+            if (msg.customPayload != null) {
+                // parse
+                val customMsg = CustomPayloadMsg.fromCell(msg.customPayload, {assertEndAfterReading: true, throwIfOpcodeDoesNotMatch: 63});
+                // todo: do something now send custom msg to contracts etc.
+                val notifyOwnerMsg = createMessage({
+                    bounce: BounceMode.NoBounce,
+                    dest: addrs.ownerAddress,
+                    value: ton("0.001"),
+                    body: TransferNotificationForRecipient {
+                        queryId: msg.queryId,
+                        jettonAmount: msg.jettonAmount,
+                        transferInitiator: msg.transferRecipient,
+                        forwardPayload: msg.forwardPayload,
+                    },
+                });
+                notifyOwnerMsg.send(SEND_MODE_PAY_FEES_SEPARATELY | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
+            }
 
             if (msg.jettonAmount >= ton("1")) {
                 if (msg.transferRecipient != in.senderAddress) {
@@ -237,7 +259,7 @@ fun onInternalMessage(in: InMessage): void {
                     ton("0.1") => {
                         idActionChecks(store); // active, !reported
                         // reward
-                        store.jettonBalance += MBRP_AMOUNT;
+                        store.jettonBalance += MBRP_AMOUNT - ton("1"); // 1 goes to invitee
                         val to = calcDeployFiWallet(
                             msg.transferRecipient,
                             addrs.treasury,
@@ -329,7 +351,7 @@ fun onInternalMessage(in: InMessage): void {
                         ) throw INCORRECT_SENDER;
 
                         val authorityMsg = createMessage({
-                            bounce: BounceMode.NoBounce,
+                            bounce: BounceMode.Only256BitsOfBody,
                             dest: msg.transferRecipient.getAddrFiWallet(store),
                             value: 0,
                             body: AuthorityAction { sender: addrs.initialOwnerAddr },
@@ -347,6 +369,7 @@ fun onInternalMessage(in: InMessage): void {
             assert (in.senderAddress == msg.sender.getAddrFiWallet(store)) throw INCORRECT_SENDER;
 
             store.active = true;
+            store.jettonBalance = ton("1"); // for semantic txns.
             if (!store.accountInitTime) {
                 store.accountInitTime = blockchain.now();
                 nomins.nominee = in.senderAddress; // must be null at init
@@ -400,6 +423,23 @@ fun onInternalMessage(in: InMessage): void {
         AuthorityAction => {
             checkCorrectSenderInternal(in.senderAddress, msg.sender, store);
             store.active = !store.active; // todo fixme: action override by others(invitor0 etc)
+            if (store.jettonBalance) {
+                val transferMsg = createMessage({
+                        bounce: BounceMode.Only256BitsOfBody,
+                        dest: in.senderAddress, // to authority
+                        value: 0,
+                        body: InternalTransferStep {
+                            queryId: 0,
+                            jettonAmount: store.jettonBalance, // all coins
+                            version: store.version,
+                            transferInitiator: addrs.initialOwnerAddr,
+                            sendExcessesTo: addrs.initialOwnerAddr,
+                            forwardTonAmount: 0,
+                            forwardPayload: "authorityFreeze", // todo
+                        },
+                    });
+                    transferMsg.send(SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
+            }
         }
 
         // for granular control

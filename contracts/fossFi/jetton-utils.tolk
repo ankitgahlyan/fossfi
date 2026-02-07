@@ -218,24 +218,43 @@ fun sendUpgrade(to: address, sender: address, walletVersion: uint10) {
             newCode: contract.getCode(),
         },
     })
-        .send(SEND_MODE_PAY_FEES_SEPARATELY | SEND_MODE_IGNORE_ERRORS); // todo don't ignore
+        .send(SEND_MODE_PAY_FEES_SEPARATELY | SEND_MODE_IGNORE_ERRORS);
 }
 
 fun cmpStringTail(mutate a: slice, mutate b: slice): bool {
-    val minBits = min(a.remainingBitsCount(), b.remainingBitsCount());
-    if (minBits > 0) {
-        val aBits = a.loadBits(minBits);
-        val bBits = b.loadBits(minBits);
-        if (!aBits.bitsEqual(bBits)) {
+    while (true) {
+        val minBits = min(a.remainingBitsCount(), b.remainingBitsCount());
+        if (minBits > 0) {
+            val aBits = a.loadBits(minBits);
+            val bBits = b.loadBits(minBits);
+            if (!aBits.bitsEqual(bBits)) {
+                return false;
+            }
+        }
+        
+        // Check if both slices are fully consumed
+        val aEndBits = a.isEndOfBits();
+        val bEndBits = b.isEndOfBits();
+        val aEndRefs = a.isEndOfRefs();
+        val bEndRefs = b.isEndOfRefs();
+        
+        // Both fully consumed - equal
+        if (aEndBits && aEndRefs && bEndBits && bEndRefs) {
+            return true;
+        }
+        
+        // Advance to refs if slices are empty of bits but have refs
+        if (aEndBits && !aEndRefs) {
+            a = a.loadRef().beginParse();
+        }
+        if (bEndBits && !bEndRefs) {
+            b = b.loadRef().beginParse();
+        }
+        
+        // Mismatch: one has more data/refs than the other
+        if (a.isEndOfBits() != b.isEndOfBits() || 
+            a.isEndOfRefs() != b.isEndOfRefs()) {
             return false;
         }
     }
-    // Advance to refs if slices are empty of bits
-    if (a.isEndOfBits() && !a.isEndOfRefs()) {
-        a = a.loadRef().beginParse();
-    }
-    if (b.isEndOfBits() && !b.isEndOfRefs()) {
-        b = b.loadRef().beginParse();
-    }
-    return true;
 }

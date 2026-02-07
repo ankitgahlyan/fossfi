@@ -155,6 +155,10 @@ struct (0x00000008) VotingAction {
     originalSender: address;
 }
 
+struct CustomPayloadMsg {
+    queryId: uint64;
+}
+
 struct IdInfo {
     username: SnakeString;
     lattitude: SnakeString;
