@@ -90,7 +90,7 @@ struct (0x2508d66a) Upgrade {
 
 struct (0xcb862902) ChangeMinterMetadataUri {
     queryId: uint64
-    newMetadataUri: SnakeString
+    newMetadataUri: cell // SnakeString
 }
 
 struct (0xd372158c) TopUpTons {

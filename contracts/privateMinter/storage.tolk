@@ -20,7 +20,7 @@ struct PriStore { // not upgradable
     adminAddress: address
     nextAdminAddress: address? = null
     readonly jettonWalletCode: cell
-    metadataUri: Cell<SnakeString>? = null // to deploy directly from MINT wallet & calc minter addr onchain
+    metadataUri: cell? = null //Cell<SnakeString>? // to deploy directly from MINT wallet & calc minter addr onchain
 }
 
 fun PriStore.load() {

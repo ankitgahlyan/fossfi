@@ -51,6 +51,7 @@ struct TimeStamps {
 
 struct FiWalletStore { // todo: nft like store migration after activate/upgrade/ID acc also code upgrade & reverese/killSwitch for normal jettons coz of  
     jettonBalance: coins = 0
+    goldCoins: uint32 = 1 // todo: implement: store of value, transferrable
     txnCount: uint8 = 0 // for fixed fees burns to counter minting
     status: uint2 = 0 // for granular control
     isAuthorityAccount: bool = false // todo: (learn: use this(sent through ownJetton) pattern for signaturePayloadBypass) for elevated permissions, 100,000 accounts needed to vote
@@ -76,7 +77,7 @@ struct FiWalletStore { // todo: nft like store migration after activate/upgrade/
 struct FiStore {
     totalSupply: coins = 0
     walletVersion: uint10 = 0
-    adminAddress: address
+    adminAddress: address // todo: implement: use dao address
     readonly baseFiWalletCode: cell // for address calculation
     latestFiWalletCode: cell // for upgrades
     metadataUri: cell // Cell<SnakeString>

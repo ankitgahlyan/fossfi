@@ -232,7 +232,7 @@ fun onInternalMessage(in: InMessage) {
         ChangeMinterMetadataUri => {
             var storage = lazy PriStore.load();
             assertSenderIsAdmin(in.senderAddress, storage.adminAddress);
-            storage.metadataUri = msg.newMetadataUri.toCell();
+            storage.metadataUri = msg.newMetadataUri;
             storage.save();
         }
 
@@ -258,36 +258,19 @@ fun onInternalMessage(in: InMessage) {
 struct JettonDataReply {
     totalSupply: int
     mintable: bool
-    adminAddress: address?
-    jettonContent: Cell<OnchainMetadataReply>
+    adminAddress: address
+    jettonContent: cell?
     jettonWalletCode: cell
-}
-
-struct (0x00) OnchainMetadataReply {
-    contentDict: map<uint256, Cell<SnakeDataReply>>
-}
-
-struct (0x00) SnakeDataReply {
-    string: SnakeString
 }
 
 get fun get_jetton_data(): JettonDataReply {
     val storage = lazy PriStore.load();
 
-    var metadata: OnchainMetadataReply = { contentDict: createEmptyMap() };
-    if (storage.metadataUri != null) {
-        metadata.contentDict.set(
-            stringSha256("uri"),
-            SnakeDataReply { string: storage.metadataUri.load() }.toCell()
-        );
-        metadata.contentDict.set(stringSha256("decimals"), SnakeDataReply { string: "9" }.toCell());
-    }
-
     return {
         totalSupply: storage.totalSupply,
         mintable: true,
         adminAddress: storage.adminAddress,
-        jettonContent: metadata.toCell(),
+        jettonContent: storage.metadataUri,
         jettonWalletCode: storage.jettonWalletCode,
     };
 }

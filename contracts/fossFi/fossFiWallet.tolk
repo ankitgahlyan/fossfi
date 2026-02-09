@@ -260,7 +260,7 @@ fun onInternalMessage(in: InMessage): void {
 
                     ton("0.1") => {
                         idActionChecks(store); // active, !reported
-                        val now = now();
+                        val now = blockchain.now();
                         assert (now > (time.accountInit + ACTIVATION_WAIT)) throw WAIT_MORE; // nework spam protection
                         assert (now > time.lastInvite + INVITE_WAIT) throw WAIT_MORE; // invite every 4 hours, spam protection
                         time.lastInvite = now;

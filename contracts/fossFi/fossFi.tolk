@@ -18,15 +18,15 @@ type AllowedMessageToMinter =
     | InformMinterInviteInternal
     | RequestUpgradeCode
 
-fun onBouncedMessage(in: InMessageBounced): void {
-    in.bouncedBody.skipBouncedPrefix();
-    // process only mint bounces; on other messages, an exception will be thrown, it's okay
-    val msg = lazy InternalTransferStep.fromSlice(in.bouncedBody);
+// fun onBouncedMessage(in: InMessageBounced): void {
+//     in.bouncedBody.skipBouncedPrefix();
+//     // process only mint bounces; on other messages, an exception will be thrown, it's okay
+//     val msg = lazy InternalTransferStep.fromSlice(in.bouncedBody);
 
-    var store = lazy FiStore.load();
-    store.totalSupply -= msg.jettonAmount;
-    store.save();
-}
+//     var store = lazy FiStore.load();
+//     store.totalSupply -= msg.jettonAmount;
+//     store.save();
+// } // not a minter anymore, peers do that kind of stuff
 
 // fun assertSenderIsAdmin(senderAddress: address, adminAddress: address) {
 //     // theoretically, minter's admin can be dropped and be `null`, so being precise, we should check:
@@ -103,34 +103,7 @@ fun onInternalMessage(in: InMessage): void {
         }
 
         MintNewJettons => {
-            assert (in.senderAddress == store.adminAddress) throw ERROR_NOT_OWNER;
-            assert (msg.mintRecipient.getWorkchain() == MY_WORKCHAIN) throw ERROR_WRONG_WORKCHAIN;
-
-            val internalTransferMsg = lazy msg.internalTransferMsg.load({
-                throwIfOpcodeDoesNotMatch: ERROR_INVALID_OP,
-            });
-            var forwardTonAmount = internalTransferMsg.forwardTonAmount;
-            internalTransferMsg.forwardPayload.checkIsCorrectTLBEither();
-
-            // a little more than needed, it’s ok since it’s sent by the admin and excesses will return back
-            checkAmountIsEnoughToTransfer(msg.tonAmount, forwardTonAmount, in.originalForwardFee);
-
-            store.totalSupply += internalTransferMsg.jettonAmount;
-
-            reserveToncoinsOnBalance(ton("0.01"), RESERVE_MODE_EXACT_AMOUNT); // reserve for storage fees
-
-            val deployMsg = createMessage({
-                bounce: BounceMode.Only256BitsOfBody,
-                dest: calcDeployFiWallet(
-                    msg.mintRecipient,
-                    store.adminAddress,
-                    contract.getAddress(),
-                    store.baseFiWalletCode
-                ),
-                value: msg.tonAmount,
-                body: msg.internalTransferMsg,
-            });
-            deployMsg.send(SEND_MODE_PAY_FEES_SEPARATELY | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
+            assert (false) throw INCORRECT_RECEIVER; // just for fun/standard
         }
 
         ChangeMinterAdmin => {
@@ -140,7 +113,7 @@ fun onInternalMessage(in: InMessage): void {
 
         ChangeMinterMetadataUri => {
             assert (in.senderAddress == store.adminAddress) throw ERROR_NOT_OWNER;
-            store.metadataUri = msg.newMetadataUri.toCell();
+            store.metadataUri = msg.newMetadataUri;
         }
 
         Upgrade => {
@@ -230,7 +203,7 @@ fun onInternalMessage(in: InMessage): void {
             assert (in.body.isEmpty()) throw 0xFFFF;
         }
     }
-    store.save(); // todo: what of topUp, upgrade and else cases
+    store.save();
 }
 
 struct JettonDataReply {
@@ -247,6 +220,7 @@ struct JettonDataReply {
 // struct (0x00) SnakeDataReply {
 //     string: SnakeString
 // }
+
 get fun get_jetton_data(): JettonDataReply {
     val store = lazy FiStore.load();
 
@@ -260,7 +234,7 @@ get fun get_jetton_data(): JettonDataReply {
     // // }
     return {
         totalSupply: store.totalSupply,
-        mintable: true, // but by peers only & not owner
+        mintable: true, // but by peers only & not minter
         adminAddress: store.adminAddress,
         jettonContent: store.metadataUri, // metadata.toCell(),
         jettonWalletCode: store.latestFiWalletCode, // or return baseCode?

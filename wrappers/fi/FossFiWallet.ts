@@ -391,6 +391,7 @@ export function dictValueParserJettonWalletData(): DictionaryValue<JettonWalletD
 
 export function loadGetterTupleFiJetton$Data(source: TupleReader) {
     const _balance = source.readBigNumber();
+    const _goldCoins = source.readBigNumber();
     const _txnCount = source.readBigNumber();
     const _status = source.readBigNumber();
     const _isAuthority = source.readBoolean();
