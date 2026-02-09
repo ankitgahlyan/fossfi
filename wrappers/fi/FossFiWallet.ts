@@ -403,10 +403,9 @@ export function loadGetterTupleFiJetton$Data(source: TupleReader) {
     const _connections = source.readBigNumber();
     const _active = source.readBoolean();
     const _mintable = source.readBoolean();
-    const _accountInitTime = source.readBigNumber();
     const _version = source.readBigNumber();
-    const _lastWeeklyClaimTime = source.readBigNumber();
     const _id = source.readCell();
+    const _timestamps = loadGetterTupleTimestamps(source);
     const _addresses = loadGetterTupleAddresses(source);
     const _maps = source.readCell(); // todo: parseIt
     const _baseFiWalletCode = source.readCell();
@@ -435,8 +434,9 @@ export function loadGetterTupleFiJetton$Data(source: TupleReader) {
         connections: _connections,
         active: _active,
         mintable: _mintable,
-        accountInitTime: _accountInitTime,
-        lastWeeklyClaimTime: _lastWeeklyClaimTime,
+        accountInitTime: _timestamps.accountInit,
+        lastWeeklyClaimTime: _timestamps.lastClaim,
+        lastInviteTime: _timestamps.lastInvite,
         version: _version,
         id: _id,
         maps: _maps,
@@ -459,4 +459,10 @@ export function loadGetterTupleAddresses(source: TupleReader) {
     const _personalJetton = trustedAddrs.loadAddressAny();
     const _authorisedAccs = trustedAddrs.loadDict(Dictionary.Keys.Address(), Dictionary.Values.Address());
     return { $$type: 'Addresses' as const, owner: _owner, treasury: _treasury, initialOwner: _initialOwner, nominee: _nominee, invitor: _invitor, invitor0: _invitor0, minter: _minter, personalMinter: _personalMinter, personalJetton: _personalJetton, authorisedAccs: _authorisedAccs };
+}
+
+export function loadGetterTupleTimestamps(source: TupleReader) {
+    const slice = source.readCell().beginParse();
+
+    return {$$type: 'Timestamps' as const, accountInit: slice.loadUintBig(32), lastClaim: slice.loadUintBig(32), lastInvite: slice.loadUintBig(32)}
 }

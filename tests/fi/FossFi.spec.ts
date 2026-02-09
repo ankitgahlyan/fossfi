@@ -134,7 +134,7 @@ describe('FossFi', () => {
             {
                 $$type: 'JettonTransfer',
                 queryId: 0n,
-                amount: toNano(0.1),
+                amount: toNano("0.1"),
                 destination: user.address,
                 responseDestination: null,
                 customPayload: null,

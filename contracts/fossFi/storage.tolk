@@ -43,6 +43,12 @@ struct ReportInfo {
     reportResolutionTime: uint32 = 0;
 }
 
+struct TimeStamps {
+    accountInit: uint32 = 0
+    lastInvite: uint32 = 0
+    lastClaim: uint32 = 0
+}
+
 struct FiWalletStore { // todo: nft like store migration after activate/upgrade/ID acc also code upgrade & reverese/killSwitch for normal jettons coz of  
     jettonBalance: coins = 0
     txnCount: uint8 = 0 // for fixed fees burns to counter minting
@@ -57,11 +63,10 @@ struct FiWalletStore { // todo: nft like store migration after activate/upgrade/
     connections: uint8 = 0 // 250 max msgSending constraints
     active: bool = false
     mintable: bool = true
-    accountInitTime: uint32 = 0
     version: uint10 = 0
-    lastWeeklyAllowanceClaimTime: uint32 = 0
 
     id: cell // todo: implement manual change; unique ID username@localLatitudeGroupName
+    timestamps: Cell<TimeStamps>
     addresses: Cell<Addresses>
     maps: Cell<Maps>
 

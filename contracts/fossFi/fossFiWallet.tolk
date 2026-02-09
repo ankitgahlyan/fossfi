@@ -54,6 +54,7 @@ fun onBouncedMessage(in: InMessageBounced): void {
 fun onInternalMessage(in: InMessage): void {
     val msg = lazy AllowedMessageToWallet.fromSlice(in.body);
     var store = lazy FiWalletStore.load();
+    var time = lazy store.timestamps.load();
     var addrs = lazy store.addresses.load();
     var maps = lazy store.maps.load();
     var nomins = lazy addrs.nomInAddrs.load();
@@ -229,17 +230,18 @@ fun onInternalMessage(in: InMessage): void {
                     ton("0.101") => {
                         // claim weekly grant
                         val now = blockchain.now();
+                        assert (now > (time.accountInit + ACTIVATION_WAIT)) throw WAIT_MORE; // claim starts after a week
                         assert (
                             // for 2 years weekly 11,111 tokens can be claimed
-                            (now < 63072000 + store.accountInitTime) &&
-                            (now > 604800 + store.lastWeeklyAllowanceClaimTime)
+                            (now < MAX_CLAIM_PERIOD + time.accountInit) &&
+                            (now > ACTIVATION_WAIT + time.lastClaim)
                         ) throw WAIT_MORE;
 
                         // votingPower based mint
                         var claimAmount = ton("11111") + (ton("1") * store.receivedVotes);
 
                         store.jettonBalance += claimAmount;
-                        store.lastWeeklyAllowanceClaimTime = now;
+                        time.lastClaim = now;
                         // inform minter about new tokens mint
                         val notifyMinterMsg = createMessage({
                             bounce: BounceMode.NoBounce,
@@ -258,6 +260,10 @@ fun onInternalMessage(in: InMessage): void {
 
                     ton("0.1") => {
                         idActionChecks(store); // active, !reported
+                        val now = now();
+                        assert (now > (time.accountInit + ACTIVATION_WAIT)) throw WAIT_MORE; // nework spam protection
+                        assert (now > time.lastInvite + INVITE_WAIT) throw WAIT_MORE; // invite every 4 hours, spam protection
+                        time.lastInvite = now;
                         // reward
                         store.jettonBalance += MBRP_AMOUNT - ton("1"); // 1 goes to invitee
                         val to = calcDeployFiWallet(
@@ -370,8 +376,8 @@ fun onInternalMessage(in: InMessage): void {
 
             store.active = true;
             store.jettonBalance = ton("1"); // for semantic txns.
-            if (!store.accountInitTime) {
-                store.accountInitTime = blockchain.now();
+            if (!time.accountInit) {
+                time.accountInit = blockchain.now();
                 nomins.nominee = in.senderAddress; // must be null at init
                 store.id = msg.forwardPayload.toCell();
 
@@ -476,13 +482,13 @@ fun onInternalMessage(in: InMessage): void {
         TopUpTons => {
             // deploy + just accept tons
             if (
-                !store.accountInitTime &&
+                !time.accountInit &&
                 (in.senderAddress == addrs.trustedJettonAddrs.load().minterAddr)
             ) {
                 store.active = true;
                 store.jettonBalance += ton("1"); // need for semantic txns.
                 store.isAuthorityAccount = true;
-                store.accountInitTime = blockchain.now();
+                time.accountInit = blockchain.now();
                 nomins.invitor = contract.getAddress();
                 nomins.invitor0 = contract.getAddress();
             }
@@ -506,6 +512,7 @@ fun onInternalMessage(in: InMessage): void {
     }
 
     addrs.nomInAddrs = nomins.toCell();
+    store.timestamps = time.toCell();
     store.addresses = addrs.toCell();
     store.maps = maps.toCell();
     store.save(); // save once for any matches above
