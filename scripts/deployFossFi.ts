@@ -23,30 +23,31 @@ export async function run(provider: NetworkProvider) {
         walletVersion: 0n,
         admin: deployerAddress,
         base_fi_wallet_code: walletCode,
-        metadata: envContent // content
+        metadata: envContent, // content
+        others: null,
     };
 
     const fossFi = provider.open(FossFi.createFromConfig(fossFiConfig, await compile('FossFi')));
 
-    // await fossFi.sendDeploy(provider.sender(), toNano('0.5'));
-    const mint: TopUp = {
-            $$type: 'TopUp',
-            queryId: 0n,
-        };
-    
-        await provider.sender().send(
-            {
-                value: toNano("0.2"),
-                to: fossFi.address,
-                sendMode: SendMode.PAY_GAS_SEPARATELY,
-                init: fossFi.init,
-                body: beginCell()
-                    .store(
-                        storeTopUp(mint),
-                    )
-                    .endCell(),
-            }
-        )
+    await fossFi.sendDeploy(provider.sender(), toNano('0.5'));
+    // const mint: TopUp = {
+    //     $$type: 'TopUp',
+    //     queryId: 0n,
+    // };
+
+    // await provider.sender().send(
+    //     {
+    //         value: toNano("0.2"),
+    //         to: fossFi.address,
+    //         sendMode: SendMode.PAY_GAS_SEPARATELY,
+    //         init: fossFi.init,
+    //         body: beginCell()
+    //             .store(
+    //                 storeTopUp(mint),
+    //             )
+    //             .endCell(),
+    //     }
+    // )
 
     // await provider.waitForDeploy(fossFi.address);
 

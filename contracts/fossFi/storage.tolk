@@ -18,17 +18,25 @@ struct Addresses {
     id: cell // todo: implement manual change; unique ID username@localLatitudeGroupName
     nomInAddrs: Cell<NomInAddrs>
     trustedJettonAddrs: Cell<TrustedAddrs>
+    others: Cell<Codes>
+}
+
+struct Codes {
+    a: cell
+    b: cell
+    c: cell
+    d: cell
 }
 
 struct Maps {
-    friends: map<address, coins> // todo: store jettonAddrs instead of userAddrs for bounce handling or pass extra receiver field in outgoing msg & can it help in socialRecovery too?
-    followers: map<address, coins> // todo delete redundant state just keep following and one side friend then bounce on other side if not exists? NO coz how to accClose then!
-    followings: map<address, coins>
+    // friends: map<address, coins> // todo: store jettonAddrs instead of userAddrs for bounce handling or pass extra receiver field in outgoing msg & can it help in socialRecovery too?
+    // followers: map<address, coins> // todo delete redundant state just keep following and one side friend then bounce on other side if not exists? NO coz how to accClose then!
+    // followings: map<address, coins>
     invited: map<address, coins>
     
     allowances: map<address, coins> // todo need in personal tokens too?
-    debts: map<address, coins>
-    closeFriends: map<address, bool> // for social recovery of account
+    // debts: map<address, coins>
+    // closeFriends: map<address, bool> // for social recovery of account
     votedFor: map<address, uint4> // todo: what struct to use
     
     reportInfo: Cell<ReportInfo> 
@@ -80,6 +88,7 @@ struct FiStore {
     readonly baseFiWalletCode: cell // for address calculation
     latestFiWalletCode: cell? // for upgrades
     metadataUri: cell // Cell<SnakeString>
+    others: Cell<Codes>
 }
 
 fun FiStore.load() {

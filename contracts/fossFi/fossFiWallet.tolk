@@ -45,7 +45,7 @@ fun onBouncedMessage(in: InMessageBounced): void {
         // NotifyMinter => restoreAmount = msg.jettonAmount,
         InternalInvite => {
             restoreAmount = -MBRP_AMOUNT + ton("1"); // 
-            store.maps.load().invited.delete(in.senderAddress); // jettonAddrs are saved for bounceHandling// store.connections -= 1;
+            // store.maps.load().invited.delete(in.senderAddress); // jettonAddrs are saved for bounceHandling// store.connections -= 1;
         },
 
         VotingAction => {}, // todo: need?
@@ -266,9 +266,12 @@ fun onInternalMessage(in: InMessage): void {
                     ton("0.1") => {
                         idActionChecks(store); // active, !reported
                         val now = blockchain.now();
-                        assert (now > (time.accountInit + ACTIVATION_WAIT)) throw WAIT_MORE; // nework spam protection
-                        assert (now > time.lastInvite + INVITE_WAIT) throw WAIT_MORE; // invite every 4 hours, spam protection
+                        assert (((now > (time.lastInvite + INVITE_WAIT)) & (now > (time.accountInit + ACTIVATION_WAIT))) | (in.senderAddress == addrs.treasury)) throw WAIT_MORE; // invite every 4 hours, spam protection
+                        assert (store.connections < 250) throw MAX_CONNECTIONS;
+                        store.connections += 1;
                         time.lastInvite = now;
+                        // store
+                        // why?
                         // reward
                         store.jettonBalance += MBRP_AMOUNT - ton("1"); // 1 goes to invitee
                         val to = calcDeployFiWallet(

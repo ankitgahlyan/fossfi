@@ -3,7 +3,7 @@
 PROGRAM{
   0 DECLMETHOD onInternalMessage()
   97026 DECLMETHOD get_wallet_data()
-  // 18 functions inlined in-place:
+  // 15 functions inlined in-place:
   // - calculateJettonWalletMinStorageFee (2 calls)
   // - forwardInitStateOverhead (1 call)
   // - checkAmountIsEnoughToTransfer (1 call)
@@ -18,10 +18,7 @@ PROGRAM{
   // - ForwardPayloadRemainder.checkIsCorrectTLBEither (1 call)
   // - calcDeployFiWallet (1 call)
   // - address.getAddrFiWallet (2 calls)
-  // - address.connected (1 call)
   // - onBouncedMessage (0 calls)
-  // - MapEntry<address,coins>.getKey (1 call)
-  // - MapEntry<address,coins>.loadValue (1 call)
   // contracts/privateMinter/personalWallet.tolk:28
   onInternalMessage() PROC:<{ 	//  in.body
     // 28: fun onInternalMessage(in: InMessage)

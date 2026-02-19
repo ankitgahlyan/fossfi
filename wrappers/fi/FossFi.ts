@@ -27,7 +27,9 @@ export type FossFiConfig = {
     admin: Address;
 	base_fi_wallet_code: Cell;
 	metadata: Cell | FossFiContent;
+    others: Cell | null;
 };
+
 export type FossFiConfigFull = {
     supply: bigint,
     walletVersion: bigint,
@@ -81,6 +83,7 @@ export function fossFiConfigToCell(config: FossFiConfig): Cell {
 		.storeRef(config.base_fi_wallet_code)
 		.storeBit(false)
 		.storeRef(content)
+        .storeMaybeRef(config.others)
 		.endCell();
 }
 

@@ -46,7 +46,8 @@ describe('FossFi', () => {
             walletVersion: 0n,
             admin: deployer.address,
             base_fi_wallet_code: fiWalletCode,
-            metadata: envContent
+            metadata: envContent,
+            others: null,
         }, fiCode));
 
         const deployResult = await fi.sendDeploy(deployer.getSender(), toNano('1'));
