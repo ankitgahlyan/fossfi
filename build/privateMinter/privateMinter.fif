@@ -483,15 +483,15 @@ PROGRAM{
       LDOPTSTDADDR          	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount '633 lazyS
       NIP                   	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount lazyS
       LDGRAMS               	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount forwardTonAmount mutableCopy
-      // 102: if (mutableCopy.loadMaybeRef() != null)
+      // 104: if (mutableCopy.loadMaybeRef() != null)
       LDOPTREF              	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount forwardTonAmount '640 mutableCopy
       SWAP                  	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount forwardTonAmount mutableCopy '640
       ISNULL                	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount forwardTonAmount mutableCopy '641
       IFNOT:<{              	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount forwardTonAmount mutableCopy
-        // 104: mutableCopy.assertEnd()
+        // 106: mutableCopy.assertEnd()
         ENDS                	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount forwardTonAmount
       }>ELSE<{
-        // 102: if (mutableCopy.loadMaybeRef() != null)
+        // 104: if (mutableCopy.loadMaybeRef() != null)
         DROP                	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount forwardTonAmount
       }>
       // 189: checkAmountIsEnoughToTransfer(msg.tonAmount, forwardTonAmount, in.originalForwardFee)

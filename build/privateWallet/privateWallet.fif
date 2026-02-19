@@ -345,16 +345,17 @@ PROGRAM{
       LDOPTSTDADDR          	//  storage.ownerAddress '64 storage.jettonBalance msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 lazyS
       SKIPOPTREF            	//  storage.ownerAddress '64 storage.jettonBalance msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 lazyS
       LDGRAMS               	//  storage.ownerAddress '64 storage.jettonBalance msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7
+      // 103: var mutableCopy = self
       DUP                   	//  storage.ownerAddress '64 storage.jettonBalance msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7 mutableCopy
-      // 102: if (mutableCopy.loadMaybeRef() != null)
+      // 104: if (mutableCopy.loadMaybeRef() != null)
       LDOPTREF              	//  storage.ownerAddress '64 storage.jettonBalance msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7 '517 mutableCopy
       SWAP                  	//  storage.ownerAddress '64 storage.jettonBalance msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7 mutableCopy '517
       ISNULL                	//  storage.ownerAddress '64 storage.jettonBalance msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7 mutableCopy '518
       IFNOT:<{              	//  storage.ownerAddress '64 storage.jettonBalance msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7 mutableCopy
-        // 104: mutableCopy.assertEnd()
+        // 106: mutableCopy.assertEnd()
         ENDS                	//  storage.ownerAddress '64 storage.jettonBalance msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7
       }>ELSE<{
-        // 102: if (mutableCopy.loadMaybeRef() != null)
+        // 104: if (mutableCopy.loadMaybeRef() != null)
         DROP                	//  storage.ownerAddress '64 storage.jettonBalance msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7
       }>
       // 103: msg.transferRecipient.getWorkchain() == MY_WORKCHAIN

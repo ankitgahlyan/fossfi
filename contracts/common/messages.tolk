@@ -93,7 +93,9 @@ struct (0xcb862902) ChangeMinterMetadataUri {
     newMetadataUri: cell // SnakeString
 }
 
-struct (0xd372158c) TopUpTons {}
+struct (0xd372158c) TopUpTons {
+    queryId: uint64
+}
 
 // "forward payload" is TL/B `(Either Cell ^Cell)`;
 // we want to test, that if ^Cell, no other data exists in a slice

@@ -79,7 +79,7 @@ export function fossFiConfigToCell(config: FossFiConfig): Cell {
 		.storeUint(config.walletVersion, 10)
 		.storeAddress(config.admin)
 		.storeRef(config.base_fi_wallet_code)
-		.storeRef(config.base_fi_wallet_code)
+		.storeBit(false)
 		.storeRef(content)
 		.endCell();
 }
@@ -137,6 +137,19 @@ export function storeInternalTransferStep(src: InternalTransferStep) {
     };
 }
 
+export type TopUp = {
+    $$type: 'TopUp';
+    queryId: bigint;
+}
+
+export function storeTopUp(src: TopUp) {
+    return (builder: Builder) => {
+        const b_0 = builder;
+        b_0.storeUint(Op.top_up, 32);
+        b_0.storeUint(src.queryId, 64);
+    };
+}
+
 export class FossFi implements Contract {
 	readonly abi: ContractABI = { name: 'FossFi' }; // todo: implement
 
@@ -157,7 +170,7 @@ export class FossFi implements Contract {
         await provider.internal(via, {
             value,
             sendMode: SendMode.PAY_GAS_SEPARATELY,
-            body: beginCell().storeUint(0xd372158c, 32).endCell(),
+            body: beginCell().storeUint(Op.top_up, 32).storeUint(Op.top_up, 64).endCell(),
         });
     }
 

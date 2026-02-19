@@ -16,6 +16,7 @@ fun calcDeployFiWallet(
             ownerAddress,
             treasury,
             initialOwnerAddr: ownerAddress,
+            id: createEmptyCell(),
             nomInAddrs: NomInAddrs {}.toCell(),
             trustedJettonAddrs: TrustedAddrs {
                 minterAddr: minterAddress,
@@ -33,7 +34,6 @@ fun calcDeployFiWallet(
             votedFor: createEmptyMap(),
             reportInfo: ReportInfo { reports: createEmptyMap() }.toCell(),
         }.toCell(), // todo: learn how to set it default
-        id: createEmptyCell(),
         timestamps: TimeStamps {}.toCell(),
         baseFiWalletCode,
     };

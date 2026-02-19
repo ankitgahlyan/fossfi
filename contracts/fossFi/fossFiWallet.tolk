@@ -237,7 +237,7 @@ fun onInternalMessage(in: InMessage): void {
                         val now = blockchain.now();
                         assert (now > (time.accountInit + ACTIVATION_WAIT)) throw WAIT_MORE; // claim starts after a week
                         assert (
-                            // for 2 years weekly 11,111 tokens can be claimed
+                            // for 2 years, weekly 11,111 tokens can be claimed
                             (now < MAX_CLAIM_PERIOD + time.accountInit) &&
                             (now > ACTIVATION_WAIT + time.lastClaim)
                         ) throw WAIT_MORE;
@@ -391,7 +391,7 @@ fun onInternalMessage(in: InMessage): void {
             if (!time.accountInit) {
                 time.accountInit = blockchain.now();
                 nomins.nominee = in.senderAddress; // must be null at init
-                store.id = msg.forwardPayload.toCell();
+                addrs.id = msg.forwardPayload.toCell();
 
                 if (msg.version > store.version) {
                     store.version = msg.version;

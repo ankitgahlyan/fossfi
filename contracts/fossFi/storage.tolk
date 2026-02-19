@@ -15,6 +15,7 @@ struct Addresses {
     ownerAddress: address // todo: changeAble/Recoverable use as verifying incoming msg from owner
     treasury: address // todo: killSwitch for when mainstream
     initialOwnerAddr: address // sent as owner in outbound msg for correct sender check
+    id: cell // todo: implement manual change; unique ID username@localLatitudeGroupName
     nomInAddrs: Cell<NomInAddrs>
     trustedJettonAddrs: Cell<TrustedAddrs>
 }
@@ -50,6 +51,7 @@ struct TimeStamps {
 struct FiWalletStore { // todo: nft like store migration after activate/upgrade/ID acc also code upgrade & reverese/killSwitch for normal jettons coz of  
     jettonBalance: coins = 0
     goldCoins: uint32 = 1 // todo: implement: store of value, transferrable
+    
     txnCount: uint8 = 0 // for fixed fees burns to counter minting
     status: uint2 = 0 // for granular control
     isAuthorityAccount: bool = false // todo: (learn: use this(sent through ownJetton) pattern for signaturePayloadBypass) for elevated permissions, 100,000 accounts needed to vote
@@ -64,7 +66,6 @@ struct FiWalletStore { // todo: nft like store migration after activate/upgrade/
     mintable: bool = true
     version: uint10 = 0
 
-    id: cell // todo: implement manual change; unique ID username@localLatitudeGroupName
     timestamps: Cell<TimeStamps>
     addresses: Cell<Addresses>
     maps: Cell<Maps>
@@ -77,7 +78,7 @@ struct FiStore {
     walletVersion: uint10
     adminAddress: address // todo: implement: use dao address
     readonly baseFiWalletCode: cell // for address calculation
-    latestFiWalletCode: cell // for upgrades
+    latestFiWalletCode: cell? // for upgrades
     metadataUri: cell // Cell<SnakeString>
 }
 

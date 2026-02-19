@@ -116,7 +116,7 @@ fun onInternalMessage(in: InMessage): void {
                         body: Upgrade {
                             walletVersion: store.walletVersion,
                             sender: store.adminAddress,
-                            newCode: store.latestFiWalletCode,
+                            newCode: msg.newCode!,
                         },
                     });
                     upgradeMsg.send(SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE |
@@ -147,7 +147,7 @@ fun onInternalMessage(in: InMessage): void {
                     body: Upgrade {
                         walletVersion: store.walletVersion,
                         sender: store.adminAddress,
-                        newCode: store.latestFiWalletCode,
+                        newCode: store.latestFiWalletCode!,
                     },
                 });
                 upgradeMsg.send(SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE |
@@ -169,7 +169,7 @@ fun onInternalMessage(in: InMessage): void {
                         contract.getAddress(),
                         store.baseFiWalletCode
                     ),
-                    body: TopUpTons {},
+                    body: TopUpTons { queryId: msg.queryId },
                 });
                 deployTopUpMsg.send(SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE |
                 SEND_MODE_BOUNCE_ON_ACTION_FAIL);
@@ -254,7 +254,7 @@ fun calcDeployLottery(
     treasury: address,
     minter: address,
     fiJettonInitCode: cell,
-    lotteryCode: cell // todo: fixme,,
+    lotteryCode: cell // todo: fixme,,,
 ): AutoDeployAddress {
     val emptyFiWalletStore: LotteryStorage = {
         participants: createEmptyMap(),

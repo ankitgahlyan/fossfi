@@ -6,7 +6,7 @@
 import { Sha256 } from "@aws-crypto/sha256-js"
 import { Dictionary, DictionaryValue, beginCell, Cell, Address, contractAddress } from "@ton/core"
 import { TonClient } from "@ton/ton"
-import chalk from "chalk"
+// import chalk from "chalk"
 import { FossFi } from "../wrappers/fi/FossFi";
 import { FossFiWallet } from "../wrappers/fi/FossFiWallet";
 import { sha256_sync } from "@ton/crypto";
@@ -156,7 +156,7 @@ export const displayContentCell = async (content: Cell) => {
         const result = await parseMetadataFromCell(content)
         console.log(`Token name: ${result.name}`)
         console.log(`Description: ${result.description}`)
-        console.log(`Image: ${chalk.underline(result.image)}`)
+        // console.log(`Image: ${chalk.underline(result.image)}`)
     } catch (_e) {
         console.error("Failed to parse metadata from cell")
     }

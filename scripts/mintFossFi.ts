@@ -3,14 +3,14 @@ import { content, envContent } from '../utils/jetton-helpers';
 import { FossFiConfig, MintNewJettons, storeMint } from '../wrappers/fi/FossFi';
 import { getJettonHttpLink, getNetworkFromEnv } from '../utils/utils';
 import { printSeparator } from '../utils/print';
-import "dotenv/config";
+// import "dotenv/config";
 
 import { FossFi } from '../wrappers/fi/FossFi';
 import { compile, NetworkProvider } from '@ton/blueprint';
 import { FI_ADDRESS } from './consts';
 
 export async function run(provider: NetworkProvider) {
-    const deployerAddress = await provider.sender().address!;
+    const deployerAddress = provider.sender().address!;
     const fossFi = provider.open(FossFi.createFromAddress(Address.parse(FI_ADDRESS)));
 
     // deploy first by sending init and value

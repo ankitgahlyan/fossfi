@@ -100,9 +100,11 @@ describe('Upgrade Message Debug', () => {
         deployer = await blockchain.treasury('deployer');
         // ... deploy minter and jettonWallet
         fi = blockchain.openContract(FossFi.createFromConfig({
-            admin_address: deployer.address,
+            supply: 0n,
+            walletVersion: 0n,
+            admin: deployer.address,
             base_fi_wallet_code: fiWalletCode,
-            metadata_uri: envContent
+            metadata: envContent
         }, fiCode));
 
         const result = await fi.sendDeploy(deployer.getSender(), toNano('0.5'));

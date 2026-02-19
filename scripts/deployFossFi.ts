@@ -1,9 +1,9 @@
-import { toNano, Address } from '@ton/core';
+import { toNano, Address, SendMode, beginCell } from '@ton/core';
 import { envContent } from '../utils/jetton-helpers';
-import { FossFiConfig } from '../wrappers/fi/FossFi';
+import { FossFiConfig, storeTopUp, TopUp } from '../wrappers/fi/FossFi';
 import { getJettonHttpLink, getNetworkFromEnv } from '../utils/utils';
 import { printSeparator } from '../utils/print';
-import "dotenv/config";
+// import "dotenv/config";
 
 import { FossFi } from '../wrappers/fi/FossFi';
 import { compile, NetworkProvider } from '@ton/blueprint';
@@ -28,7 +28,25 @@ export async function run(provider: NetworkProvider) {
 
     const fossFi = provider.open(FossFi.createFromConfig(fossFiConfig, await compile('FossFi')));
 
-    await fossFi.sendDeploy(provider.sender(), toNano('0.5'));
+    // await fossFi.sendDeploy(provider.sender(), toNano('0.5'));
+    const mint: TopUp = {
+            $$type: 'TopUp',
+            queryId: 0n,
+        };
+    
+        await provider.sender().send(
+            {
+                value: toNano("0.2"),
+                to: fossFi.address,
+                sendMode: SendMode.PAY_GAS_SEPARATELY,
+                init: fossFi.init,
+                body: beginCell()
+                    .store(
+                        storeTopUp(mint),
+                    )
+                    .endCell(),
+            }
+        )
 
     // await provider.waitForDeploy(fossFi.address);
 
