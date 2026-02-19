@@ -3,13 +3,14 @@ import {
     beginCell,
     Builder,
     Cell,
-    Contract,
-    ContractABI,
+    type Contract,
+    type ContractABI,
     contractAddress,
-    ContractProvider,
+    type ContractProvider,
     Dictionary,
-    DictionaryValue,
-    Sender,
+    type DictionaryValue,
+    ExternalAddress,
+    type Sender,
     SendMode,
     Slice,
     TupleBuilder,
@@ -18,7 +19,7 @@ import {
 
 export type FossFiWalletConfig = {
     balance: bigint,
-    votes: number,
+    votes: bigint,
     id: Cell,
     addresses: Cell,
     maps: Cell,
@@ -35,7 +36,7 @@ export function fossFiWalletConfigToCell(config: FossFiWalletConfig): Cell {
         .storeCoins(0) // accumulatedFees
         .storeCoins(0) // debt
         .storeBit(false) // debts
-        .storeUint(10, 4) // votes
+        .storeUint(config.votes, 4) // votes (use config)
         .storeUint(0, 20) // receivedVotes
         .storeUint(0, 8) // connections
         .storeBit(false) // active
@@ -82,57 +83,6 @@ export class FossFiWallet implements Contract {
         if (message && typeof message === 'object' && !(message instanceof Slice) && message.$$type === 'JettonTransferInternal') {
             body = beginCell().store(storeJettonTransferInternal(message)).endCell();
         }
-        // if (message && typeof message === 'object' && !(message instanceof Slice) && message.$$type === 'InviteInternal') {
-        //     body = beginCell().store(storeInviteInternal(message)).endCell();
-        // }
-        // if (message && typeof message === 'object' && !(message instanceof Slice) && message.$$type === 'InviteApproval') {
-        //     body = beginCell().store(storeInviteApproval(message)).endCell();
-        // }
-        // if (message && typeof message === 'object' && !(message instanceof Slice) && message.$$type === 'UnInviteInternal') {
-        //     body = beginCell().store(storeUnInviteInternal(message)).endCell();
-        // }
-        // if (message && typeof message === 'object' && !(message instanceof Slice) && message.$$type === 'FriendRequestInternal') {
-        //     body = beginCell().store(storeFriendRequestInternal(message)).endCell();
-        // }
-        // if (message && typeof message === 'object' && !(message instanceof Slice) && message.$$type === 'ConfirmRequestInternal') {
-        //     body = beginCell().store(storeConfirmRequestInternal(message)).endCell();
-        // }
-        // if (message && typeof message === 'object' && !(message instanceof Slice) && message.$$type === 'UnfriendInternal') {
-        //     body = beginCell().store(storeUnfriendInternal(message)).endCell();
-        // }
-        // if (message && typeof message === 'object' && !(message instanceof Slice) && message.$$type === 'FollowInternal') {
-        //     body = beginCell().store(storeFollowInternal(message)).endCell();
-        // }
-        // if (message && typeof message === 'object' && !(message instanceof Slice) && message.$$type === 'UnfollowInternal') {
-        //     body = beginCell().store(storeUnfollowInternal(message)).endCell();
-        // }
-        // if (message && typeof message === 'object' && !(message instanceof Slice) && message.$$type === 'ReportInternal') {
-        //     body = beginCell().store(storeReportInternal(message)).endCell();
-        // }
-        // if (message && typeof message === 'object' && !(message instanceof Slice) && message.$$type === 'DisputeInternal') {
-        //     body = beginCell().store(storeDisputeInternal(message)).endCell();
-        // }
-        // if (message && typeof message === 'object' && !(message instanceof Slice) && message.$$type === 'ResolutionInternal') {
-        //     body = beginCell().store(storeResolutionInternal(message)).endCell();
-        // }
-        // if (message && typeof message === 'object' && !(message instanceof Slice) && message.$$type === 'AccCloseBurnInternal') {
-        //     body = beginCell().store(storeAccCloseBurnInternal(message)).endCell();
-        // }
-        // if (message && typeof message === 'object' && !(message instanceof Slice) && message.$$type === 'ProvideWalletBalance') {
-        //     body = beginCell().store(storeProvideWalletBalance(message)).endCell();
-        // }
-        // if (message && typeof message === 'object' && !(message instanceof Slice) && message.$$type === 'JettonBurn') {
-        //     body = beginCell().store(storeJettonBurn(message)).endCell();
-        // }
-        // if (message && typeof message === 'object' && !(message instanceof Slice) && message.$$type === 'ClaimTON') {
-        //     body = beginCell().store(storeClaimTON(message)).endCell();
-        // }
-        // if (message && typeof message === 'object' && !(message instanceof Slice) && message.$$type === 'RequestUpgradeCode') {
-        //     body = beginCell().store(storeRequestUpgradeCode(message)).endCell();
-        // }
-        // if (message && typeof message === 'object' && !(message instanceof Slice) && message.$$type === 'UpgradeCode') {
-        //     body = beginCell().store(storeUpgradeCode(message)).endCell();
-        // }
         if (message && typeof message === 'object' && message instanceof Slice) {
             body = message.asCell();
         }
@@ -148,14 +98,14 @@ export class FossFiWallet implements Contract {
     async getGetWalletData(provider: ContractProvider) {
         const builder = new TupleBuilder();
         const source = (await provider.get('get_wallet_data', builder.build())).stack;
-        const result = loadGetterTupleJettonWalletData(source);
+        const result = loadTupleFiJettonData(source);
         return result;
     }
 
-    async getGetWalletDataAll(provider: ContractProvider) {
+    async getGetWalletDataFull(provider: ContractProvider) {
         const builder = new TupleBuilder();
         const source = (await provider.get('get_wallet_data_all', builder.build())).stack;
-        const result = loadGetterTupleFiJetton$Data(source);
+        const result = loadTupleFiJettonFullData(source);
         return result;
     }
 }
@@ -199,17 +149,6 @@ export function loadJettonTransfer(slice: Slice) {
 }
 
 export function loadTupleJettonTransfer(source: TupleReader) {
-    const _queryId = source.readBigNumber();
-    const _amount = source.readBigNumber();
-    const _destination = source.readAddress();
-    const _responseDestination = source.readAddressOpt();
-    const _customPayload = source.readCellOpt();
-    const _forwardTonAmount = source.readBigNumber();
-    const _forwardPayload = source.readCell().asSlice();
-    return { $$type: 'JettonTransfer' as const, queryId: _queryId, amount: _amount, destination: _destination, responseDestination: _responseDestination, customPayload: _customPayload, forwardTonAmount: _forwardTonAmount, forwardPayload: _forwardPayload };
-}
-
-export function loadGetterTupleJettonTransfer(source: TupleReader) {
     const _queryId = source.readBigNumber();
     const _amount = source.readBigNumber();
     const _destination = source.readAddress();
@@ -292,17 +231,6 @@ export function loadTupleJettonTransferInternal(source: TupleReader) {
     return { $$type: 'JettonTransferInternal' as const, queryId: _queryId, amount: _amount, version: _version, sender: _sender, responseDestination: _responseDestination, forwardTonAmount: _forwardTonAmount, forwardPayload: _forwardPayload };
 }
 
-export function loadGetterTupleJettonTransferInternal(source: TupleReader) {
-    const _queryId = source.readBigNumber();
-    const _amount = source.readBigNumber();
-    const _version = source.readBigNumber();
-    const _sender = source.readAddress();
-    const _responseDestination = source.readAddressOpt();
-    const _forwardTonAmount = source.readBigNumber();
-    const _forwardPayload = source.readCell().asSlice();
-    return { $$type: 'JettonTransferInternal' as const, queryId: _queryId, amount: _amount, version: _version, sender: _sender, responseDestination: _responseDestination, forwardTonAmount: _forwardTonAmount, forwardPayload: _forwardPayload };
-}
-
 export function storeTupleJettonTransferInternal(source: JettonTransferInternal) {
     const builder = new TupleBuilder();
     builder.writeNumber(source.queryId);
@@ -326,15 +254,69 @@ export function dictValueParserJettonTransferInternal(): DictionaryValue<JettonT
     }
 }
 
-export type JettonWalletData = {
-    $$type: 'JettonWalletData';
+// Rename large complex type to avoid conflict with small FiJettonData used by helpers
+export type FiJettonFullData = {
+    $$type: 'FiJettonFullData';
+    owner: Address;
+    treasury: Address;
+    initialOwner: Address;
+    minter: Address;
+    personalMinter: Address | null;
+    personalJetton: Address | null;
+    nominee: Address | null;
+    invitor: Address | null;
+    invitor0: Address | null;
+    authorisedAccs: Dictionary<Address, Address>;
     balance: bigint;
+    goldCoins: bigint;
+    txnCount: bigint;
+    status: bigint;
+    isAuthority: boolean;
+    creditNeed: bigint;
+    accumulatedFees: bigint;
+    debt: bigint;
+    debts: boolean;
+    votes: bigint;
+    receivedVotes: bigint;
+    connections: bigint;
+    active: boolean;
+    mintable: boolean;
+    accountInitTime: bigint;
+    lastWeeklyClaimTime: bigint;
+    lastInviteTime: bigint;
+    version: bigint;
+    id: Cell;
+    // maps: Cell;
+    closeFriends: Dictionary<Address, boolean>;
+    invites: Dictionary<Address, bigint>;
+    friends: Dictionary<Address, bigint>;
+    followers: Dictionary<Address, bigint>;
+    followings: Dictionary<Address, bigint>;
+    allowances: Dictionary<Address, bigint>;
+    debtsMap: Dictionary<Address, bigint>;
+    votedFor: Dictionary<Address, bigint>;
+    reportInfo: ReportInfo;
+    baseFiWalletCode: Cell;
+}
+
+export type ReportInfo = {
+    reports: Dictionary<Address, boolean>;
+    tosBreach: boolean;
+    reporterCount: bigint;
+    disputerCount: bigint;
+    resolutiontime: bigint;
+}
+
+// Small FiJettonData used by store/load helpers (keeps consistency with storeFiJettonData / loadFiJettonData)
+export type FiJettonData = {
+    $$type: 'FiJettonData';
     owner: Address;
     minter: Address;
+    balance: bigint;
     code: Cell;
 }
 
-export function storeJettonWalletData(src: JettonWalletData) {
+export function storeFiJettonData(src: FiJettonData) {
     return (builder: Builder) => {
         const b_0 = builder;
         b_0.storeCoins(src.balance);
@@ -344,32 +326,24 @@ export function storeJettonWalletData(src: JettonWalletData) {
     };
 }
 
-export function loadJettonWalletData(slice: Slice) {
+export function loadFiJettonData(slice: Slice) {
     const sc_0 = slice;
     const _balance = sc_0.loadCoins();
     const _owner = sc_0.loadAddress();
     const _minter = sc_0.loadAddress();
     const _code = sc_0.loadRef();
-    return { $$type: 'JettonWalletData' as const, balance: _balance, owner: _owner, minter: _minter, code: _code };
+    return { $$type: 'FiJettonData' as const, balance: _balance, owner: _owner, minter: _minter, code: _code };
 }
 
-export function loadTupleJettonWalletData(source: TupleReader) {
+export function loadTupleFiJettonData(source: TupleReader) {
     const _balance = source.readBigNumber();
     const _owner = source.readAddress();
     const _minter = source.readAddress();
     const _code = source.readCell();
-    return { $$type: 'JettonWalletData' as const, balance: _balance, owner: _owner, minter: _minter, code: _code };
+    return { $$type: 'FiJettonData' as const, balance: _balance, owner: _owner, minter: _minter, code: _code };
 }
 
-export function loadGetterTupleJettonWalletData(source: TupleReader) {
-    const _balance = source.readBigNumber();
-    const _owner = source.readAddress();
-    const _minter = source.readAddress();
-    const _code = source.readCell();
-    return { $$type: 'JettonWalletData' as const, balance: _balance, owner: _owner, minter: _minter, code: _code };
-}
-
-export function storeTupleJettonWalletData(source: JettonWalletData) {
+export function storeTupleFiJettonData(source: FiJettonData) {
     const builder = new TupleBuilder();
     builder.writeNumber(source.balance);
     builder.writeAddress(source.owner);
@@ -378,18 +352,193 @@ export function storeTupleJettonWalletData(source: JettonWalletData) {
     return builder.build();
 }
 
-export function dictValueParserJettonWalletData(): DictionaryValue<JettonWalletData> {
+export function dictValueParserFiJettonData(): DictionaryValue<FiJettonData> {
     return {
         serialize: (src, builder) => {
-            builder.storeRef(beginCell().store(storeJettonWalletData(src)).endCell());
+            builder.storeRef(beginCell().store(storeFiJettonData(src)).endCell());
         },
         parse: (src) => {
-            return loadJettonWalletData(src.loadRef().beginParse());
+            return loadFiJettonData(src.loadRef().beginParse());
         }
     }
 }
 
-export function loadGetterTupleFiJetton$Data(source: TupleReader) {
+// Add store/load/tuple helpers for full FiJetton data
+export function storeFiJettonFullData(src: FiJettonFullData) {
+    return (builder: Builder) => {
+        const b = builder;
+        b.storeCoins(src.balance);
+        b.storeUint(src.goldCoins, 32);
+        b.storeUint(src.txnCount, 8);
+        b.storeUint(src.status, 2);
+        b.storeBit(src.isAuthority);
+        b.storeCoins(src.creditNeed);
+        b.storeCoins(src.accumulatedFees);
+        b.storeCoins(src.debt);
+        b.storeBit(src.debts);
+        b.storeUint(src.votes, 4);
+        b.storeUint(src.receivedVotes, 20);
+        b.storeUint(src.connections, 8);
+        b.storeBit(src.active);
+        b.storeBit(src.mintable);
+        b.storeUint(src.version, 10);
+        b.storeRef(src.id); // todo: cell
+
+        // timestamps as a ref cell
+        b.storeRef(beginCell()
+            .storeUint(src.accountInitTime, 32)
+            .storeUint(src.lastWeeklyClaimTime, 32)
+            .storeUint(src.lastInviteTime, 32)
+            .endCell());
+
+        // addresses as a ref cell (owner, treasury, initialOwner, nomins ref, trustedAddrs ref)
+        const trustedAddrsBuilder = beginCell();
+        trustedAddrsBuilder.storeAddress(src.minter);
+        if (src.personalMinter !== null && src.personalMinter !== undefined) { trustedAddrsBuilder.storeBit(true).storeAddress(src.personalMinter); } else { trustedAddrsBuilder.storeBit(false); }
+        if (src.personalJetton !== null && src.personalJetton !== undefined) { trustedAddrsBuilder.storeBit(true).storeAddress(src.personalJetton); } else { trustedAddrsBuilder.storeBit(false); }
+        trustedAddrsBuilder.storeDict(src.authorisedAccs, Dictionary.Keys.Address(), Dictionary.Values.Address());
+        const trustedAddrs = trustedAddrsBuilder.endCell();
+
+        const nomins = beginCell()
+            .storeAddress(src.nominee)
+            .storeAddress(src.invitor)
+            .storeAddress(src.invitor0)
+            .endCell();
+
+        b.storeRef(beginCell()
+            .storeAddress(src.owner)
+            .storeAddress(src.treasury)
+            .storeAddress(src.initialOwner)
+            .storeRef(nomins)
+            .storeRef(trustedAddrs)
+            .endCell());
+
+        const reportInfoCell = beginCell()
+            .storeDict(src.reportInfo.reports, Dictionary.Keys.Address(), Dictionary.Values.Bool())
+            .storeBit(src.reportInfo.tosBreach)
+            .storeUint(src.reportInfo.reporterCount, 10)
+            .storeUint(src.reportInfo.disputerCount, 10)
+            .storeUint(src.reportInfo.resolutiontime, 32)
+            .endCell();
+
+        const mapsBuilder = beginCell();
+        mapsBuilder.storeDict(src.friends, Dictionary.Keys.Address(), Dictionary.Values.BigUint(128));
+        mapsBuilder.storeDict(src.followers, Dictionary.Keys.Address(), Dictionary.Values.BigUint(128));
+        mapsBuilder.storeDict(src.followings, Dictionary.Keys.Address(), Dictionary.Values.BigUint(128));
+        mapsBuilder.storeDict(src.invites, Dictionary.Keys.Address(), Dictionary.Values.BigUint(128));
+        mapsBuilder.storeDict(src.allowances, Dictionary.Keys.Address(), Dictionary.Values.BigUint(128));
+        mapsBuilder.storeDict(src.debtsMap, Dictionary.Keys.Address(), Dictionary.Values.BigUint(128));
+        mapsBuilder.storeDict(src.votedFor, Dictionary.Keys.Address(), Dictionary.Values.BigUint(4));
+        mapsBuilder.storeDict(src.closeFriends, Dictionary.Keys.Address(), Dictionary.Values.Bool());
+        mapsBuilder.storeRef(reportInfoCell);
+        const mapsCell = mapsBuilder.endCell();
+        b.storeRef(mapsCell);
+        b.storeRef(src.baseFiWalletCode);
+    };
+}
+
+export function loadFiJettonFullData(slice: Slice) {
+    const s = slice;
+    const _balance = s.loadCoins();
+    const _goldCoins = s.loadUintBig(32);
+    const _txnCount = s.loadUintBig(8);
+    const _status = s.loadUintBig(2);
+    const _isAuthority = s.loadBit();
+    const _creditNeed = s.loadCoins();
+    const _accumulatedFees = s.loadCoins();
+    const _debt = s.loadCoins();
+    const _debts = s.loadBit();
+    const _votes = s.loadUintBig(4);
+    const _receivedVotes = s.loadUintBig(20);
+    const _connections = s.loadUintBig(8);
+    const _active = s.loadBit();
+    const _mintable = s.loadBit();
+    const _version = s.loadUintBig(10);
+    const _id = s.loadRef();
+
+    const tsSlice = s.loadRef().beginParse();
+    const _accountInitTime = tsSlice.loadUintBig(32);
+    const _lastWeeklyClaimTime = tsSlice.loadUintBig(32);
+    const _lastInviteTime = tsSlice.loadUintBig(32);
+
+    const addrSlice = s.loadRef().beginParse();
+    const _owner = addrSlice.loadAddress();
+    const _treasury = addrSlice.loadAddress();
+    const _initialOwner = addrSlice.loadAddress();
+    const nomins = addrSlice.loadRef().beginParse();
+    const _nominee = nomins.loadAddressAny();
+    const _invitor = nomins.loadAddressAny();
+    const _invitor0 = nomins.loadAddressAny();
+    const trustedAddrs = addrSlice.loadRef().beginParse();
+    const _minter = trustedAddrs.loadAddress();
+    const _personalMinter = trustedAddrs.loadAddressAny();
+    const _personalJetton = trustedAddrs.loadAddressAny();
+    const _authorisedAccs = trustedAddrs.loadDict(Dictionary.Keys.Address(), Dictionary.Values.Address());
+
+    const _mapsSlice = s.loadRef().beginParse();
+    const _friends = _mapsSlice.loadDict(Dictionary.Keys.Address(), Dictionary.Values.BigUint(128));
+    const _followers = _mapsSlice.loadDict(Dictionary.Keys.Address(), Dictionary.Values.BigUint(128));
+    const _followings = _mapsSlice.loadDict(Dictionary.Keys.Address(), Dictionary.Values.BigUint(128));
+    const _invites = _mapsSlice.loadDict(Dictionary.Keys.Address(), Dictionary.Values.BigUint(128));
+    const _allowances = _mapsSlice.loadDict(Dictionary.Keys.Address(), Dictionary.Values.BigUint(128));
+    const _debtsMap = _mapsSlice.loadDict(Dictionary.Keys.Address(), Dictionary.Values.BigUint(128));
+    const _votedFor = _mapsSlice.loadDict(Dictionary.Keys.Address(), Dictionary.Values.BigUint(4));
+    const _closeFriends = _mapsSlice.loadDict(Dictionary.Keys.Address(), Dictionary.Values.Bool());
+    const reportInfoSlice = _mapsSlice.loadRef().beginParse();
+    const _reportInfo: ReportInfo = {
+        reports: reportInfoSlice.loadDict(Dictionary.Keys.Address(), Dictionary.Values.Bool()),
+        tosBreach: reportInfoSlice.loadBit(),
+        reporterCount: reportInfoSlice.loadUintBig(10),
+        disputerCount: reportInfoSlice.loadUintBig(10),
+        resolutiontime: reportInfoSlice.loadUintBig(32)
+    };
+    const _baseFiWalletCode = s.loadRef();
+
+    return {
+        $$type: 'FiJettonFullData' as const,
+        owner: _owner,
+        treasury: _treasury,
+        initialOwner: _initialOwner,
+        minter: _minter,
+        personalMinter: _personalMinter as Address,
+        personalJetton: _personalJetton as Address,
+        nominee: _nominee as Address,
+        invitor: _invitor as Address,
+        invitor0: _invitor0 as Address,
+        authorisedAccs: _authorisedAccs,
+        balance: _balance,
+        goldCoins: _goldCoins,
+        txnCount: _txnCount,
+        status: _status,
+        isAuthority: _isAuthority,
+        creditNeed: _creditNeed,
+        accumulatedFees: _accumulatedFees,
+        debt: _debt,
+        debts: _debts,
+        votes: _votes,
+        receivedVotes: _receivedVotes,
+        connections: _connections,
+        active: _active,
+        mintable: _mintable,
+        accountInitTime: _accountInitTime,
+        lastWeeklyClaimTime: _lastWeeklyClaimTime,
+        lastInviteTime: _lastInviteTime,
+        version: _version,
+        id: _id,
+        friends: _friends,
+        followers: _followers,
+        followings: _followings,
+        invites: _invites,
+        allowances: _allowances,
+        debtsMap: _debtsMap,
+        votedFor: _votedFor,
+        closeFriends: _closeFriends,
+        reportInfo: _reportInfo,
+        baseFiWalletCode: _baseFiWalletCode
+    };
+}
+
+export function loadTupleFiJettonFullData(source: TupleReader) {
     const _balance = source.readBigNumber();
     const _goldCoins = source.readBigNumber();
     const _txnCount = source.readBigNumber();
@@ -405,24 +554,43 @@ export function loadGetterTupleFiJetton$Data(source: TupleReader) {
     const _active = source.readBoolean();
     const _mintable = source.readBoolean();
     const _version = source.readBigNumber();
-    const _id = source.readCell();
+    const _id = source.readBigNumber();
+    // const _id = source.readCell();
     const _timestamps = loadGetterTupleTimestamps(source);
     const _addresses = loadGetterTupleAddresses(source);
-    const _maps = source.readCell(); // todo: parseIt
+    const _maps = source.readCell().beginParse();
+    const _friends = _maps.loadDict(Dictionary.Keys.Address(), Dictionary.Values.BigUint(128));
+    const _followers = _maps.loadDict(Dictionary.Keys.Address(), Dictionary.Values.BigUint(128));
+    const _followings = _maps.loadDict(Dictionary.Keys.Address(), Dictionary.Values.BigUint(128));
+    const _invites = _maps.loadDict(Dictionary.Keys.Address(), Dictionary.Values.BigUint(128));
+    const _allowances = _maps.loadDict(Dictionary.Keys.Address(), Dictionary.Values.BigUint(128));
+    const _debtsMap = _maps.loadDict(Dictionary.Keys.Address(), Dictionary.Values.BigUint(128));
+    const _votedFor = _maps.loadDict(Dictionary.Keys.Address(), Dictionary.Values.BigUint(4));
+    const _closeFriends = _maps.loadDict(Dictionary.Keys.Address(), Dictionary.Values.Bool());
+    const reportInfoSlice = _maps.loadRef().beginParse();
+    const _reportInfo: ReportInfo = {
+        reports: reportInfoSlice.loadDict(Dictionary.Keys.Address(), Dictionary.Values.Bool()),
+        tosBreach: reportInfoSlice.loadBit(),
+        reporterCount: reportInfoSlice.loadUintBig(10),
+        disputerCount: reportInfoSlice.loadUintBig(10),
+        resolutiontime: reportInfoSlice.loadUintBig(32)
+    };
     const _baseFiWalletCode = source.readCell();
+
     return {
-        $$type: 'FiJetton$Data' as const,
+        $$type: 'FiJettonFullData' as const,
         owner: _addresses.owner,
         treasury: _addresses.treasury,
         initialOwner: _addresses.initialOwner,
         minter: _addresses.minter,
-        personalMinter: _addresses.personalMinter,
-        personalJetton: _addresses.personalJetton,
-        nominee: _addresses.nominee,
-        invitor: _addresses.invitor,
-        invitor0: _addresses.invitor0,
+        personalMinter: _addresses.personalMinter as Address,
+        personalJetton: _addresses.personalJetton as Address,
+        nominee: _addresses.nominee as Address,
+        invitor: _addresses.invitor as Address,
+        invitor0: _addresses.invitor0 as Address,
         authorisedAccs: _addresses.authorisedAccs,
         balance: _balance,
+        goldCoins: _goldCoins,
         txnCount: _txnCount,
         status: _status,
         isAuthority: _isAuthority,
@@ -440,8 +608,16 @@ export function loadGetterTupleFiJetton$Data(source: TupleReader) {
         lastInviteTime: _timestamps.lastInvite,
         version: _version,
         id: _id,
-        maps: _maps,
-        // baseFiWalletCode: _baseFiWalletCode
+        friends: _friends,
+        followers: _followers,
+        followings: _followings,
+        invites: _invites,
+        allowances: _allowances,
+        debtsMap: _debtsMap,
+        votedFor: _votedFor,
+        closeFriends: _closeFriends,
+        reportInfo: _reportInfo,
+        baseFiWalletCode: _baseFiWalletCode
     };
 }
 
@@ -465,5 +641,90 @@ export function loadGetterTupleAddresses(source: TupleReader) {
 export function loadGetterTupleTimestamps(source: TupleReader) {
     const slice = source.readCell().beginParse();
 
-    return {$$type: 'Timestamps' as const, accountInit: slice.loadUintBig(32), lastClaim: slice.loadUintBig(32), lastInvite: slice.loadUintBig(32)}
+    return { $$type: 'Timestamps' as const, accountInit: slice.loadVarUintBig, lastClaim: slice.loadUintBig, lastInvite: slice.loadUint } // todo: all working
 }
+
+export function storeTupleFiJettonFullData(source: FiJettonFullData) {
+    const builder = new TupleBuilder();
+    builder.writeNumber(source.balance);
+    builder.writeNumber(source.goldCoins);
+    builder.writeNumber(source.txnCount);
+    builder.writeNumber(source.status);
+    builder.writeBoolean(source.isAuthority);
+    builder.writeNumber(source.creditNeed);
+    builder.writeNumber(source.accumulatedFees);
+    builder.writeNumber(source.debt);
+    builder.writeBoolean(source.debts);
+    builder.writeNumber(source.votes);
+    builder.writeNumber(source.receivedVotes);
+    builder.writeNumber(source.connections);
+    builder.writeBoolean(source.active);
+    builder.writeBoolean(source.mintable);
+    builder.writeNumber(source.version);
+    builder.writeCell(source.id);
+
+    // timestamps cell
+    builder.writeCell(beginCell()
+        .storeUint(source.accountInitTime, 32)
+        .storeUint(source.lastWeeklyClaimTime, 32)
+        .storeUint(source.lastInviteTime, 32)
+        .endCell());
+
+    // addresses cell
+    const trustedAddrsBuilder = beginCell();
+    trustedAddrsBuilder.storeAddress(source.minter);
+    if (source.personalMinter !== null && source.personalMinter !== undefined) { trustedAddrsBuilder.storeBit(true).storeAddress(source.personalMinter); } else { trustedAddrsBuilder.storeBit(false); }
+    if (source.personalJetton !== null && source.personalJetton !== undefined) { trustedAddrsBuilder.storeBit(true).storeAddress(source.personalJetton); } else { trustedAddrsBuilder.storeBit(false); }
+    trustedAddrsBuilder.storeDict(source.authorisedAccs, Dictionary.Keys.Address(), Dictionary.Values.Address());
+    const trustedAddrs = trustedAddrsBuilder.endCell();
+
+    const nomins = beginCell()
+        .storeAddress(source.nominee)
+        .storeAddress(source.invitor)
+        .storeAddress(source.invitor0)
+        .endCell();
+
+    builder.writeCell(beginCell()
+        .storeAddress(source.owner)
+        .storeAddress(source.treasury)
+        .storeAddress(source.initialOwner)
+        .storeRef(nomins)
+        .storeRef(trustedAddrs)
+        .endCell());
+
+    // build maps cell (friends, followers, followings, invites, allowances, debtsMap, votedFor, closeFriends, reportInfo)
+    const mapsBuilder = beginCell();
+    mapsBuilder.storeDict(source.friends, Dictionary.Keys.Address(), Dictionary.Values.BigUint(128));
+    mapsBuilder.storeDict(source.followers, Dictionary.Keys.Address(), Dictionary.Values.BigUint(128));
+    mapsBuilder.storeDict(source.followings, Dictionary.Keys.Address(), Dictionary.Values.BigUint(128));
+    mapsBuilder.storeDict(source.invites, Dictionary.Keys.Address(), Dictionary.Values.BigUint(128));
+    mapsBuilder.storeDict(source.allowances, Dictionary.Keys.Address(), Dictionary.Values.BigUint(128));
+    mapsBuilder.storeDict(source.debtsMap, Dictionary.Keys.Address(), Dictionary.Values.BigUint(128));
+    mapsBuilder.storeDict(source.votedFor, Dictionary.Keys.Address(), Dictionary.Values.BigUint(4));
+    mapsBuilder.storeDict(source.closeFriends, Dictionary.Keys.Address(), Dictionary.Values.Bool());
+    const reportInfoCell = beginCell()
+        .storeDict(source.reportInfo.reports, Dictionary.Keys.Address(), Dictionary.Values.Bool())
+        .storeBit(source.reportInfo.tosBreach)
+        .storeUint(source.reportInfo.reporterCount, 10)
+        .storeUint(source.reportInfo.disputerCount, 10)
+        .storeUint(source.reportInfo.resolutiontime, 32)
+        .endCell();
+    mapsBuilder.storeRef(reportInfoCell);
+    const mapsCell = mapsBuilder.endCell();
+    builder.writeCell(mapsCell);
+    builder.writeCell(source.baseFiWalletCode);
+
+    return builder.build();
+}
+
+export function dictValueParserFiJettonFullData(): DictionaryValue<FiJettonFullData> {
+    return {
+        serialize: (src, builder) => {
+            builder.storeRef(beginCell().store(storeFiJettonFullData(src)).endCell());
+        },
+        parse: (src) => {
+            return loadFiJettonFullData(src.loadRef().beginParse());
+        }
+    }
+}
+

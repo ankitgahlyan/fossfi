@@ -1,13 +1,12 @@
-import { toNano, beginCell, Address, SendMode, fromNano } from '@ton/core';
+import { toNano, Address } from '@ton/core';
 import { envContent } from '../utils/jetton-helpers';
-import { FossFiConfig, MintNewJettons, storeMint } from '../wrappers/fi/FossFi';
+import { FossFiConfig } from '../wrappers/fi/FossFi';
 import { getJettonHttpLink, getNetworkFromEnv } from '../utils/utils';
 import { printSeparator } from '../utils/print';
 import "dotenv/config";
 
 import { FossFi } from '../wrappers/fi/FossFi';
 import { compile, NetworkProvider } from '@ton/blueprint';
-import { Op } from '../wrappers/constants';
 
 export async function run(provider: NetworkProvider) {
     const deployer = process.env.DEPLOYER;
@@ -16,29 +15,20 @@ export async function run(provider: NetworkProvider) {
         throw new Error("deployer address is not provided")
     }
     const deployerAddress = Address.parse(deployer);
-    const supply = toNano(process.env.JETTON_SUPPLY ?? 1000000000) // 1_000_000_000 jettons
     // ====================================================================================
     const walletCode = await compile('FossFiWallet')
 
     const fossFiConfig: FossFiConfig = {
-        admin_address: deployerAddress,
+        supply: 0n,
+        walletVersion: 0n,
+        admin: deployerAddress,
         base_fi_wallet_code: walletCode,
-        metadata_uri: envContent // content
+        metadata: envContent // content
     };
 
     const fossFi = provider.open(FossFi.createFromConfig(fossFiConfig, await compile('FossFi')));
 
     await fossFi.sendDeploy(provider.sender(), toNano('0.5'));
-
-    // await provider.sender().send(
-    //     {
-    //         value: toNano('0.5'),
-    //         to: fossFi.address,
-    //         sendMode: SendMode.PAY_GAS_SEPARATELY,
-    //         init: fossFi.init,
-    //         body: beginCell().storeUint(Op.top_up, 32).storeUint(0, 64).endCell(),
-    //     }
-    // )
 
     // await provider.waitForDeploy(fossFi.address);
 
@@ -50,8 +40,6 @@ export async function run(provider: NetworkProvider) {
         "Make sure to send txn from following wallet:. \n" +
         deployerAddress.toString({ testOnly: true })
     )
-    printSeparator()
-    console.log("Minting:: ", fromNano(supply))
     printSeparator()
 
     try {
@@ -66,8 +54,5 @@ export async function run(provider: NetworkProvider) {
     }
     const link = getJettonHttpLink(network, fossFi.address, "tonviewer")
     console.log(`You can soon check your deployed contract at ${link}`)
-
-    // await provider.waitForDeploy(fossFi.address, 3, 30000);
     console.log(`Jetton Minter deployed successfully!`);
-    // run methods on `dns`
 }

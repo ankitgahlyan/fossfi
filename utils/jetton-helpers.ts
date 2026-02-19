@@ -195,10 +195,11 @@ const jettonParams = {
 export const envContent = buildOnchainMetadata(jettonParams)
 export const content = nftContentToCell(jettonParams)
 
-export async function buildJettonMinterFromEnv(deployerAddress: Address) {
+// export async function buildJettonMinterFromEnv(deployerAddress: Address) {
 
-    return await FossFi.fromInit(deployerAddress, content)
-}
+//     return await FossFi.fromInit(deployerAddress, content)
+// }
+
 export async function buildFossFiWalletFromAddress(deployerAddress: Address) {
     return await FossFiWallet.createFromAddress(deployerAddress)
 }

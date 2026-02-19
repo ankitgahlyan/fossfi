@@ -1,4 +1,3 @@
-
 // we're working in basechain, but theoretically, a jetton might even work in masterchain
 const MY_WORKCHAIN = BASECHAIN
 

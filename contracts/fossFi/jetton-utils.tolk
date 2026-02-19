@@ -3,6 +3,7 @@ import "../common/consts"
 import "../common/errors"
 import "../common/messages"
 import "../common/sharding"
+import "../lottery/messages"
 
 fun calcDeployFiWallet(
     ownerAddress: address,
@@ -258,4 +259,17 @@ fun cmpStringTail(mutate a: slice, mutate b: slice): bool {
             return false;
         }
     }
+}
+
+@inline
+fun enterLottery(sender: address, dest: address) {
+    val enterLottery = createMessage({
+                bounce: BounceMode.Only256BitsOfBody,
+                dest, // todo: fixme: treasury for now
+                value: 0,
+                body: EnterLottery {
+                    sender,
+                }
+            });
+            enterLottery.send(SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
 }

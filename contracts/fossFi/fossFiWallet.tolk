@@ -1,5 +1,4 @@
 import "@stdlib/gas-payments"
-import "@stdlib/tvm-lowlevel"
 import "fees-management"
 import "jetton-utils"
 import "storage"
@@ -7,6 +6,7 @@ import "../common/consts"
 import "../common/errors"
 import "../common/messages"
 import "../common/sharding"
+import "../lottery/messages"
 
 type AllowedMessageToWallet =
     | AskToTransfer
@@ -21,29 +21,34 @@ type AllowedMessageToWallet =
     | TransferNotificationForRecipient // forwards invite notif invitor0 owner
     | Upgrade
     | VotingAction
+    | LotteryWin
+    | EnterLottery
 
-type BounceOpToHandle = InternalTransferStep | InternalInvite | VotingAction
+type BounceOpToHandle = EnterLottery | InternalTransferStep | InternalInvite | VotingAction
 
 // type BounceRich = InternalInvite
 // global store: FiWalletStore = lazy FiWalletStore.load();
 fun onBouncedMessage(in: InMessageBounced): void {
+    // todo: do we need to check correct sender here?
     in.bouncedBody.skipBouncedPrefix();
     val msg = lazy BounceOpToHandle.fromSlice(in.bouncedBody);
     var store = lazy FiWalletStore.load();
     var restoreAmount: coins = 0;
     match (msg) {
+        EnterLottery => {restoreAmount = LOTTERY_ENTRY_AMT},
+
         // todo fixme: ignore < 1 ton symantic txns
         InternalTransferStep => {
             restoreAmount = msg.jettonAmount; // safe to fetch jettonAmount, because it's in the beginning of a message
-        }
+        },
 
         // NotifyMinter => restoreAmount = msg.jettonAmount,
         InternalInvite => {
             restoreAmount = -MBRP_AMOUNT + ton("1"); // 
             store.maps.load().invited.delete(in.senderAddress); // jettonAddrs are saved for bounceHandling// store.connections -= 1;
-        }
+        },
 
-        VotingAction => {} // todo: need?
+        VotingAction => {}, // todo: need?
     }
 
     // todo: need? to burnForce for async reasons
@@ -365,6 +370,13 @@ fun onInternalMessage(in: InMessage): void {
                         authorityMsg.send(SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE |
                         SEND_MODE_BOUNCE_ON_ACTION_FAIL);
                     }
+
+                    ton("0.99") => {
+                        store.jettonBalance -= LOTTERY_ENTRY_AMT; // todo: fixme check all deductions
+                        enterLottery(addrs.initialOwnerAddr, addrs.treasury); // todo: fixme: use lottery addr
+                    }
+
+                    // todo: else
                 }
             }
         }
@@ -504,6 +516,17 @@ fun onInternalMessage(in: InMessage): void {
             notifyInvitor0.send(SEND_MODE_PAY_FEES_SEPARATELY | SEND_MODE_IGNORE_ERRORS);
         }
 
+        EnterLottery => {
+            checkCorrectSenderInternal(in.senderAddress, addrs.initialOwnerAddr, store);
+            enterLottery(addrs.initialOwnerAddr, addrs.treasury);
+        },
+
+        // todo: complete it
+        LotteryWin => {
+            assert (in.senderAddress == addrs.treasury) throw INCORRECT_SENDER;
+            store.jettonBalance += msg.amt;
+        }
+
         else => {
             // invalid input; a typical reaction is:
             // ignore empty messages, "wrong opcode" if not
@@ -533,8 +556,7 @@ get fun get_wallet_data(): JettonWalletDataReply {
         jettonBalance: store.jettonBalance,
         ownerAddress: addrs.initialOwnerAddr, // init owner
         minterAddress: addrs.trustedJettonAddrs.load().minterAddr,
-        // jettonWalletCode: store.baseFiWalletCode, // init code
-        jettonWalletCode: contract.getCode(), // latest
+        jettonWalletCode: store.baseFiWalletCode, // init code
     };
 }
 

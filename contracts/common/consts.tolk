@@ -14,6 +14,7 @@ const ZERO_ADDRESS = address("EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c")
 // const walletStateInitBits: int = 2_50_000; // 20_000, 2_19_987 // todo 
 
 const MBRP_AMOUNT: int = ton("1000"); // NOTE: store as consts to upgrade with code now minter updates, any const update also updates version but should not
+const LOTTERY_ENTRY_AMT: coins = ton("10");
 const ACTIVATION_WAIT: int = 604800; // 1 WEEK
 const INVITE_WAIT: int = 14400; // 4 HOURS
 const MAX_CLAIM_PERIOD: int = 63072000; // 2 YEARS

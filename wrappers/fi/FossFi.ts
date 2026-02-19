@@ -1,85 +1,87 @@
 import {
-    Address,
-    beginCell,
-    Builder,
-    Cell,
-    Contract,
-    ContractABI,
-    contractAddress,
-    ContractProvider,
-    DictionaryValue,
-    Sender,
-    SendMode, Slice,
-    toNano,
-    TupleBuilder,
-    TupleReader
+	Address,
+	beginCell,
+	Builder,
+	Cell,
+	type Contract,
+	type ContractABI,
+	contractAddress,
+	type ContractProvider,
+	type DictionaryValue,
+	type Sender,
+	SendMode,
+	Slice,
+	toNano,
+	TupleBuilder,
+	TupleReader
 } from '@ton/core';
 import { Op } from '../constants';
-import * as fs from 'node:fs';
-import * as path from 'path';
 
 export type FossFiContent = {
-    uri: string
+	uri: string;
 };
 
 export type FossFiConfig = {
-    admin_address: Address | null,
-    base_fi_wallet_code: Cell,
-    metadata_uri: Cell | FossFiContent
+	supply: bigint;
+    walletVersion: bigint;
+    admin: Address;
+	base_fi_wallet_code: Cell;
+	metadata: Cell | FossFiContent;
 };
 export type FossFiConfigFull = {
     supply: bigint,
+    walletVersion: bigint,
     admin: Address | null,
-    //Makes no sense to update transfer admin. ...Or is it?
-    transfer_admin: Address | null,
-    wallet_code: Cell,
+    base_fi_wallet_code: Cell,
+    latest_fi_wallet_code: Cell,
     metadata_uri: Cell | FossFiContent
 }
 
 export function endParse(slice: Slice) {
-    if (slice.remainingBits > 0 || slice.remainingRefs > 0) {
-        throw new Error('remaining bits in data');
-    }
+	if (slice.remainingBits > 0 || slice.remainingRefs > 0) {
+		throw new Error('remaining bits in data');
+	}
 }
 
 export function fossFiConfigCellToConfig(config: Cell): FossFiConfigFull {
     const sc = config.beginParse()
     const parsed: FossFiConfigFull = {
         supply: sc.loadCoins(),
+        walletVersion: sc.loadUintBig(10),
         admin: sc.loadMaybeAddress(),
-        transfer_admin: sc.loadMaybeAddress(),
-        wallet_code: sc.loadRef(),
+        base_fi_wallet_code: sc.loadRef(),
+        latest_fi_wallet_code: sc.loadRef(),
         metadata_uri: sc.loadRef()
     };
     endParse(sc);
     return parsed;
 }
 
-export function parseFossFiData(data: Cell): FossFiConfigFull {
-    return fossFiConfigCellToConfig(data);
-}
-
 export function fossFiConfigFullToCell(config: FossFiConfigFull): Cell {
     const content = config.metadata_uri instanceof Cell ? config.metadata_uri : jettonContentToCell(config.metadata_uri);
     return beginCell()
         .storeCoins(config.supply)
+        .storeUint(config.walletVersion, 10)
         .storeAddress(config.admin)
-        .storeAddress(config.transfer_admin)
-        .storeRef(config.wallet_code)
+        .storeRef(config.base_fi_wallet_code)
+        .storeRef(config.latest_fi_wallet_code)
         .storeRef(content)
         .endCell()
 }
 
 export function fossFiConfigToCell(config: FossFiConfig): Cell {
-    const content = config.metadata_uri instanceof Cell ? config.metadata_uri : jettonContentToCell(config.metadata_uri);
-    return beginCell()
-        .storeCoins(0)
-        .storeUint(0, 10)
-        .storeAddress(config.admin_address)
-        .storeRef(config.base_fi_wallet_code)
-        .storeRef(config.base_fi_wallet_code)
-        .storeRef(content)
-        .endCell();
+	const content =
+		config.metadata instanceof Cell
+			? config.metadata
+			: jettonContentToCell(config.metadata);
+	return beginCell()
+		.storeCoins(config.supply)
+		.storeUint(config.walletVersion, 10)
+		.storeAddress(config.admin)
+		.storeRef(config.base_fi_wallet_code)
+		.storeRef(config.base_fi_wallet_code)
+		.storeRef(content)
+		.endCell();
 }
 
 export function jettonContentToCell(content: FossFiContent) {
@@ -136,19 +138,13 @@ export function storeInternalTransferStep(src: InternalTransferStep) {
 }
 
 export class FossFi implements Contract {
-    readonly abi: ContractABI = { name: 'FossFi' } // todo: implement from shard wrapper
+	readonly abi: ContractABI = { name: 'FossFi' }; // todo: implement
 
     constructor(readonly address: Address, readonly init?: { code: Cell; data: Cell }) {
     }
 
     static createFromAddress(address: Address) {
         return new FossFi(address);
-    }
-
-    static async fromInit(owner: Address, jettonContent: Cell) {
-        const __gen_init = await FossFi_init(owner, jettonContent);
-        const address = contractAddress(0, __gen_init);
-        return new FossFi(address, __gen_init);
     }
 
     static createFromConfig(config: FossFiConfig, code: Cell, workchain = 0) {
@@ -161,7 +157,7 @@ export class FossFi implements Contract {
         await provider.internal(via, {
             value,
             sendMode: SendMode.PAY_GAS_SEPARATELY,
-            body: beginCell().storeUint(Op.top_up, 32).storeUint(0, 64).endCell(),
+            body: beginCell().storeUint(0xd372158c, 32).endCell(),
         });
     }
 
@@ -342,7 +338,6 @@ export class FossFi implements Contract {
         });
     }
 
-
     static changeContentMessage(content: Cell | FossFiContent) {
         const contentString = content instanceof Cell ? content.beginParse().loadStringTail() : content.uri;
         return beginCell().storeUint(Op.change_metadata_url, 32).storeUint(0, 64) // op, queryId
@@ -504,18 +499,18 @@ export class FossFi implements Contract {
     }
 }
 
-async function FossFi_init(owner: Address, jettonContent: Cell) {
-    const codefile = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../build/', 'FossFi.compiled.json'), 'utf-8'));
-    const keys = Object.keys(codefile);
-    const thirdValue = codefile[keys[2]];        // dynamic third property
-    const codeHex: string = String(thirdValue);  // or: const codeHex = codefile.hex;
-    const __code = Cell.fromHex(codeHex);
-    const builder = beginCell();
-    builder.storeUint(0, 1);
-    initFossFi_init_args({ $$type: 'FossFi_init_args', owner, jettonContent })(builder);
-    const __data = builder.endCell();
-    return { code: __code, data: __data };
-}
+// async function FossFi_init(owner: Address, jettonContent: Cell) {
+//     const codefile = JSON.parse(fs.readFileSync(path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../build/', 'FossFi.compiled.json'), 'utf-8'));
+//     const keys = Object.keys(codefile);
+//     const thirdValue = codefile[keys[2]];        // dynamic third property
+//     const codeHex: string = String(thirdValue);  // or: const codeHex = codefile.hex;
+//     const __code = Cell.fromHex(codeHex);
+//     const builder = beginCell();
+//     builder.storeUint(0, 1);
+//     initFossFi_init_args({ $$type: 'FossFi_init_args', owner, jettonContent })(builder);
+//     const __data = builder.endCell();
+//     return { code: __code, data: __data };
+// }
 
 function initFossFi_init_args(src: FossFi_init_args) {
     return (builder: Builder) => {

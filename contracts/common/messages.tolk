@@ -1,5 +1,5 @@
-import "../fossFi/storage"
 import "../common/utils.tolk"
+import "../fossFi/storage"
 
 type ForwardPayloadRemainder = RemainingBitsAndRefs
 
@@ -93,9 +93,7 @@ struct (0xcb862902) ChangeMinterMetadataUri {
     newMetadataUri: cell // SnakeString
 }
 
-struct (0xd372158c) TopUpTons {
-}
-
+struct (0xd372158c) TopUpTons {}
 
 // "forward payload" is TL/B `(Either Cell ^Cell)`;
 // we want to test, that if ^Cell, no other data exists in a slice
@@ -103,44 +101,44 @@ fun ForwardPayloadRemainder.checkIsCorrectTLBEither(self) {
     var mutableCopy = self;
     if (mutableCopy.loadMaybeRef() != null) {
         // throw "cell underflow" if there is data besides a ref
-        mutableCopy.assertEnd()
+        mutableCopy.assertEnd();
     }
 }
 
 struct (0x00000001) InternalInvite {
-    queryId: uint64 = 0;
-    version: uint10;
-    id: IdInfo? = null;
-    sender: address;
-    invitor: address;
-    currentWalletCode: cell? = null;
-    forwardPayload: ForwardPayloadRemainder;
+    queryId: uint64 = 0
+    version: uint10
+    id: IdInfo? = null
+    sender: address
+    invitor: address
+    currentWalletCode: cell? = null
+    forwardPayload: ForwardPayloadRemainder
 }
 
 struct (0x00000002) InternalDeActivate {}
 
 struct (0x00000003) InternalInviteApproval {
-    sender: address;
+    sender: address
 }
 
 struct (0x00000038) RequestUpgradeCode {
-    sender: address;
-    version: uint10;
+    sender: address
+    version: uint10
 }
 
 struct (0x00000004) InformMinterInviteInternal {
-    sender: address;
-    invitor: address;
-    forwardPayload: ForwardPayloadRemainder;
+    sender: address
+    invitor: address
+    forwardPayload: ForwardPayloadRemainder
 }
 
 struct (0x00000005) AuthorityAction {
-    sender: address;
+    sender: address
 }
 
 struct (0x00000006) SetStatus {
-    sender: address;
-    status: uint2;
+    sender: address
+    status: uint2
 }
 
 struct (0x00000007) TransferByAuthority {
@@ -150,18 +148,18 @@ struct (0x00000007) TransferByAuthority {
 }
 
 struct (0x00000008) VotingAction {
-    positiveVote: bool = true;
-    count: uint4 = 10;
-    originalSender: address;
+    positiveVote: bool = true
+    count: uint4 = 10
+    originalSender: address
 }
 
 struct CustomPayloadMsg {
-    queryId: uint64;
+    queryId: uint64
 }
 
 struct IdInfo {
-    username: SnakeString;
-    lattitude: SnakeString;
-    longitude: SnakeString;
-    address: address;
+    username: SnakeString
+    lattitude: SnakeString
+    longitude: SnakeString
+    address: address
 }

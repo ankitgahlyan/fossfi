@@ -1,11 +1,10 @@
-import "fees-management"
 import "jetton-utils"
 import "storage"
 import "../common/consts.tolk"
 import "../common/errors"
 import "../common/messages"
 import "../common/sharding"
-import "../common/utils"
+import "../lottery/storage"
 
 type AllowedMessageToMinter =
     | MintNewJettons
@@ -18,26 +17,6 @@ type AllowedMessageToMinter =
     | InformMinterInviteInternal
     | RequestUpgradeCode
 
-// fun onBouncedMessage(in: InMessageBounced): void {
-//     in.bouncedBody.skipBouncedPrefix();
-//     // process only mint bounces; on other messages, an exception will be thrown, it's okay
-//     val msg = lazy InternalTransferStep.fromSlice(in.bouncedBody);
-
-//     var store = lazy FiStore.load();
-//     store.totalSupply -= msg.jettonAmount;
-//     store.save();
-// } // not a minter anymore, peers do that kind of stuff
-
-// fun assertSenderIsAdmin(senderAddress: address, adminAddress: address) {
-//     // theoretically, minter's admin can be dropped and be `null`, so being precise, we should check:
-//     // ```
-//     // assert (adminAddress != null) throw ERROR_NOT_OWNER;
-//     // ```
-//     // but in practice, the above assertion is reduntant, we just bypass the nullability check:
-//     assert (
-//         senderAddress == adminAddress
-//     ) throw ERROR_NOT_OWNER; // then, if admin is `null`, error code 7 will be thrown (while executing operator `==`),// it's suitable for current implementation
-// }
 fun onInternalMessage(in: InMessage): void {
     val msg = lazy AllowedMessageToMinter.fromSlice(in.body);
     var store = lazy FiStore.load();
@@ -220,7 +199,6 @@ struct JettonDataReply {
 // struct (0x00) SnakeDataReply {
 //     string: SnakeString
 // }
-
 get fun get_jetton_data(): JettonDataReply {
     val store = lazy FiStore.load();
 
@@ -237,7 +215,7 @@ get fun get_jetton_data(): JettonDataReply {
         mintable: true, // but by peers only & not minter
         adminAddress: store.adminAddress,
         jettonContent: store.metadataUri, // metadata.toCell(),
-        jettonWalletCode: store.latestFiWalletCode, // or return baseCode?
+        jettonWalletCode: store.baseFiWalletCode,
     };
 }
 
@@ -257,11 +235,6 @@ get fun get_wallet_address(ownerAddress: address) {
         .calculateAddress();
 }
 
-get fun get_next_admin_address() {
-    val store = lazy FiStore.load();
-    return store.adminAddress;
-}
-
 fun checkCorrectSender(sender: address, senderInitOwner: address, store: FiStore) {
     assert (
         sender ==
@@ -273,4 +246,22 @@ fun checkCorrectSender(sender: address, senderInitOwner: address, store: FiStore
         )
             .calculateAddress()
     ) throw ERROR_NOT_VALID_WALLET;
+}
+
+// todo: implement minter deploy(efficient) not jetton(costly stateinit send)
+// todo: implement bouncing-lottery also for gamification of network
+fun calcDeployLottery(
+    treasury: address,
+    minter: address,
+    fiJettonInitCode: cell,
+    lotteryCode: cell // todo: fixme,,
+): AutoDeployAddress {
+    val emptyFiWalletStore: LotteryStorage = {
+        participants: createEmptyMap(),
+        minter,
+        treasury,
+        fiJettonInitCode,
+    };
+
+    return { stateInit: { code: lotteryCode, data: emptyFiWalletStore.toCell() } };
 }

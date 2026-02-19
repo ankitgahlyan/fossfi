@@ -1,5 +1,5 @@
 "Asm.fif" include
-// automatically generated from personalWallet.tolk, errors.tolk, fees-management.tolk, jetton-utils.tolk, messages.tolk, sharding.tolk, storage.tolk, jetton-utils.tolk, storage.tolk, utils.tolk, consts.tolk
+// automatically generated from personalWallet.tolk, errors.tolk, fees-management.tolk, jetton-utils.tolk, messages.tolk, sharding.tolk, storage.tolk, jetton-utils.tolk, utils.tolk, storage.tolk, consts.tolk, messages.tolk
 PROGRAM{
   0 DECLMETHOD onInternalMessage()
   97026 DECLMETHOD get_wallet_data()
@@ -68,6 +68,7 @@ PROGRAM{
     }>                      	//  in.body
     // 29: val msg = lazy AllowedMessageToWallet.fromSlice(in.body)
     DUP                     	//  in.body lazyS
+    // 35: return PriWalletStore.fromCell(contract.getData())
     c4 PUSH                 	//  in.body lazyS '59
     // 30: var storage = lazy PriWalletStore.load()
     CTOS                    	//  in.body lazyS lazyS
@@ -344,17 +345,16 @@ PROGRAM{
       LDOPTSTDADDR          	//  storage.ownerAddress '64 storage.jettonBalance msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 lazyS
       SKIPOPTREF            	//  storage.ownerAddress '64 storage.jettonBalance msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 lazyS
       LDGRAMS               	//  storage.ownerAddress '64 storage.jettonBalance msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7
-      // 103: var mutableCopy = self
       DUP                   	//  storage.ownerAddress '64 storage.jettonBalance msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7 mutableCopy
-      // 104: if (mutableCopy.loadMaybeRef() != null)
+      // 102: if (mutableCopy.loadMaybeRef() != null)
       LDOPTREF              	//  storage.ownerAddress '64 storage.jettonBalance msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7 '517 mutableCopy
       SWAP                  	//  storage.ownerAddress '64 storage.jettonBalance msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7 mutableCopy '517
       ISNULL                	//  storage.ownerAddress '64 storage.jettonBalance msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7 mutableCopy '518
       IFNOT:<{              	//  storage.ownerAddress '64 storage.jettonBalance msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7 mutableCopy
-        // 106: mutableCopy.assertEnd()
+        // 104: mutableCopy.assertEnd()
         ENDS                	//  storage.ownerAddress '64 storage.jettonBalance msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7
       }>ELSE<{
-        // 104: if (mutableCopy.loadMaybeRef() != null)
+        // 102: if (mutableCopy.loadMaybeRef() != null)
         DROP                	//  storage.ownerAddress '64 storage.jettonBalance msg.USlot1 msg.USlot2 msg.USlot3 msg.USlot4 msg.USlot6 msg.USlot7
       }>
       // 103: msg.transferRecipient.getWorkchain() == MY_WORKCHAIN

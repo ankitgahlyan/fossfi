@@ -1,5 +1,5 @@
 "Asm.fif" include
-// automatically generated from personal.tolk, fees-management.tolk, jetton-utils.tolk, storage.tolk, errors.tolk, messages.tolk, sharding.tolk, utils.tolk, jetton-utils.tolk, storage.tolk, consts.tolk
+// automatically generated from personal.tolk, fees-management.tolk, jetton-utils.tolk, storage.tolk, errors.tolk, messages.tolk, sharding.tolk, utils.tolk, jetton-utils.tolk, storage.tolk, consts.tolk, messages.tolk
 PROGRAM{
   0 DECLMETHOD onInternalMessage()
   106029 DECLMETHOD get_jetton_data()
@@ -483,15 +483,15 @@ PROGRAM{
       LDOPTSTDADDR          	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount '633 lazyS
       NIP                   	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount lazyS
       LDGRAMS               	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount forwardTonAmount mutableCopy
-      // 104: if (mutableCopy.loadMaybeRef() != null)
+      // 102: if (mutableCopy.loadMaybeRef() != null)
       LDOPTREF              	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount forwardTonAmount '640 mutableCopy
       SWAP                  	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount forwardTonAmount mutableCopy '640
       ISNULL                	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount forwardTonAmount mutableCopy '641
       IFNOT:<{              	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount forwardTonAmount mutableCopy
-        // 106: mutableCopy.assertEnd()
+        // 104: mutableCopy.assertEnd()
         ENDS                	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount forwardTonAmount
       }>ELSE<{
-        // 104: if (mutableCopy.loadMaybeRef() != null)
+        // 102: if (mutableCopy.loadMaybeRef() != null)
         DROP                	//  storage.jettonWalletCode storage.totalSupply '598 storage.fiFields msg.USlot5 msg.USlot6 msg.USlot7 internalTransferMsg.jettonAmount forwardTonAmount
       }>
       // 189: checkAmountIsEnoughToTransfer(msg.tonAmount, forwardTonAmount, in.originalForwardFee)
@@ -738,15 +738,9 @@ PROGRAM{
       // 37: assert (
       // ...39: ) throw ERROR_NOT_OWNER
       73 THROWIFNOT         	//  lazyS '872 '873 '874 storage.adminAddress '876 '877
-      // 235: storage.metadataUri = msg.newMetadataUri.toCell()
+      // 235: storage.metadataUri = msg.newMetadataUri
       s0 s6 XCHG            	//  '877 '872 '873 '874 storage.adminAddress '876 lazyS
-      64 LDU
-      NIP                   	//  '877 '872 '873 '874 storage.adminAddress '876 msg.USlot7
-      NEWC                  	//  '877 '872 '873 '874 storage.adminAddress '876 msg.USlot7 b
-      // 17: b.storeSlice(self)
-      STSLICE               	//  '877 '872 '873 '874 storage.adminAddress '876 b
-      // 235: storage.metadataUri = msg.newMetadataUri.toCell()
-      ENDC                  	//  '877 '872 '873 '874 storage.adminAddress '876 storage.metadataUri
+      PLDREF                	//  '877 '872 '873 '874 storage.adminAddress '876 storage.metadataUri
       // 31: contract.setData(self.toCell())
       NEWC                  	//  '877 '872 '873 '874 storage.adminAddress '876 storage.metadataUri b
       s0 s6 XCHG2           	//  '877 storage.metadataUri '873 '874 storage.adminAddress '876 b '872
@@ -760,7 +754,7 @@ PROGRAM{
       s1 s2 XCHG            	//  storage.metadataUri '877 b
       STREF                 	//  storage.metadataUri b
       STOPTREF              	//  b
-      ENDC                  	//  '897
+      ENDC                  	//  '886
       c4 POP                	// 
     }>                      	//  in.body lazyS
     // 46: match (msg)
@@ -768,26 +762,26 @@ PROGRAM{
     IFJMP:<{                	//  in.body lazyS
       // 27: return PriStore.fromCell(contract.getData())
       NIP                   	//  lazyS
-      c4 PUSH               	//  lazyS '908
+      c4 PUSH               	//  lazyS '897
       // 240: var storage = lazy PriStore.load()
       CTOS                  	//  lazyS lazyS
       // 241: assertSenderIsAdmin(in.senderAddress, storage.adminAddress)
-      LDGRAMS               	//  lazyS '912 lazyS
+      LDGRAMS               	//  lazyS '901 lazyS
       NIP                   	//  lazyS lazyS
-      LDGRAMS               	//  lazyS '913 lazyS
+      LDGRAMS               	//  lazyS '902 lazyS
       NIP                   	//  lazyS lazyS
-      LDSTDADDR             	//  lazyS '914 lazyS
+      LDSTDADDR             	//  lazyS '903 lazyS
       DROP                  	//  lazyS storage.adminAddress
-      INMSG_SRC             	//  lazyS storage.adminAddress '915
+      INMSG_SRC             	//  lazyS storage.adminAddress '904
       // 38: senderAddress == adminAddress!
-      SDEQ                  	//  lazyS '918
+      SDEQ                  	//  lazyS '907
       // 37: assert (
       // ...39: ) throw ERROR_NOT_OWNER
       73 THROWIFNOT         	//  lazyS
       // 242: contract.setCodePostponed(msg.newCode!)
       11 LDU
       NIP                   	//  lazyS
-      LDSTDADDR             	//  '920 lazyS
+      LDSTDADDR             	//  '909 lazyS
       NIP                   	//  lazyS
       LDOPTREF              	//  msg.USlot6 lazyS
       PLDOPTREF             	//  msg.USlot6 msg.USlot7
@@ -802,88 +796,42 @@ PROGRAM{
       DROP                  	// 
     }>                      	//  in.body
     // 253: assert (in.body.isEmpty()) throw 0xFFFF
-    16 PUSHPOW2DEC          	//  in.body '925=65535
-    SWAP                    	//  '925=65535 in.body
-    SEMPTY                  	//  '925=65535 '926
+    16 PUSHPOW2DEC          	//  in.body '914=65535
+    SWAP                    	//  '914=65535 in.body
+    SEMPTY                  	//  '914=65535 '915
     THROWANYIFNOT           	// 
   }>
-  // contracts/privateMinter/personal.tolk:274
+  // contracts/privateMinter/personal.tolk:266
   get_jetton_data() PROC:<{   	// 
     // 27: return PriStore.fromCell(contract.getData())
     c4 PUSH                 	//  '8
-    // 275: val storage = lazy PriStore.load()
+    // 267: val storage = lazy PriStore.load()
     CTOS                    	//  lazyS
-    // 277: var metadata: OnchainMetadataReply = { contentDict: createEmptyMap() }
-    NEWDICT                 	//  lazyS metadata
-    // 278: if (storage.metadataUri != null)
-    SWAP                    	//  metadata lazyS
-    LDGRAMS                 	//  metadata storage.totalSupply lazyS
-    LDGRAMS                 	//  metadata storage.totalSupply '15 lazyS
-    NIP                     	//  metadata storage.totalSupply lazyS
-    LDREF                   	//  metadata storage.totalSupply '16 lazyS
-    NIP                     	//  metadata storage.totalSupply lazyS
-    LDSTDADDR               	//  metadata storage.totalSupply storage.adminAddress lazyS
-    LDOPTSTDADDR            	//  metadata storage.totalSupply storage.adminAddress '18 lazyS
-    NIP                     	//  metadata storage.totalSupply storage.adminAddress lazyS
-    LDREF                   	//  metadata storage.totalSupply storage.adminAddress storage.jettonWalletCode lazyS
-    PLDOPTREF               	//  metadata storage.totalSupply storage.adminAddress storage.jettonWalletCode storage.metadataUri
-    DUP                     	//  metadata storage.totalSupply storage.adminAddress storage.jettonWalletCode storage.metadataUri storage.metadataUri
-    ISNULL                  	//  metadata storage.totalSupply storage.adminAddress storage.jettonWalletCode storage.metadataUri '21
-    IFNOT:<{                	//  metadata storage.totalSupply storage.adminAddress storage.jettonWalletCode storage.metadataUri
-      // 280: stringSha256("uri")
-      51065135818459385347574250312853146822620586594996463797054414300406918686668 PUSHINT	//  metadata storage.totalSupply storage.adminAddress storage.jettonWalletCode storage.metadataUri '22=51065135818459385347574250312853146822620586594996463797054414300406918686668
-      // 281: SnakeDataReply { string: storage.metadataUri.load() }.toCell()
-      SWAP                  	//  metadata storage.totalSupply storage.adminAddress storage.jettonWalletCode '22=51065135818459385347574250312853146822620586594996463797054414300406918686668 storage.metadataUri
-      CTOS                  	//  metadata storage.totalSupply storage.adminAddress storage.jettonWalletCode '22=51065135818459385347574250312853146822620586594996463797054414300406918686668 '28
-      NEWC                  	//  metadata storage.totalSupply storage.adminAddress storage.jettonWalletCode '22=51065135818459385347574250312853146822620586594996463797054414300406918686668 '28 b
-      x{00} STSLICECONST    	//  metadata storage.totalSupply storage.adminAddress storage.jettonWalletCode '22=51065135818459385347574250312853146822620586594996463797054414300406918686668 '28 b
-      // 17: b.storeSlice(self)
-      STSLICE               	//  metadata storage.totalSupply storage.adminAddress storage.jettonWalletCode '22=51065135818459385347574250312853146822620586594996463797054414300406918686668 b
-      // 281: SnakeDataReply { string: storage.metadataUri.load() }.toCell()
-      ENDC                  	//  metadata storage.totalSupply storage.adminAddress storage.jettonWalletCode '22=51065135818459385347574250312853146822620586594996463797054414300406918686668 '38
-      s0 s1 s5 XCHG3
-      // 279: metadata.contentDict.set(
-      8 PUSHPOW2            	//  storage.jettonWalletCode storage.totalSupply storage.adminAddress '38 '22=51065135818459385347574250312853146822620586594996463797054414300406918686668 metadata '41=256
-      DICTUSETREF           	//  storage.jettonWalletCode storage.totalSupply storage.adminAddress metadata
-      // 283: metadata.contentDict.set(stringSha256("decimals"), SnakeDataReply { string: "9" }.toCell())
-      107878361799212983662495570378745491379550006934010968359181619763835345146430 PUSHINT	//  storage.jettonWalletCode storage.totalSupply storage.adminAddress metadata '42=107878361799212983662495570378745491379550006934010968359181619763835345146430
-      x{39} PUSHSLICE       	//  storage.jettonWalletCode storage.totalSupply storage.adminAddress metadata '42=107878361799212983662495570378745491379550006934010968359181619763835345146430 '43
-      NEWC                  	//  storage.jettonWalletCode storage.totalSupply storage.adminAddress metadata '42=107878361799212983662495570378745491379550006934010968359181619763835345146430 '43 b
-      x{00} STSLICECONST    	//  storage.jettonWalletCode storage.totalSupply storage.adminAddress metadata '42=107878361799212983662495570378745491379550006934010968359181619763835345146430 '43 b
-      // 17: b.storeSlice(self)
-      STSLICE               	//  storage.jettonWalletCode storage.totalSupply storage.adminAddress metadata '42=107878361799212983662495570378745491379550006934010968359181619763835345146430 b
-      // 283: metadata.contentDict.set(stringSha256("decimals"), SnakeDataReply { string: "9" }.toCell())
-      ENDC                  	//  storage.jettonWalletCode storage.totalSupply storage.adminAddress metadata '42=107878361799212983662495570378745491379550006934010968359181619763835345146430 '51
-      s0 s2 XCHG
-      8 PUSHPOW2            	//  storage.jettonWalletCode storage.totalSupply storage.adminAddress '51 '42=107878361799212983662495570378745491379550006934010968359181619763835345146430 metadata '54=256
-      DICTUSETREF           	//  storage.jettonWalletCode storage.totalSupply storage.adminAddress metadata
-      // 278: if (storage.metadataUri != null)
-      s0 s3 XCHG            	//  metadata storage.totalSupply storage.adminAddress storage.jettonWalletCode
-    }>ELSE<{
-      DROP                  	//  metadata storage.totalSupply storage.adminAddress storage.jettonWalletCode
-    }>
-    // 288: mintable: true
-    TRUE                    	//  metadata storage.totalSupply storage.adminAddress storage.jettonWalletCode '55
-    // 290: jettonContent: metadata.toCell()
-    NEWC                    	//  metadata storage.totalSupply storage.adminAddress storage.jettonWalletCode '55 b
-    x{00} STSLICECONST      	//  metadata storage.totalSupply storage.adminAddress storage.jettonWalletCode '55 b
-    s1 s5 XCHG              	//  '55 storage.totalSupply storage.adminAddress storage.jettonWalletCode metadata b
-    STOPTREF                	//  '55 storage.totalSupply storage.adminAddress storage.jettonWalletCode b
-    ENDC                    	//  '55 storage.totalSupply storage.adminAddress storage.jettonWalletCode '60
-    // 286: return
-    s3 s4 XCHG              	//  storage.totalSupply '55 storage.adminAddress storage.jettonWalletCode '60
-    SWAP                    	//  storage.totalSupply '55 storage.adminAddress '60 storage.jettonWalletCode
+    // 269: return
+    LDGRAMS                 	//  storage.totalSupply lazyS
+    LDGRAMS                 	//  storage.totalSupply '13 lazyS
+    NIP                     	//  storage.totalSupply lazyS
+    LDREF                   	//  storage.totalSupply '14 lazyS
+    NIP                     	//  storage.totalSupply lazyS
+    LDSTDADDR               	//  storage.totalSupply storage.adminAddress lazyS
+    LDOPTSTDADDR            	//  storage.totalSupply storage.adminAddress '16 lazyS
+    NIP                     	//  storage.totalSupply storage.adminAddress lazyS
+    LDREF                   	//  storage.totalSupply storage.adminAddress storage.jettonWalletCode lazyS
+    PLDOPTREF               	//  storage.totalSupply storage.adminAddress storage.jettonWalletCode storage.metadataUri
+    // 271: mintable: true
+    TRUE                    	//  storage.totalSupply storage.adminAddress storage.jettonWalletCode storage.metadataUri '19
+    s3 s1 s3 XCHG3          	//  storage.totalSupply '19 storage.adminAddress storage.metadataUri storage.jettonWalletCode
   }>
-  // contracts/privateMinter/personal.tolk:295
+  // contracts/privateMinter/personal.tolk:278
   get_wallet_address() PROC:<{	//  ownerAddress
     // 27: return PriStore.fromCell(contract.getData())
     c4 PUSH                 	//  ownerAddress '9
-    // 296: val storage = lazy PriStore.load()
+    // 279: val storage = lazy PriStore.load()
     CTOS                    	//  ownerAddress lazyS
-    // 297: return calcAddrPriWallet(
+    // 280: return calcAddrPriWallet(
     LDREF                   	//  ownerAddress storage.fiFields lazyS
     PLDREF                  	//  ownerAddress storage.fiFields storage.jettonWalletCode
-    // 299: storage.fiFields.load().treasury
+    // 282: storage.fiFields.load().treasury
     SWAP                    	//  ownerAddress storage.jettonWalletCode storage.fiFields
     CTOS                    	//  ownerAddress storage.jettonWalletCode s
     LDSTDADDR               	//  ownerAddress storage.jettonWalletCode '18 s
@@ -892,7 +840,7 @@ PROGRAM{
     LDREF                   	//  ownerAddress storage.jettonWalletCode '19 '20 s
     NIP                     	//  ownerAddress storage.jettonWalletCode '19 s
     ENDS                    	//  ownerAddress storage.jettonWalletCode '19
-    // 300: contract.getAddress()
+    // 283: contract.getAddress()
     MYADDR                  	//  ownerAddress storage.jettonWalletCode '19 '21
     // 10: val emptyPriWalletStore: PriWalletStore =
     s3 PUSH                 	//  ownerAddress storage.jettonWalletCode emptyPriWalletStore.treasury emptyPriWalletStore.minterAddress emptyPriWalletStore.ownerAddress
@@ -928,13 +876,13 @@ PROGRAM{
     248 STU                 	//  '42
     BTOS                    	//  '22
   }>
-  // contracts/privateMinter/personal.tolk:305
+  // contracts/privateMinter/personal.tolk:288
   get_next_admin_address() PROC:<{	// 
     // 27: return PriStore.fromCell(contract.getData())
     c4 PUSH                 	//  '8
-    // 306: val storage = lazy PriStore.load()
+    // 289: val storage = lazy PriStore.load()
     CTOS                    	//  lazyS
-    // 307: return storage.nextAdminAddress
+    // 290: return storage.nextAdminAddress
     LDGRAMS                 	//  '12 lazyS
     NIP                     	//  lazyS
     LDGRAMS                 	//  '13 lazyS

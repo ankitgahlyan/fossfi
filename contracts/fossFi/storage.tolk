@@ -1,5 +1,3 @@
-import "../common/utils.tolk"
-
 struct NomInAddrs {
     nominee: address? = null
     invitor: address? = null
@@ -27,7 +25,7 @@ struct Maps {
     followings: map<address, coins>
     invited: map<address, coins>
     
-    allowances: map<address, map<address, coins>> // todo need in personal tokens too?
+    allowances: map<address, coins> // todo need in personal tokens too?
     debts: map<address, coins>
     closeFriends: map<address, bool> // for social recovery of account
     votedFor: map<address, uint4> // todo: what struct to use
@@ -75,8 +73,8 @@ struct FiWalletStore { // todo: nft like store migration after activate/upgrade/
 }
 
 struct FiStore {
-    totalSupply: coins = 0
-    walletVersion: uint10 = 0
+    totalSupply: coins
+    walletVersion: uint10
     adminAddress: address // todo: implement: use dao address
     readonly baseFiWalletCode: cell // for address calculation
     latestFiWalletCode: cell // for upgrades
